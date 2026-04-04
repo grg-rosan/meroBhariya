@@ -1,0 +1,269 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [postgis]
+}
+
+// ─────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────
+
+enum Role {
+  MERCHANT
+  RIDER
+  DISPATCHER
+  ADMIN
+}
+
+enum ShipmentStatus {
+  PENDING
+  ASSIGNED
+  PICKED_UP
+  IN_HUB
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+  RETURNED
+}
+
+enum DocumentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PaymentType {
+  COD
+  PREPAID
+}
+
+enum MerchantDocType {
+  PAN_CERTIFICATE
+  BUSINESS_REGISTRATION
+  TAX_CLEARANCE
+  OWNER_CITIZENSHIP
+  OWNER_PHOTO
+}
+
+enum RiderDocType {
+  CITIZENSHIP_FRONT
+  CITIZENSHIP_BACK
+  DRIVING_LICENSE_FRONT
+  DRIVING_LICENSE_BACK
+  VEHICLE_BLUEBOOK
+  VEHICLE_INSURANCE
+  RIDER_PHOTO
+  VEHICLE_PHOTO
+}
+
+// ─────────────────────────────────────────
+// USER
+// ─────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  fullName     String
+  email        String   @unique
+  passwordHash String
+  phoneNumber  String   @unique
+  role         Role     @default(MERCHANT)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  merchantProfile MerchantProfile?
+  riderProfile    RiderProfile?
+  logs            ShipmentLog[]
+}
+
+// ─────────────────────────────────────────
+// VEHICLE TYPE
+// ─────────────────────────────────────────
+
+model VehicleType {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  maxWeightKg Float
+  description String?
+  isActive    Boolean @default(true)
+
+  riders     RiderProfile[]
+  shipments  Shipment[]
+  fareConfig FareConfig?
+}
+
+// ─────────────────────────────────────────
+// FARE CONFIG
+// ─────────────────────────────────────────
+
+model FareConfig {
+  id            Int         @id @default(autoincrement())
+  vehicleTypeId Int         @unique
+  vehicleType   VehicleType @relation(fields: [vehicleTypeId], references: [id])
+
+  baseFare       Float
+  perKmRate      Float
+  perKgRate      Float
+  minFare        Float
+  fragileCharge  Float @default(0)
+  codChargeRate  Float @default(0)
+  nightSurcharge Float @default(0)
+  cancelCharge   Float @default(0)
+
+  isActive  Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────
+// MERCHANT
+// ─────────────────────────────────────────
+
+model MerchantProfile {
+  id            String  @id @default(cuid())
+  userId        String  @unique @map("user_id")
+  user          User    @relation(fields: [userId], references: [id])
+  businessName  String
+  panNumber     String?
+  pickupAddress String
+  location      Unsupported("geography(Point, 4326)")?
+
+  documents MerchantDocument[]
+  shipments Shipment[]
+}
+
+model MerchantDocument {
+  id           String          @id @default(cuid())
+  merchantId   String
+  merchant     MerchantProfile @relation(fields: [merchantId], references: [id])
+  type         MerchantDocType
+  fileUrl      String
+  filePublicId String?
+  status       DocumentStatus  @default(PENDING)
+  note         String?
+  uploadedAt   DateTime        @default(now())
+  reviewedAt   DateTime?
+
+  @@index([merchantId])
+  @@index([merchantId, status])
+}
+
+// ─────────────────────────────────────────
+// RIDER
+// ─────────────────────────────────────────
+
+model RiderProfile {
+  id              String      @id @default(cuid())
+  userId          String      @unique @map("user_id")
+  user            User        @relation(fields: [userId], references: [id])
+  vehicleTypeId   Int
+  vehicleType     VehicleType @relation(fields: [vehicleTypeId], references: [id])
+  licenseNumber   String      @unique
+  vehicleNumber   String      @unique
+  isOnline        Boolean     @default(false)
+  isVerified      Boolean     @default(false)
+  currentLocation Unsupported("geography(Point, 4326)")?
+
+  documents RiderDocument[]
+  shipments Shipment[]
+
+  @@index([vehicleTypeId])
+  @@index([isOnline, isVerified])
+}
+
+model RiderDocument {
+  id           String         @id @default(cuid())
+  riderId      String
+  rider        RiderProfile   @relation(fields: [riderId], references: [id])
+  type         RiderDocType
+  fileUrl      String
+  filePublicId String?
+  status       DocumentStatus @default(PENDING)
+  note         String?
+  expiresAt    DateTime?
+  uploadedAt   DateTime       @default(now())
+  reviewedAt   DateTime?
+
+  @@index([riderId])
+  @@index([riderId, status])
+}
+
+// ─────────────────────────────────────────
+// SHIPMENT
+// ─────────────────────────────────────────
+
+model Shipment {
+  id             String          @id @default(cuid())
+  trackingNumber String          @unique
+  merchantId     String
+  merchant       MerchantProfile @relation(fields: [merchantId], references: [id])
+  riderId        String?
+  rider          RiderProfile?   @relation(fields: [riderId], references: [id])
+  vehicleTypeId  Int
+  vehicleType    VehicleType     @relation(fields: [vehicleTypeId], references: [id])
+
+  receiverName     String
+  receiverPhone    String
+  deliveryAddress  String
+  deliveryLocation Unsupported("geography(Point, 4326)")?
+
+  weight       Float
+  isFragile    Boolean        @default(false)
+  orderValue   Float
+  codAmount    Float          @default(0)
+  fareSnapshot Float?
+
+  status    ShipmentStatus @default(PENDING)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  logs        ShipmentLog[]
+  transaction Transaction?
+
+  @@index([merchantId])
+  @@index([riderId])
+  @@index([status])
+  @@index([merchantId, status])
+  @@index([riderId, status])
+}
+
+// ─────────────────────────────────────────
+// SHIPMENT LOG
+// ─────────────────────────────────────────
+
+model ShipmentLog {
+  id          String         @id @default(cuid())
+  shipmentId  String
+  shipment    Shipment       @relation(fields: [shipmentId], references: [id])
+  status      ShipmentStatus
+  note        String?
+  updatedById String
+  updatedBy   User           @relation(fields: [updatedById], references: [id])
+  createdAt   DateTime       @default(now())
+
+  @@index([shipmentId])
+  @@index([updatedById])
+}
+
+// ─────────────────────────────────────────
+// TRANSACTION
+// ─────────────────────────────────────────
+
+model Transaction {
+  id         String      @id @default(cuid())
+  shipmentId String      @unique
+  shipment   Shipment    @relation(fields: [shipmentId], references: [id])
+
+  paymentType      PaymentType
+  totalFare        Float
+  codAmount        Float       @default(0)
+  collectedByRider Float?
+  isRemitted       Boolean     @default(false)
+  remittedAt       DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
