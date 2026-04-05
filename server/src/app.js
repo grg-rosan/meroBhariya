@@ -12,6 +12,8 @@ import {globalMiddleware} from "../src/middleware/error.middleware.js"
 config();
 connectDB();
 
+import adminRoutes from "./modules/admin/admin.routes.js";
+
 
 const app = express();
 
@@ -27,6 +29,7 @@ app.use(cookieParser());
 
 //API routes
 app.use("/api/auth",authRoute)
+app.use("/api/admin", adminRoutes);
 
 app.all("/{*path}", (req, res, next) => {
   next(new AppError(`Can't find ${req.url} on this server`, 404));

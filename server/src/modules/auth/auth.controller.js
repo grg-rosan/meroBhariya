@@ -1,69 +1,97 @@
-import { registerUserService, logInUserService, changeUserPasswordService } from "./auth.service.js";
-import { generateToken } from "../../utils/generateToken.js";
-import asyncHandler from "../../utils/asyncHandler.js";
+// src/modules/auth/auth.controller.js
+import * as authService from "./auth.service.js";
 
-const register = asyncHandler(async (req, res) => {
-  const user = await registerUserService(req.body);
+// ─── Helper ───────────────────────────────────────────────────────────────────
 
-  res.status(201).json({
-    status: "success",
-    data: {
-      user: {
-        id: user.id,           // id ✓
-        name: user.fullName,   // fullName ✓
-        email: user.email,
-        role: user.role.toLowerCase(),
-      },
-    },
-  });
-});
+function handleError(res, err) {
+  // Service throws { status, message } for known errors
+  if (err.status && err.message) {
+    return res.status(err.status).json({ message: err.message });
+  }
+  console.error("[Auth] Unhandled error:", err);
+  return res.status(500).json({ message: "Internal server error." });
+}
 
-const login = asyncHandler(async (req, res) => {
-  const user = await logInUserService(req.body);
+// ─── POST /api/auth/login ─────────────────────────────────────────────────────
 
-  const token = generateToken(user.id); // id ✓
+export async function loginHandler(req, res) {
+  const { email, password } = req.body;
 
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 1000 * 60 * 60 * 24 * 7,
-  });
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password are required." });
+  }
 
-  res.status(200).json({
-    status: "success",
-    data: {
-      user: {
-        id: user.id,           // id ✓
-        name: user.fullName,   // fullName ✓
-        email: user.email,
-        role: user.role.toLowerCase(),
-      },
-      token,
-    },
-  });
-});
+  try {
+    const result = await authService.login({ email, password });
+    return res.status(200).json(result);
+    // result: { token, user }
+  } catch (err) {
+    return handleError(res, err);
+  }
+}
 
-const logout = asyncHandler(async (req, res) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-  });
+// ─── POST /api/auth/register/rider ───────────────────────────────────────────
 
-  res.status(200).json({
-    status: "success",
-    message: "Logged out successfully",
-  });
-});
+export async function registerRiderHandler(req, res) {
+  const { name, email, phone, password, vehicleType, plateNumber, address } = req.body;
 
-const changePassword = asyncHandler(async (req, res) => {
-  await changeUserPasswordService(req.user.id, req.body); // id ✓
+  const missing = ["name", "email", "phone", "password", "vehicleType", "plateNumber", "address"]
+    .filter(k => !req.body[k]);
 
-  res.status(200).json({
-    status: "success",
-    message: "Password changed successfully",
-  });
-});
+  if (missing.length) {
+    return res.status(400).json({ message: `Missing fields: ${missing.join(", ")}` });
+  }
 
-export { register, login, logout, changePassword };
+  try {
+    const result = await authService.registerRider({
+      name, email, phone, password, vehicleType, plateNumber, address,
+    });
+    return res.status(201).json(result);
+    // result: { token, user }
+  } catch (err) {
+    return handleError(res, err);
+  }
+}
+
+// ─── POST /api/auth/register/merchant ────────────────────────────────────────
+
+export async function registerMerchantHandler(req, res) {
+  const { name, email, phone, password, businessName, address, panNumber } = req.body;
+
+  const missing = ["name", "email", "phone", "password", "businessName", "address"]
+    .filter(k => !req.body[k]);
+
+  if (missing.length) {
+    return res.status(400).json({ message: `Missing fields: ${missing.join(", ")}` });
+  }
+
+  try {
+    const result = await authService.registerMerchant({
+      name, email, phone, password, businessName, address, panNumber,
+    });
+    return res.status(201).json(result);
+    // result: { token, user }
+  } catch (err) {
+    return handleError(res, err);
+  }
+}
+
+// ─── GET /api/auth/me ─────────────────────────────────────────────────────────
+
+export async function getMeHandler(req, res) {
+  // req.userId is set by requireAuth middleware
+  try {
+    const user = await authService.getMe(req.userId);
+    return res.status(200).json({ user });
+  } catch (err) {
+    return handleError(res, err);
+  }
+}
+
+// ─── POST /api/auth/logout ────────────────────────────────────────────────────
+// JWT is stateless — logout is handled client-side by deleting the token.
+// This endpoint exists so the frontend has a consistent API surface.
+
+export async function logoutHandler(req, res) {
+  return res.status(200).json({ message: "Logged out successfully." });
+}

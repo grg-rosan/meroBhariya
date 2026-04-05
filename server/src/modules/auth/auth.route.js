@@ -1,12 +1,23 @@
-import express from "express";
-import { register, login, logout, changePassword } from "../auth/auth.controller.js";
-import { authMiddleware } from "../../middlewares/auth.middleware.js";
+// src/modules/auth/auth.routes.js
+import { Router } from "express";
+import {
+  loginHandler,
+  registerRiderHandler,
+  registerMerchantHandler,
+  getMeHandler,
+  logoutHandler,
+} from "./auth.controller.js";
+import { requireAuth } from "./auth.middleware.js";
 
-const router = express.Router();
+const router = Router();
 
-router.post("/register", register);
-router.post("/login", login);
-router.post("/logout", logout);
-router.post("/change-password", authMiddleware, changePassword); // protected ✓
+// Public
+router.post("/login",             loginHandler);
+router.post("/register/rider",    registerRiderHandler);
+router.post("/register/merchant", registerMerchantHandler);
+
+// Protected
+router.get( "/me",     requireAuth, getMeHandler);
+router.post("/logout", requireAuth, logoutHandler);
 
 export default router;

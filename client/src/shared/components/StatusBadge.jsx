@@ -1,19 +1,17 @@
 const MAP = {
-  PENDING:          { label: 'Pending',        cls: 'bg-amber-100 text-amber-800' },
-  ASSIGNED:         { label: 'Assigned',        cls: 'bg-blue-100 text-blue-800' },
-  PICKED_UP:        { label: 'Picked up',       cls: 'bg-indigo-100 text-indigo-800' },
-  IN_HUB:           { label: 'At hub',          cls: 'bg-purple-100 text-purple-800' },
-  OUT_FOR_DELIVERY: { label: 'Out for delivery', cls: 'bg-sky-100 text-sky-800' },
-  DELIVERED:        { label: 'Delivered',        cls: 'bg-green-100 text-green-800' },
-  CANCELLED:        { label: 'Cancelled',        cls: 'bg-red-100 text-red-800' },
-  RETURNED:         { label: 'Returned',         cls: 'bg-orange-100 text-orange-800' },
+  PENDING:          { label: 'Pending',          cls: 'bg-amber-500/10 text-amber-400' },
+  ASSIGNED:         { label: 'Assigned',          cls: 'bg-blue-500/10 text-blue-400' },
+  PICKED_UP:        { label: 'Picked up',         cls: 'bg-indigo-500/10 text-indigo-400' },
+  IN_HUB:           { label: 'At hub',            cls: 'bg-purple-500/10 text-purple-400' },
+  OUT_FOR_DELIVERY: { label: 'Out for delivery',  cls: 'bg-sky-500/10 text-sky-400' },
+  DELIVERED:        { label: 'Delivered',         cls: 'bg-green-500/10 text-green-400' },
+  CANCELLED:        { label: 'Cancelled',         cls: 'bg-red-500/10 text-red-400' },
+  RETURNED:         { label: 'Returned',          cls: 'bg-orange-500/10 text-orange-400' },
 };
 
 export default function StatusBadge({ status }) {
-  const { label, cls } = MAP[status] ?? { label: status, cls: 'bg-gray-100 text-gray-700' };
+  const { label, cls } = MAP[status] ?? { label: status, cls: 'bg-zinc-700 text-zinc-300' };
   return (
-    <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${cls}`}>
-      {label}
-    </span>
+    <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${cls}`}>{label}</span>
   );
 }
