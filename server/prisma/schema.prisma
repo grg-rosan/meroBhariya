@@ -222,6 +222,9 @@ model Shipment {
 
   logs        ShipmentLog[]
   transaction Transaction?
+  // NEW: Tracking the Two-Man Rule handoff
+  isHandoffPending   Boolean @default(false)
+  handoffInitiatorId String? // The User ID of the Dispatcher who scanned it first
 
   @@index([merchantId])
   @@index([riderId])

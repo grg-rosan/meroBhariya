@@ -1,28 +1,27 @@
-import { registerUser, logInUser } from "./auth.service.js";
+import { registerUserService, logInUserService, changeUserPasswordService } from "./auth.service.js";
 import { generateToken } from "../../utils/generateToken.js";
 import asyncHandler from "../../utils/asyncHandler.js";
 
-const register = asyncHandler(async (req, res, next) => {
-  const user = await registerUser(req.body);
+const register = asyncHandler(async (req, res) => {
+  const user = await registerUserService(req.body);
+
   res.status(201).json({
     status: "success",
     data: {
       user: {
-        id: user.userID,
-        name: user.name,
+        id: user.id,           // id ✓
+        name: user.fullName,   // fullName ✓
         email: user.email,
+        role: user.role.toLowerCase(),
       },
     },
   });
 });
 
-const login = asyncHandler(async(req, res) => {
-  //login user | if loginUser throws new error  => asyncHandler catches  => globalMiddleware responds
-  const user = await logInUser(req.body);
+const login = asyncHandler(async (req, res) => {
+  const user = await logInUserService(req.body);
 
-  //generate jwt token
-  const token = generateToken(user.userID);
-  console.log(token);
+  const token = generateToken(user.id); // id ✓
 
   res.cookie("token", token, {
     httpOnly: true,
@@ -35,31 +34,36 @@ const login = asyncHandler(async(req, res) => {
     status: "success",
     data: {
       user: {
-        id: user.userID,
-        name: user.name,
+        id: user.id,           // id ✓
+        name: user.fullName,   // fullName ✓
         email: user.email,
-        role: user.role.toLocaleLowerCase(),
+        role: user.role.toLowerCase(),
       },
-      // do not show token here because it is already saved in cookie in generateToken function
       token,
     },
   });
-})
+});
 
-const logout = asyncHandler(async(req, res) => {
-    res.clearCookie("token", {
-      httpOnly: true,
-      secure: false, // true in production
-      sameSite: "strict",
-    });
+const logout = asyncHandler(async (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
 
-    res.status(200).json({
-      status: "success",
-      message: "Logged out successfully",
-    });
-})
+  res.status(200).json({
+    status: "success",
+    message: "Logged out successfully",
+  });
+});
 
-const changePassword = asyncHandler(async(req,res) => {
+const changePassword = asyncHandler(async (req, res) => {
+  await changeUserPasswordService(req.user.id, req.body); // id ✓
 
-})
-export { register, login, logout,changePassword };
+  res.status(200).json({
+    status: "success",
+    message: "Password changed successfully",
+  });
+});
+
+export { register, login, logout, changePassword };

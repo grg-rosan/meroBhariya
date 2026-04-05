@@ -1,42 +1,41 @@
 import jwt from "jsonwebtoken";
 import { prisma } from "../../config/db.config.js";
+import asyncHandler from "../utils/asyncHandlers.js";
+import AppError from "../utils/appError.js";
 
-//read the token form the request
-//check if the token is valid
-export const authMiddleware = async (req, res, next) => {
-  //<-------get token form headers ------>
+export const authMiddleware = asyncHandler(async (req, res, next) => {
   let token;
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
+
+  // 1. Extract Token
+  if (req.headers.authorization?.startsWith("Bearer")) {
     token = req.headers.authorization.split(" ")[1];
-  } else if (req.cookies && req.cookies?.token) {
+  } else if (req.cookies?.token) {
     token = req.cookies.token;
   }
+
   if (!token) {
-    return res.status(401).json({ message: "not authorized" });
+    return next(new AppError("Not authorized, no token provided", 401));
   }
-     console.log("extracted token:", token)
 
-  //<<-----verify if user exists ------->
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  // 2. Verify Token 
+  // (If this fails, jwt.verify throws an error, asyncHandler catches it)
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    if (!decoded.id) {
-      throw new Error("Invalid token payload" );
-    }
-    const user = await prisma.user.findUnique({
-      where: { userID: decoded.id },
-    });
-    if (!user) {
-      return res.status(401).json({ error: "user no longer exists" });
-    }
-    req.user = user;
-    next();
-  } catch (e) {
-      return res.status(401).json({
-      message: "Not authorized, token failed",
-    });
+  // 3. Check User
+  const user = await prisma.user.findUnique({
+    where: { id: decoded.id },
+    select: { id: true, isActive: true, role: true }
+  });
+
+  if (!user) {
+    return next(new AppError("The user belonging to this token no longer exists", 401));
   }
-};
+
+  if (!user.isActive) {
+    return next(new AppError("This account has been deactivated", 403));
+  }
+
+  // 4. Grant Access
+  req.user = user;
+  next();
+});
