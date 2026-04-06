@@ -60,3 +60,4 @@ export function lastNDaysFilter(n) {
 
   return { gte: start, lte: end };
 }
+
