@@ -13,3 +13,14 @@ POST/   shipments/:id/handoff      DISPATCHER, RIDER        Two-man hub exit
 Two things to note
 riderId in the schema is RiderProfile.id, not User.id. The original handoff code assigned userId directly to riderId — that's fixed here. The handoff now looks up the RiderProfile first and uses its id.
 distanceKm must come from the client on shipment creation since the schema stores delivery coordinates as a PostGIS geography point but doesn't compute distance server-side. When you add geocoding later, replace the distanceKm body field with a server-side PostGIS ST_Distance query.
+
+
+Method                          Path                            Handler
+GET                             /rider/dashboard                Shift stats + activity feed
+PATCH                           /rider/dutyToggle               on/off duty
+GET                             /rider/manifestActive           assigned shipments
+POST                            /rider/deliver                  Confirm delivery + COD
+PATCH                           /rider/location                 Push GPS coordinates
+GET                             /rider/earnings                 Paginated earnings history
+GET                             /rider/documentsList            submitted docs
+POST                            /rider/documents                Upload doc via Cloudinary
