@@ -1,7 +1,7 @@
 // src/App.jsx
 import { createBrowserRouter, RouterProvider, Navigate, Outlet } from "react-router-dom";
 import { AuthProvider }  from "./auth/AuthContext";
-import ProtectedRoute    from "./auth/ProtectedRoute";
+import ProtectedRoute, { PublicOnlyRoute }    from "./auth/ProtectedRoute";
 import RootLayout from "./shared/layouts/RootLayout";
 
 import LoginPage              from "./pages/auth/LoginPage";
@@ -12,6 +12,7 @@ import { adminRoutes }      from "./admin/routes";
 import { merchantRoutes }   from "./merchant/route";
 import { riderRoutes }      from "./rider/routes";
 import { dispatcherRoutes } from "./dispatcher/routes";
+import LandingPage from "./pages/landing/LandingPage";
 
 function protect(allowedRoles, routeGroup) {
   return {
@@ -22,9 +23,9 @@ function protect(allowedRoles, routeGroup) {
 
 const router = createBrowserRouter([
   {
-    element: <RootLayout />,
+    element: <PublicOnlyRoute/>,
     children: [
-      { path: "/",               element: <Navigate to="/login" replace /> },
+      { path: "/",               element: <LandingPage replace /> },
       { path: "/login",          element: <LoginPage /> },
       { path: "/register",       element: <RegisterPage /> },
       { path: "/register/:role", element: <RegisterPage /> },

@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:15-alpine
+    image: postgis/postgis:15-alpine
     restart: always
     environment:
       POSTGRES_USER: user
@@ -8,6 +8,7 @@ services:
       POSTGRES_DB: meroBhariya
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./server/prisma/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5433:5432"
     healthcheck:
@@ -44,6 +45,8 @@ services:
       - DATABASE_URL=postgresql://user:password@db:5432/meroBhariya
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
       - NODE_ENV=development
+      - JWT_SECRET=c4c56025e38a80a4f176b39194c59f1609db98dd81f7f1ba9a920a9d9d6072ba      
+      - JWT_EXPIRES_IN=7d  
     depends_on: 
       db:
         condition: service_healthy
@@ -61,7 +64,7 @@ services:
     environment:
       - VITE_API_URL=http://localhost:3000
     depends_on:
-      - backend
+      - server
   
 volumes:
   postgres_data:

@@ -1,0 +1,46 @@
+Merchant submits shipment form
+        │
+        ▼
+POST /api/merchant/shipment
+        │
+        ▼
+shipment.service.js
+  → validate fare config
+  → create Shipment in DB (status: PENDING)
+  → create ShipmentLog in DB
+  → publishEvent(ROUTING_KEY.SHIPMENT_CREATED, payload)  ← RabbitMQ enters HERE
+        │
+        ▼
+RabbitMQ Exchange: porter.shipments
+routing key: shipment.created
+        │
+        ▼
+Queue: dispatcher.new_shipments
+        │
+        ▼
+dispatcher.consumer.js (already running, listening)
+  → fetch full shipment from DB
+  → io.to("dispatchers").emit("shipment:new", shipment)  ← Socket.IO
+        │
+        ▼
+All connected Dispatcher UIs see the new shipment on their board
+        │
+        ▼
+Dispatcher clicks "Assign" → picks a rider
+        │
+        ▼
+PATCH /api/dispatcher/shipment/:id/assign
+        │
+        ▼
+dispatcher.service.js
+  → update Shipment in DB (status: ASSIGNED, riderId)
+  → create ShipmentLog
+  → publishEvent(ROUTING_KEY.SHIPMENT_ASSIGNED, payload)  ← RabbitMQ again
+        │
+        ▼
+Queue: notifications.rider + notifications.merchant
+        │
+        ▼
+notification.consumer.js
+  → io.to("user:riderId").emit("shipment:assigned", ...)
+  → io.to("user:merchantId").emit("shipment:assigned", ...)

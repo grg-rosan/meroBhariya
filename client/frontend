@@ -1,0 +1,15 @@
+Note: vehicleTypeId, licenseNumber, and vehicleNumber are all required on RiderProfile with no defaults, so your registration request body must include all three when role === "RIDER". You may want to add validation (e.g. with Zod) to enforce this before hitting the service.
+
+API surface at a glance
+Method  Endpoint                     Role                    Description
+POST    /shipments                   MERCHANT               Create + auto-calculate fare
+GET     /shipments                  All                     List (scoped by role)
+GET     /shipments/:id              All                     Single shipment + logs
+PATCH    /shipments/:id/assign     ADMIN,DISPATCHER          Assign a rider
+PATCH   /shipments/:id/status      ADMIN, DISPATCHER         Move status forward
+PATCH   /shipments/:id/cancel      MERCHANT, ADMIN           Cancel shipment
+POST/   shipments/:id/handoff      DISPATCHER, RIDER        Two-man hub exit
+
+Two things to note
+riderId in the schema is RiderProfile.id, not User.id. The original handoff code assigned userId directly to riderId — that's fixed here. The handoff now looks up the RiderProfile first and uses its id.
+distanceKm must come from the client on shipment creation since the schema stores delivery coordinates as a PostGIS geography point but doesn't compute distance server-side. When you add geocoding later, replace the distanceKm body field with a server-side PostGIS ST_Distance query.
