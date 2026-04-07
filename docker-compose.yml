@@ -61,7 +61,7 @@ services:
     environment:
       - VITE_API_URL=http://localhost:3000
     depends_on:
-      - backend
+      - server
   
 volumes:
   postgres_data:

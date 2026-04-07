@@ -1,5 +1,5 @@
 // src/modules/auth/auth.controller.js
-import * as authService from "./auth.service.js";
+import * as authService from "./auth.services.js";
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
 

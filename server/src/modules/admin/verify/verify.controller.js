@@ -1,5 +1,5 @@
 // src/modules/admin/verify/verify.controller.js
-import * as verifyService from "./verify.service.js";
+import * as verifyService from "./verify.services.js";
 
 function handleError(res, err) {
   if (err.status && err.message) return res.status(err.status).json({ message: err.message });

@@ -6,8 +6,9 @@ import {connectDB} from  "./config/db.config.js"
 //Import user Routes
 import authRoute from "./modules/auth/auth.route.js"
 import cookieParser from "cookie-parser";
-import AppError from "./utils/appError.js";
-import {globalMiddleware} from "../src/middleware/error.middleware.js"
+import AppError from "./utils/AppError.js";
+import {globalMiddleware} from "./middlewares/error.middleware.js"
+//import {globalMiddleware} from "../src/middleware/error.middleware.js"
 
 config();
 connectDB();

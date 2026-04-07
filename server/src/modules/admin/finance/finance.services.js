@@ -1,5 +1,5 @@
 // src/modules/admin/finance/finance.service.js
-import { prisma } from "../../../config/prisma.js";
+import { prisma } from "../../../config/db.config.js";
 
 // ─── Revenue summary ──────────────────────────────────────────────────────────
 

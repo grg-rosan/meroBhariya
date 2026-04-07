@@ -1,5 +1,5 @@
-import prisma from "../../../config/db.config.js";
-import { AppError } from "../../../utils/AppError.js";
+import { prisma } from "../../../config/db.config.js";
+import AppError from "../../../utils/AppError.js";
 import { parseDateRange } from "../../../utils/dateFilter.js";
 import { parsePagination } from "../../../utils/pagination.js";
 

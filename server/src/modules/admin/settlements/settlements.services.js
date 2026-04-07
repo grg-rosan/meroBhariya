@@ -1,6 +1,5 @@
 // src/modules/admin/settlements/settlements.service.js
-import { prisma } from "../../../config/prisma.js";
-
+import { prisma } from "../../../config/db.config.js";
 // ─── Rider settlement summary ─────────────────────────────────────────────────
 // Shows each rider's unremitted COD balance
 

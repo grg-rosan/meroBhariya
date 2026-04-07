@@ -1,7 +1,7 @@
 // src/modules/admin/verify/verify.service.js
-import { prisma } from "../../../config/prisma.js";
+import { prisma } from "../../../config/db.config.js";
 import { sendNotification, NOTIFICATION_TYPE } from "../../../utils/sendNotification.js";
-await sendNotification({ type: NOTIFICATION_TYPE.DOC_APPROVED, user, payload: { docType: doc.type } });
+//await sendNotification({ type: NOTIFICATION_TYPE.DOC_APPROVED, user, payload: { docType: doc.type } });
 
 // ─── List pending merchants ───────────────────────────────────────────────────
 

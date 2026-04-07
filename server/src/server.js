@@ -2,7 +2,7 @@ import http from "http"
 import { Server as socketIOServer} from "socket.io"
 import app from "./app.js";
 import { disconnectDB } from "./config/db.config.js";
-import { startOrderConsumer } from "./modules/order/order.consumer.js";
+//import { startOrderConsumer } from "./modules/order/order.consumer.js";
 import { initSocketHandlers } from "./infrastructure/socket/socket.handler.js";
 
 const port = 3000;
@@ -19,7 +19,7 @@ const io = new socketIOServer(server, {
 })
 
 initSocketHandlers(io)
-startOrderConsumer(io)
+//startOrderConsumer(io)
 server.listen(port,()=>{
     console.log(`listening to port ${port}`)
 })
