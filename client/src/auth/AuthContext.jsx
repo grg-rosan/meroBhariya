@@ -1,5 +1,5 @@
+//src/auth/AuthContext.jsx
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext(null);
 
@@ -63,7 +63,6 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);       // { id, name, email, role }
   const [loading, setLoading] = useState(true); // true while validating stored token
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
 
   // On mount: validate any stored token
   useEffect(() => {
@@ -83,19 +82,18 @@ export function AuthProvider({ children }) {
       const { token, user } = await authAPI.login(email, password);
       localStorage.setItem("token", token);
       setUser(user);
-      navigate(ROLE_HOME[user.role] ?? "/", { replace: true });
+      return user;
     } catch (err) {
       setError(err.message);
       throw err; // let the form surface it too
     }
-  }, [navigate]);
+  }, []);
 
   const logout = useCallback(async () => {
     await authAPI.logout();
     localStorage.removeItem("token");
     setUser(null);
-    navigate("/login", { replace: true });
-  }, [navigate]);
+  }, []);
 
   const value = { user, loading, error, login, logout, setError };
 

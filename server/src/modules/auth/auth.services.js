@@ -172,3 +172,84 @@ export async function getMe(userId) {
 
   return sanitizeUser(user);
 }
+// ─── Create Staff (Admin or Dispatcher) ──────────────────────────────────────
+// Only called by an existing ADMIN via POST /api/admin/staff
+// No public registration — accounts are created internally
+ 
+export async function createStaff({ name, email, phone, password, role, createdByUserId }) {
+  // Only ADMIN and DISPATCHER roles allowed through this path
+  if (!["ADMIN", "DISPATCHER"].includes(role)) {
+    throw new AppError("Invalid staff role. Must be ADMIN or DISPATCHER.", 400);
+  }
+ 
+  // Check duplicates
+  const existing = await prisma.user.findFirst({
+    where: { OR: [{ email }, { phoneNumber: phone }] },
+  });
+  if (existing) {
+    throw new AppError(
+      existing.email === email ? "Email already registered." : "Phone number already registered.",
+      409,
+    );
+  }
+ 
+  const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+ 
+  const user = await prisma.user.create({
+    data: {
+      fullName:    name,
+      email,
+      phoneNumber: phone,
+      passwordHash,
+      role,
+      isActive:    true,
+    },
+  });
+ 
+  console.log(`[Auth] Staff created: ${role} — ${email} (by userId: ${createdByUserId})`);
+ 
+  // Return user without token — staff accounts are not auto-logged in
+  // They use the normal /login page
+  return sanitizeUser(user);
+}
+ 
+// ─── Toggle staff active status ──────────────────────────────────────────────
+ 
+export async function toggleStaffStatus(targetUserId, adminUserId) {
+  const user = await prisma.user.findUnique({ where: { id: targetUserId } });
+  if (!user) throw new AppError("User not found.", 404);
+ 
+  // Prevent admin from deactivating themselves
+  if (targetUserId === adminUserId) {
+    throw new AppError("You cannot deactivate your own account.", 400);
+  }
+ 
+  // Only staff roles can be toggled this way
+  if (!["ADMIN", "DISPATCHER"].includes(user.role)) {
+    throw new AppError("Use the verify module to manage riders and merchants.", 400);
+  }
+ 
+  return prisma.user.update({
+    where: { id: targetUserId },
+    data:  { isActive: !user.isActive },
+    select: {
+      id: true, fullName: true, email: true,
+      role: true, isActive: true,
+    },
+  });
+}
+ 
+// ─── List all staff ───────────────────────────────────────────────────────────
+ 
+export async function getStaffList() {
+  return prisma.user.findMany({
+    where: { role: { in: ["ADMIN", "DISPATCHER"] } },
+    select: {
+      id: true, fullName: true, email: true,
+      phoneNumber: true, role: true,
+      isActive: true, createdAt: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+ 

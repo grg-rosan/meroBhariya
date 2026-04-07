@@ -1,10 +1,8 @@
 // src/modules/auth/auth.controller.js
+
 import * as authService from "./auth.services.js";
 
-// ─── Helper ───────────────────────────────────────────────────────────────────
-
 function handleError(res, err) {
-  // Service throws { status, message } for known errors
   if (err.status && err.message) {
     return res.status(err.status).json({ message: err.message });
   }
@@ -16,15 +14,12 @@ function handleError(res, err) {
 
 export async function loginHandler(req, res) {
   const { email, password } = req.body;
-
   if (!email || !password) {
     return res.status(400).json({ message: "Email and password are required." });
   }
-
   try {
     const result = await authService.login({ email, password });
     return res.status(200).json(result);
-    // result: { token, user }
   } catch (err) {
     return handleError(res, err);
   }
@@ -34,20 +29,14 @@ export async function loginHandler(req, res) {
 
 export async function registerRiderHandler(req, res) {
   const { name, email, phone, password, vehicleType, plateNumber, address } = req.body;
-
   const missing = ["name", "email", "phone", "password", "vehicleType", "plateNumber", "address"]
     .filter(k => !req.body[k]);
-
   if (missing.length) {
     return res.status(400).json({ message: `Missing fields: ${missing.join(", ")}` });
   }
-
   try {
-    const result = await authService.registerRider({
-      name, email, phone, password, vehicleType, plateNumber, address,
-    });
+    const result = await authService.registerRider({ name, email, phone, password, vehicleType, plateNumber, address });
     return res.status(201).json(result);
-    // result: { token, user }
   } catch (err) {
     return handleError(res, err);
   }
@@ -57,20 +46,14 @@ export async function registerRiderHandler(req, res) {
 
 export async function registerMerchantHandler(req, res) {
   const { name, email, phone, password, businessName, address, panNumber } = req.body;
-
   const missing = ["name", "email", "phone", "password", "businessName", "address"]
     .filter(k => !req.body[k]);
-
   if (missing.length) {
     return res.status(400).json({ message: `Missing fields: ${missing.join(", ")}` });
   }
-
   try {
-    const result = await authService.registerMerchant({
-      name, email, phone, password, businessName, address, panNumber,
-    });
+    const result = await authService.registerMerchant({ name, email, phone, password, businessName, address, panNumber });
     return res.status(201).json(result);
-    // result: { token, user }
   } catch (err) {
     return handleError(res, err);
   }
@@ -79,7 +62,6 @@ export async function registerMerchantHandler(req, res) {
 // ─── GET /api/auth/me ─────────────────────────────────────────────────────────
 
 export async function getMeHandler(req, res) {
-  // req.userId is set by requireAuth middleware
   try {
     const user = await authService.getMe(req.userId);
     return res.status(200).json({ user });
@@ -89,9 +71,56 @@ export async function getMeHandler(req, res) {
 }
 
 // ─── POST /api/auth/logout ────────────────────────────────────────────────────
-// JWT is stateless — logout is handled client-side by deleting the token.
-// This endpoint exists so the frontend has a consistent API surface.
 
 export async function logoutHandler(req, res) {
   return res.status(200).json({ message: "Logged out successfully." });
+}
+
+// ─── POST /api/admin/staff ────────────────────────────────────────────────────
+// Creates an ADMIN or DISPATCHER account.
+// Only accessible by existing ADMIN (enforced by requireRole in admin.routes.js)
+
+export async function createStaffHandler(req, res) {
+  const { name, email, phone, password, role } = req.body;
+
+  const missing = ["name", "email", "phone", "password", "role"]
+    .filter(k => !req.body[k]);
+  if (missing.length) {
+    return res.status(400).json({ message: `Missing fields: ${missing.join(", ")}` });
+  }
+
+  try {
+    const user = await authService.createStaff({
+      name, email, phone, password, role,
+      createdByUserId: req.userId, // from requireAuth middleware
+    });
+    return res.status(201).json({
+      message: `${role} account created. They can now sign in at /login.`,
+      user,
+    });
+  } catch (err) {
+    return handleError(res, err);
+  }
+}
+
+// ─── GET /api/admin/staff ─────────────────────────────────────────────────────
+
+export async function getStaffListHandler(req, res) {
+  try {
+    const staff = await authService.getStaffList();
+    return res.status(200).json(staff);
+  } catch (err) {
+    return handleError(res, err);
+  }
+}
+
+// ─── PATCH /api/admin/staff/:userId/toggle ────────────────────────────────────
+
+export async function toggleStaffStatusHandler(req, res) {
+  try {
+    const user = await authService.toggleStaffStatus(req.params.userId, req.userId);
+    return res.status(200).json(user);
+  } catch (err) {
+    return handleError(res, err);
+  }
 }
