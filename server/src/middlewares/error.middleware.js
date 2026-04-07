@@ -11,7 +11,7 @@ export const globalMiddleware = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
 
-  let error = { ...err };
+  let error = Object.assign(err);
   error.message = err.message;
   error.name = err.name;
 
