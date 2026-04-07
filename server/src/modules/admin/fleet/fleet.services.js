@@ -1,6 +1,5 @@
 // src/modules/admin/fleet/fleet.service.js
-import { prisma } from "../../../config/prisma.js";
-
+import { prisma } from "../../../config/db.config.js";
 // ─── Vehicle Types ─────────────────────────────────────────────────────────────
 
 export async function getAllVehicleTypes() {

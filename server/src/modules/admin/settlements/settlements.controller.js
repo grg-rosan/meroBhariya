@@ -1,5 +1,5 @@
 // src/modules/admin/settlements/settlements.controller.js
-import * as settlementsService from "./settlements.service.js";
+import * as settlementsService from "./settlements.services.js";
 
 function handleError(res, err) {
   if (err.status && err.message) return res.status(err.status).json({ message: err.message });

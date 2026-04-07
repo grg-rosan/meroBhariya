@@ -1,6 +1,5 @@
 // src/modules/admin/overview/overview.service.js
-import { prisma } from "../../../config/prisma.js";
-
+import { prisma } from "../../../config/db.config.js";
 // ─── Stat Cards ───────────────────────────────────────────────────────────────
 
 export async function getPlatformStats() {

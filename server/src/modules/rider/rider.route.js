@@ -1,32 +1,22 @@
-import { Router } from "express";
-import { authenticate } from "../auth/auth.middleware.js";
-import { authorize } from "../../middlewares/role.middlware.js";
+import { Router }           from "express";
+import multer               from "multer";
+import { requireAuth }      from "../auth/auth.middleware.js";
+import { roleMiddleware }   from "../../middlewares/role.middlware.js";
 import { uploadToCloudinary } from "../../utils/cloudinary.js";
 import * as riderController from "./rider.controller.js";
 
 const router = Router();
+const upload = multer({ dest: "uploads/" });
 
-// All rider routes — must be authenticated and hold the RIDER role
-router.use(authenticate, authorize("RIDER"));
+router.use(requireAuth, roleMiddleware("RIDER"));
 
-// ── Dashboard & Duty ──────────────────────────────────────────────────────────
-router.get("/dashboard", riderController.getDashboard);
-router.patch("/duty", riderController.toggleDuty);
-
-// ── Manifest ──────────────────────────────────────────────────────────────────
-router.get("/manifest", riderController.getManifest);
-
-// ── Delivery confirmation ─────────────────────────────────────────────────────
-router.post("/deliver", riderController.deliverPackage);
-
-// ── Live location ─────────────────────────────────────────────────────────────
-router.patch("/location", riderController.updateLocation);
-
-// ── Earnings ──────────────────────────────────────────────────────────────────
-router.get("/earnings", riderController.getEarnings);
-
-// ── Documents ─────────────────────────────────────────────────────────────────
-router.get("/documents", riderController.getDocuments);
-router.post("/documents", uploadToCloudinary, riderController.uploadDocument);
+router.get  ("/dashboard", riderController.getDashboard);
+router.patch("/duty",      riderController.toggleDuty);
+router.get  ("/manifest",  riderController.getManifest);
+router.post ("/deliver",   riderController.deliverPackage);
+router.patch("/location",  riderController.updateLocation);
+router.get  ("/earnings",  riderController.getEarnings);
+router.get  ("/documents", riderController.getDocuments);
+router.post ("/documents", upload.single("file"), riderController.uploadDocument);
 
 export default router;

@@ -1,5 +1,5 @@
 // src/modules/admin/finance/finance.controller.js
-import * as financeService from "./finance.service.js";
+import * as financeService from "./finance.services.js";
 
 function handleError(res, err) {
   if (err.status && err.message) return res.status(err.status).json({ message: err.message });

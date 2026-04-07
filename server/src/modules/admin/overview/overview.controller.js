@@ -1,5 +1,5 @@
 // src/modules/admin/overview/overview.controller.js
-import * as overviewService from "./overview.service.js";
+import * as overviewService from "./overview.services.js";
 
 function handleError(res, err) {
   if (err.status && err.message) return res.status(err.status).json({ message: err.message });
