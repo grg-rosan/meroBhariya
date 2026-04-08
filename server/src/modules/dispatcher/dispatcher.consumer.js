@@ -3,11 +3,9 @@
 // Broadcasts to all connected dispatcher UIs via Socket.IO.
 // prefetch(1) in rabbitmq.js ensures only ONE instance processes each message
 // even when multiple dispatchers / server instances are running.
-
-import { getChannel } from "../../config/rabbitmq.js";
-import { QUEUE }      from "../../config/queues.js";
-import { prisma }     from "../../config/prisma.js";
-
+import { getChannel } from "../../infrastructure/rabbitmq/connection.js";
+import { QUEUE } from "../../infrastructure/rabbitmq/queue.js";
+import { prisma } from "../../config/db.config.js";
 let io = null;
 
 export async function startDispatcherConsumer(socketIO) {

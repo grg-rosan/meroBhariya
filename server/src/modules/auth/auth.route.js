@@ -12,12 +12,12 @@ import { requireAuth } from "./auth.middleware.js";
 const router = Router();
 
 // Public
-router.post("/login",             loginHandler);
-router.post("/register/rider",    registerRiderHandler);
+router.post("/login", loginHandler);
+router.post("/register/rider", registerRiderHandler);
 router.post("/register/merchant", registerMerchantHandler);
 
 // Protected
-router.get( "/me",     requireAuth, getMeHandler);
+router.get("/me", requireAuth, getMeHandler);
 router.post("/logout", requireAuth, logoutHandler);
 
 export default router;

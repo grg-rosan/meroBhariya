@@ -1,6 +1,7 @@
 // src/modules/merchant/shipment/shipment.service.js
-import { prisma }       from "../../../config/prisma.js";
-import { publishEvent } from "../../../utils/publisher.js";
+import { prisma }       from "../../../config/db.config.js";
+import { publish} from "../../../infrastructure/rabbitmq/publisher.js";
+import { EXCHANGE } from "../../../infrastructure/rabbitmq/queue.js";
 import { ROUTING_KEY }  from "../../../config/queues.js";
 import { appError }     from "../../../utils/errorHandler.js";
 import { buildPaginationMeta } from "../../../utils/pagination.js";
@@ -74,7 +75,7 @@ export async function createShipment(merchantId, data,userId) {
         shipmentId:  newShipment.id,
         status:      "PENDING",
         note:        "Shipment created by merchant",
-        updatedById: req_userId, // see note below — passed via argument
+        updatedById: userId, 
       },
     });
 
@@ -84,7 +85,7 @@ export async function createShipment(merchantId, data,userId) {
   // 7. Publish to RabbitMQ — dispatcher consumer picks this up
   //    Fire-and-forget: shipment is already safe in DB
   //    If RabbitMQ is temporarily down, shipment still exists — a sweep job can re-publish
-  publishEvent(ROUTING_KEY.SHIPMENT_CREATED, {
+  publish("shipment.new", {
     shipmentId:      shipment.id,
     trackingNumber:  shipment.trackingNumber,
     merchantId:      shipment.merchantId,
@@ -181,7 +182,7 @@ export async function cancelShipment(shipmentId, merchantId) {
 
   // Notify — merchant cancellation doesn't go through RabbitMQ
   // since there's no rider assigned yet
-  publishEvent(ROUTING_KEY.SHIPMENT_CANCELLED, {
+  publish(ROUTING_KEY.SHIPMENT_CANCELLED, {
     shipmentId:     updated.id,
     trackingNumber: updated.trackingNumber,
     merchantId:     updated.merchantId,

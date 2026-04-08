@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgis/postgis:15-alpine
+    image: postgis/postgis:15-3.5-alpine
     restart: always
     environment:
       POSTGRES_USER: user
@@ -52,7 +52,7 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    command: sh -c "npx prisma generate && npx prisma migrate deploy && npm run dev"
+    command: sh -c "until npx prisma migrate deploy; do echo 'Waiting for DB...'; sleep 3; done && npx prisma generate && npm run dev"
   client:
     build: ./client
     ports:

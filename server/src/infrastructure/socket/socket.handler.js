@@ -34,8 +34,15 @@ export const initSocketHandlers = (socketIO) => {
   });
 
   io.on("connection", (socket) => {
+    console.log("socket connected successfully");
     console.log(`Connected: ${socket.user.fullName} (${socket.user.id})`);
 
+    socket.join(`user:${socket.user.id}`); // private room for every user
+
+    if (socket.user.role === "DISPATCHER") {
+      socket.join("dispatchers"); // shared dispatcher room
+      console.log(`[Socket] ${socket.user.fullName} joined dispatchers room`);
+    }
     socket.on("disconnect", () => {
       console.log(`Disconnected: ${socket.user.fullName} (${socket.user.id})`);
     });
