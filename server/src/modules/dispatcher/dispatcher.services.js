@@ -1,7 +1,6 @@
 // src/modules/dispatcher/dispatcher.service.js
 import { prisma }       from "../../config/prisma.js";
-import { publishEvent } from "../../utils/publisher.js";
-import { ROUTING_KEY }  from "../../config/queues.js";
+import { publish } from "../../infrastructure/rabbitmq/publisher.js";
 import { appError }     from "../../utils/errorHandler.js";
 import { buildPaginationMeta } from "../../utils/pagination.js";
 
@@ -90,7 +89,7 @@ export async function assignRider(shipmentId, riderId, dispatcherUserId) {
   });
 
   // 5. Publish assignment event → notification consumer delivers to rider + merchant
-  publishEvent(ROUTING_KEY.SHIPMENT_ASSIGNED, {
+  publish("shipment.assigned", {
     shipmentId,
     trackingNumber:  shipment.trackingNumber,
     riderId:         rider.id,
@@ -159,7 +158,7 @@ export async function scanHandoff(shipmentId, dispatcherUserId) {
     return s;
   });
 
-  publishEvent(ROUTING_KEY.SHIPMENT_STATUS_UPDATED, {
+  publish("shipment.status.updated", {
     shipmentId,
     trackingNumber:  shipment.trackingNumber,
     status:          "IN_HUB",
@@ -204,7 +203,7 @@ export async function updateShipmentStatus(shipmentId, newStatus, dispatcherUser
     return s;
   });
 
-  publishEvent(ROUTING_KEY.SHIPMENT_STATUS_UPDATED, {
+  publish("shipment.status.updated", {
     shipmentId,
     trackingNumber: shipment.trackingNumber,
     status:         newStatus,
@@ -215,3 +214,6 @@ export async function updateShipmentStatus(shipmentId, newStatus, dispatcherUser
 
   return updated;
 }
+
+
+

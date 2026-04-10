@@ -1,5 +1,5 @@
 // src/modules/dispatcher/dispatcher.controller.js
-import * as dispatcherService from "./dispatcher.service.js";
+import * as dispatcherService from "./dispatcher.services.js";
 import { catchAsync }         from "../../utils/errorHandler.js";
 import { parsePagination }    from "../../utils/pagination.js";
 
