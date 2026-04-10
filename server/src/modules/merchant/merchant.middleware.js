@@ -2,7 +2,7 @@
 // Runs after requireAuth — resolves the MerchantProfile from req.userId
 // and attaches req.merchantProfileId so services never do this lookup themselves.
 
-import { prisma }   from "../../config/prisma.js";
+import { prisma }   from "../../config/db.config.js";
 import { appError } from "../../utils/errorHandler.js";
 
 export async function requireMerchantProfile(req, res, next) {

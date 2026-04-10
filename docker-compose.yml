@@ -52,7 +52,7 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    command: sh -c "until npx prisma migrate deploy; do echo 'Waiting for DB...'; sleep 3; done && npx prisma generate && npm run dev"
+    command: sh -c "npm install && until npx prisma migrate deploy; do echo 'Waiting for DB...'; sleep 3; done && npx prisma generate && npm run dev"
   client:
     build: ./client
     ports:

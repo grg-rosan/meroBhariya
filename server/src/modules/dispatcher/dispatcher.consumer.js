@@ -29,7 +29,7 @@ export async function startDispatcherConsumer(socketIO) {
     { noAck: false },
   );
 
-  console.log("[DispatcherConsumer] Listening on:", QUEUE.DISPATCHER_NEW_SHIPMENTS);
+  console.log("[DispatcherConsumer] Listening on:", QUEUE.DISPATCHER_ASSIGNMENTS);
 }
 
 async function handleNewShipment(payload) {

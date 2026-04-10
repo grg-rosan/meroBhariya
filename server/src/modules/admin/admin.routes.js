@@ -12,7 +12,7 @@ import {
 import * as overviewCtrl    from "./overview/overview.controller.js";
 import * as verifyCtrl      from "./verify/verify.controller.js";
 import * as fleetCtrl       from "./fleet/fleet.controller.js";
-import * as financeCtrl     from "./finance/finance.contoreller.js";
+import * as financeCtrl from "./finance/finance.controller.js"
 import * as settlementsCtrl from "./settlements/settlements.controller.js";
 
 const router = Router();

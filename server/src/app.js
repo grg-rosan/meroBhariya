@@ -8,13 +8,14 @@ import authRoute from "./modules/auth/auth.route.js"
 import cookieParser from "cookie-parser";
 import AppError from "./utils/AppError.js";
 import {globalMiddleware} from "./middlewares/error.middleware.js"
-//import {globalMiddleware} from "../src/middleware/error.middleware.js"
 
 config();
 connectDB();
-
+import authRoutes from "./modules/auth/auth.route.js"
 import adminRoutes from "./modules/admin/admin.routes.js";
-
+import dispatcherRoutes from "./modules/dispatcher/dispatcher.route.js"
+import merchantRoutes from "./modules/merchant/shipment/shipment.route.js"
+import riderRoutes from "./modules/rider/rider.route.js"
 
 const app = express();
 
@@ -29,8 +30,11 @@ app.use(cookieParser());
 
 
 //API routes
-app.use("/api/auth",authRoute)
+app.use("/api/auth",authRoutes)
 app.use("/api/admin", adminRoutes);
+app.use("/api/dispatcher",dispatcherRoutes)
+app.use("api/rider/",riderRoutes)
+app.use("api/merchant",merchantRoutes)
 
 app.all("/{*path}", (req, res, next) => {
   next(new AppError(`Can't find ${req.url} on this server`, 404));

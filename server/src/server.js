@@ -3,8 +3,8 @@ import { Server as socketIOServer} from "socket.io"
 import app from "./app.js";
 import { disconnectDB } from "./config/db.config.js";
 import { initSocketHandlers } from "./infrastructure/socket/socket.handler.js";
+import { assertQueues } from "./infrastructure/rabbitmq/queue.js";
 import { connectRabbitMQ } from "./infrastructure/rabbitmq/connection.js";
-import { assertQueues }    from "./infrastructure/rabbitmq/queues.js";
 import { startNotificationConsumers } from "./modules/notification/notification.consumer.js";
 
 const port = 3000;

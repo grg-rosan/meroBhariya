@@ -3,9 +3,8 @@
 // Each message carries an `event` field — the Socket.IO event name to emit.
 // Each user is in their personal room: "user:<userId>"
 
-import { getChannel } from "../../config/rabbitmq.js";
-import { QUEUE }      from "../../config/queues.js";
-
+import { getChannel } from "../../infrastructure/rabbitmq/connection.js";
+import { QUEUE } from "../../infrastructure/rabbitmq/queue.js";
 let io = null;
 
 export async function startNotificationConsumers(socketIO) {
