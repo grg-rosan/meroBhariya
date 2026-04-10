@@ -32,3 +32,9 @@ export function globalErrorMiddleware(err, req, res, next) {
 
   return res.status(status).json({ message });
 }
+
+export function appError(status, message) {
+  const err = new Error(message);
+  err.status = status;
+  return err;
+}

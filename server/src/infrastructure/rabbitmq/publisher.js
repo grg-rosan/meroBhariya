@@ -1,5 +1,5 @@
 import { getChannel } from "./connection.js";
-import { EXCHANGE }   from "./queues.js";
+import { EXCHANGE }   from "./queue.js";
 
 /**
  * Publish a message to the porter.shipments topic exchange.

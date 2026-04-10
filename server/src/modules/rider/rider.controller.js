@@ -1,5 +1,5 @@
-import asyncHandler from "../../../utils/asyncHandlers.js";
-import  AppError  from "../../../utils/AppError.js";
+import { catchAsync as asyncHandler } from "../../utils/errorHandler.js";
+import  AppError  from "../../utils/AppError.js";
 import * as riderService from "./rider.services.js";
 import { uploadToCloudinary } from "../../utils/cloudinary.js";
 // ─────────────────────────────────────────
@@ -103,3 +103,6 @@ export const uploadDocument = asyncHandler(async (req, res) => {
 
   res.status(201).json({ status: "success", data });
 });
+
+
+
