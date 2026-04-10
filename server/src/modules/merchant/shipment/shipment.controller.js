@@ -1,5 +1,5 @@
 // src/modules/merchant/shipment/shipment.controller.js
-import * as shipmentService from "./shipment.service.js";
+import * as shipmentService from "./shipment.services.js";
 import { catchAsync } from "../../../utils/errorHandler.js";
 import { parsePagination } from "../../../utils/pagination.js";
 

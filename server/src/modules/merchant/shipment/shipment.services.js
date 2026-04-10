@@ -2,7 +2,6 @@
 import { prisma }       from "../../../config/db.config.js";
 import { publish} from "../../../infrastructure/rabbitmq/publisher.js";
 import { EXCHANGE } from "../../../infrastructure/rabbitmq/queue.js";
-import { ROUTING_KEY }  from "../../../config/queues.js";
 import { appError }     from "../../../utils/errorHandler.js";
 import { buildPaginationMeta } from "../../../utils/pagination.js";
 
@@ -182,7 +181,7 @@ export async function cancelShipment(shipmentId, merchantId) {
 
   // Notify — merchant cancellation doesn't go through RabbitMQ
   // since there's no rider assigned yet
-  publish(ROUTING_KEY.SHIPMENT_CANCELLED, {
+  publish("shipment.cancelled", {
     shipmentId:     updated.id,
     trackingNumber: updated.trackingNumber,
     merchantId:     updated.merchantId,
@@ -223,3 +222,4 @@ function generateTrackingNumber() {
   return `${prefix}-${timestamp}-${random}`;
   // Example: MB-LX4K2A-F3R9
 }
+
