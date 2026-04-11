@@ -1,4 +1,4 @@
-// src/merchant/pages/CreateShipment.jsx
+// src/merchant/pages/CreateShipment.jsx <<-- notice this! i have this componenet in src/merchant/components
 // Full shipment creation form with:
 //  - Google Places Autocomplete for both addresses
 //  - Live fare preview (calls /api/shipments/fare-preview)
@@ -8,10 +8,9 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Package, Loader2, ChevronRight, AlertCircle, MapPin } from 'lucide-react';
-import AddressAutocomplete from '../../shared/components/AddressAutocomplete';
+import AddressAutocomplete from './AddressAutocomplete';
 import { useMapbox } from '../../shared/hooks/useMapbox';
-import { apiPost } from '../../shared/hooks/useAPI';
-
+import { apiPost } from '../../shared/hooks/useApi';
 const VEHICLE_TYPES = [
   { id: 1, label: 'Bike (up to 20 kg)',        icon: '🏍️' },
   { id: 2, label: 'Mini Truck (up to 500 kg)',  icon: '🚐' },
