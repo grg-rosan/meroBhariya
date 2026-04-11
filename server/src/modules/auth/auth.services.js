@@ -1,9 +1,8 @@
 // src/modules/auth/auth.service.js
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-//import { prisma } from "../../config/prisma.js";
 import { prisma } from "../../config/db.config.js";
-
+import AppError from "../../utils/AppError.js"
 const SALT_ROUNDS = 12;
 const JWT_SECRET  = process.env.JWT_SECRET;
 const JWT_EXPIRES = process.env.JWT_EXPIRES_IN || "7d";

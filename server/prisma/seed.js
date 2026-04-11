@@ -1,41 +1,68 @@
-// prisma/seed.js
-// Run once: npx prisma db seed
-// This creates the first Super Admin account.
-// After this, all other admins/dispatchers are created via the Admin Dashboard.
 
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
 import bcrypt from "bcrypt";
+import "dotenv/config";
 
-const prisma = new PrismaClient();
-
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 async function main() {
+  // ── Super Admin ───────────────────────────────────────────────────────────
   const email = process.env.SEED_ADMIN_EMAIL || "admin@merobhariya.com";
   const password = process.env.SEED_ADMIN_PASSWORD || "Admin@1234";
 
-  // Check if super admin already exists
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
     console.log(`[Seed] Super Admin already exists: ${email}`);
-    return;
+    // ❌ Remove the return here — let it continue to vehicle types
+  } else {
+    const passwordHash = await bcrypt.hash(password, 12);
+    const admin = await prisma.user.create({
+      data: {
+        fullName:    "Super Admin",
+        email,
+        passwordHash,
+        phoneNumber: "9800000000",
+        role:        "ADMIN",
+        isActive:    true,
+      },
+    });
+    console.log(`[Seed] Super Admin created: ${admin.email}`);
   }
 
-  const passwordHash = await bcrypt.hash(password, 12);
-
-  const admin = await prisma.user.create({
-    data: {
-      fullName:     "Super Admin",
-      email,
-      passwordHash,
-      phoneNumber:  "9800000000",
-      role:         "ADMIN",
-      isActive:     true,
+  // ── Vehicle Types + Fare Configs ──────────────────────────────────────────
+  const vehicles = [
+    {
+      name: "Bike", maxWeightKg: 20, description: "Motorcycle for small parcels",
+      fare: { baseFare: 50, perKmRate: 15, perKgRate: 5, minFare: 80, fragileCharge: 20, codChargeRate: 0.02, nightSurcharge: 30, cancelCharge: 25 },
     },
-  });
+    {
+      name: "Scooter", maxWeightKg: 15, description: "Scooter for light deliveries",
+      fare: { baseFare: 60, perKmRate: 18, perKgRate: 6, minFare: 90, fragileCharge: 20, codChargeRate: 0.02, nightSurcharge: 30, cancelCharge: 25 },
+    },
+    {
+      name: "Van", maxWeightKg: 200, description: "Van for large shipments",
+      fare: { baseFare: 150, perKmRate: 25, perKgRate: 3, minFare: 200, fragileCharge: 50, codChargeRate: 0.02, nightSurcharge: 50, cancelCharge: 50 },
+    },
+  ];
 
-  console.log(`[Seed] Super Admin created:`);
-  console.log(`       Email:    ${admin.email}`);
-  console.log(`       Password: ${password}`);
-  console.log(`       ⚠ Change this password immediately after first login.`);
+  for (const v of vehicles) {
+    const vt = await prisma.vehicleType.upsert({
+      where:  { name: v.name },
+      update: {},
+      create: { name: v.name, maxWeightKg: v.maxWeightKg, description: v.description },
+    });
+
+    await prisma.fareConfig.upsert({
+      where:  { vehicleTypeId: vt.id },
+      update: {},
+      create: { vehicleTypeId: vt.id, ...v.fare },
+    });
+
+    console.log(`[Seed] Vehicle type seeded: ${v.name}`);
+  }
 }
 
 main()
