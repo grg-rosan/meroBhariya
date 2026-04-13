@@ -1,5 +1,5 @@
 import { catchAsync as asyncHandler } from "../../utils/errorHandler.js";
-import  AppError  from "../../utils/AppError.js";
+import AppError from "../../utils/appError.js";
 import * as riderService from "./rider.services.js";
 import { uploadToCloudinary } from "../../utils/cloudinary.js";
 // ─────────────────────────────────────────
@@ -87,22 +87,19 @@ export const getDocuments = asyncHandler(async (req, res) => {
 // Multipart — fileUrl + filePublicId attached by cloudinary middleware
 // ─────────────────────────────────────────
 
-export const uploadDocument = asyncHandler(async (req, res) => {
-  const { type, expiresAt } = req.body;
-  if (!type)      throw new AppError("type is required.", 400);
-  if (!req.file)  throw new AppError("No file provided.", 400);
-
-  const result = await uploadToCloudinary(req.file.path, "porter/rider-docs");
-
-  const data = await riderService.upsertRiderDocument(req.userId, {
-    type,
-    fileUrl:      result.secure_url,
-    filePublicId: result.public_id,
-    expiresAt,
-  });
-
-  res.status(201).json({ status: "success", data });
+export const uploadDocuments = asyncHandler(async (req, res) => {
+  const uploads = [];
+  for (const [type, fileArr] of Object.entries(req.files)) {
+    const file   = fileArr[0];
+    const result = await uploadToCloudinary(file.path, "porter/rider-docs");
+    const doc    = await riderService.upsertRiderDocument(req.user.id, {
+      type,
+      fileUrl:      result.secure_url,
+      filePublicId: result.public_id,
+      expiresAt:    req.body.expiresAt ?? null,
+    });
+    uploads.push(doc);
+  }
+  res.status(201).json({ status: "success", data: uploads });
 });
-
-
 

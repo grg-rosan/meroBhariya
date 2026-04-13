@@ -2,7 +2,7 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import "dotenv/config";
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
@@ -10,13 +10,14 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 async function main() {
   // ── Super Admin ───────────────────────────────────────────────────────────
-  const email = process.env.SEED_ADMIN_EMAIL || "admin@merobhariya.com";
-  const password = process.env.SEED_ADMIN_PASSWORD || "Admin@1234";
+  const email = process.env.SEED_ADMIN_EMAIL
+  const password = process.env.SEED_ADMIN_PASSWORD 
+
+  console.log(email, password)
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
     console.log(`[Seed] Super Admin already exists: ${email}`);
-    // ❌ Remove the return here — let it continue to vehicle types
   } else {
     const passwordHash = await bcrypt.hash(password, 12);
     const admin = await prisma.user.create({

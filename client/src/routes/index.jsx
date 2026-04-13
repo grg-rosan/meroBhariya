@@ -22,7 +22,7 @@ function protect(allowedRoles, routeGroup) {
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <RootLayout />,       // ← RootLayout just renders <Outlet />, no AuthProvider
+    element: <RootLayout />,       
     children: [
       { index: true, element: <LandingPage /> },
 

@@ -65,7 +65,6 @@ export async function createShipment(merchantId, data,userId) {
         codAmount:     Number(codAmount ?? 0),
         fareSnapshot,
         status:        "PENDING",
-        updatedBy:userId
       },
     });
 
@@ -153,7 +152,7 @@ export async function getShipmentDetail(shipmentId, merchantId) {
 
 // ─── Cancel shipment (only PENDING) ──────────────────────────────────────────
 
-export async function cancelShipment(shipmentId, merchantId) {
+export async function cancelShipment(shipmentId, merchantId, userId) {
   const shipment = await prisma.shipment.findFirst({
     where: { id: shipmentId, merchantId },
   });
@@ -172,7 +171,7 @@ export async function cancelShipment(shipmentId, merchantId) {
         shipmentId,
         status:      "CANCELLED",
         note:        "Cancelled by merchant",
-        updatedById: shipment.merchantId,
+        updatedById: userId
       },
     });
 

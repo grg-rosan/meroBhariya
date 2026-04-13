@@ -5,9 +5,7 @@ import {
   PageShell, Card, Brand, Heading, StepBar,
   Field, Input, Select, Button, ErrorAlert, Divider,
 } from "../../shared/ui/porter-ui";
-
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-
+import { API } from "../../shared/hooks/useApi.js"
 // ─── Step 0: Role picker ────────────────────────────────────────────────────
 
 function RolePicker({ onSelect }) {
@@ -17,7 +15,7 @@ function RolePicker({ onSelect }) {
 
       <div className="flex flex-col gap-3">
         {[
-          { value: "rider",    emoji: "🛵", label: "Rider",    desc: "Deliver orders & earn per trip" },
+          { value: "rider", emoji: "🛵", label: "Rider", desc: "Deliver orders & earn per trip" },
           { value: "merchant", emoji: "🏪", label: "Merchant", desc: "List your store & accept orders" },
         ].map(r => (
           <button
@@ -46,19 +44,19 @@ function RolePicker({ onSelect }) {
 // ─── Step 1: Account info ───────────────────────────────────────────────────
 
 function AccountForm({ role, onNext }) {
-  const [form,   setForm]   = useState({ name: "", email: "", phone: "", password: "", confirm: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", confirm: "" });
   const [errors, setErrors] = useState({});
 
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
-  const clr = (k)   => setErrors(p => ({ ...p, [k]: null }));
+  const clr = (k) => setErrors(p => ({ ...p, [k]: null }));
 
   function validate() {
     const e = {};
-    if (!form.name.trim())              e.name     = "Full name is required";
-    if (!form.email.includes("@"))      e.email    = "Valid email required";
-    if (form.phone.length < 10)         e.phone    = "Valid phone required";
-    if (form.password.length < 8)       e.password = "Min. 8 characters";
-    if (form.password !== form.confirm) e.confirm  = "Passwords don't match";
+    if (!form.name.trim()) e.name = "Full name is required";
+    if (!form.email.includes("@")) e.email = "Valid email required";
+    if (form.phone.length < 10) e.phone = "Valid phone required";
+    if (form.password.length < 8) e.password = "Min. 8 characters";
+    if (form.password !== form.confirm) e.confirm = "Passwords don't match";
     return e;
   }
 
@@ -105,7 +103,7 @@ function AccountForm({ role, onNext }) {
 // ─── Step 2a: Rider vehicle details ────────────────────────────────────────
 
 function RiderDetailsForm({ onNext, loading }) {
-  const [form, setForm] = useState({ vehicleType: "MOTORCYCLE", plateNumber: "", address: "" });
+  const [form, setForm] = useState({ vehicleType: "Bike", plateNumber: "", address: "" });
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
   function handleNext(e) {
@@ -119,10 +117,9 @@ function RiderDetailsForm({ onNext, loading }) {
       <form onSubmit={handleNext} className="flex flex-col gap-4">
         <Field label="Vehicle type">
           <Select value={form.vehicleType} onChange={e => set("vehicleType", e.target.value)}>
-            <option value="MOTORCYCLE">🏍 Motorcycle</option>
-            <option value="SCOOTER">🛵 Scooter</option>
-            <option value="BICYCLE">🚲 Bicycle</option>
-            <option value="CAR">🚗 Car</option>
+            <option value="Bike">🏍 Bike</option>
+            <option value="Scooter">🛵 Scooter</option>
+            <option value="Van">🚗 Van</option>
           </Select>
         </Field>
         <Field label="Plate / vehicle number">
@@ -194,8 +191,8 @@ function MerchantDetailsForm({ onNext, loading }) {
 // ─── Submit helper ──────────────────────────────────────────────────────────
 
 async function submitRegistration(role, basicInfo, details) {
-  const endpoint = role === "rider" ? "/auth/register/rider" : "/auth/register/merchant";
-  const res = await fetch(`${API_BASE}${endpoint}`, {
+  const endpoint = role === "rider" ? "/api/auth/register/rider" : "/api/auth/register/merchant";
+  const res = await fetch(`${API}${endpoint}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ...basicInfo, ...details }),
@@ -213,10 +210,10 @@ export default function RegisterPage() {
   const { role: urlRole } = useParams();
   const navigate = useNavigate();
 
-  const [step,       setStep]       = useState(urlRole ? 1 : 0);
-  const [role,       setRole]       = useState(urlRole || null);
-  const [basicInfo,  setBasicInfo]  = useState(null);
-  const [error,      setError]      = useState(null);
+  const [step, setStep] = useState(urlRole ? 1 : 0);
+  const [role, setRole] = useState(urlRole || null);
+  const [basicInfo, setBasicInfo] = useState(null);
+  const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
   function handleRolePick(r) { setRole(r); setStep(1); }
@@ -243,8 +240,8 @@ export default function RegisterPage() {
 
         {step === 0 && <RolePicker onSelect={handleRolePick} />}
         {step === 1 && <AccountForm role={role} onNext={handleAccountNext} />}
-        {step === 2 && role === "rider"    && (
-          <RiderDetailsForm    onNext={handleDetailsNext} loading={submitting} />
+        {step === 2 && role === "rider" && (
+          <RiderDetailsForm onNext={handleDetailsNext} loading={submitting} />
         )}
         {step === 2 && role === "merchant" && (
           <MerchantDetailsForm onNext={handleDetailsNext} loading={submitting} />

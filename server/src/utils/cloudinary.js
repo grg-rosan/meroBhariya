@@ -1,7 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
-import AppError from "./AppError.js";
-
-
+import AppError from "./appError.js";
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -16,6 +14,7 @@ export const uploadToCloudinary = async (filePath, folder) => {
     });
     return result;
   } catch (error) {
+    console.error("[Cloudinary Error]", error.message, error.http_code);
     throw new AppError("File upload failed", 500);
   }
 };

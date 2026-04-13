@@ -1,22 +1,36 @@
 import { useState } from 'react';
-import { useAPI,apiPatch,apiPost } from '../../shared/hooks/useApi';
-export const useAdminOverview   = () => useAPI('/api/admin/overview');
-export const usePendingUsers    = () => useAPI('/api/admin/users/pending');
-export const useFinanceSummary  = () => useAPI('/api/admin/finance/summary');
-export const useSettlements     = () => useAPI('/api/admin/settlements/pending');
-export const useFareConfigs     = () => useAPI('/api/admin/fare-configs');
-export const useVehicleTypes    = () => useAPI('/api/admin/vehicle-types');
+import { useAPI, apiPost, apiPatch } from '../../shared/hooks/useApi';
+export const useAdminOverview    = () => useAPI('/api/admin/overview');
+export const usePendingRiders    = () => useAPI('/api/admin/verify/riders');
+export const usePendingMerchants = () => useAPI('/api/admin/verify/merchants');
+export const useExpiredDocs      = () => useAPI('/api/admin/verify/expired');
+export const useFinanceSummary   = () => useAPI('/api/admin/finance/summary');
+export const useSettlements      = () => useAPI('/api/admin/settlements/pending');
+export const useFareConfigs      = () => useAPI('/api/admin/fare-configs');
+export const useVehicleTypes     = () => useAPI('/api/admin/vehicle-types');
 
-export function useVerifyUser() {
+export function useReviewRiderDoc() {
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState(null);
-  const verify = async (userId, action, note = '') => {
+  const review = async (docId, { status, note, expiresAt }) => {
     setLoading(true); setError(null);
-    try { return await apiPost('/api/admin/verify-user', { userId, action, note }); }
+    try { return await apiPatch(`/api/admin/verify/rider-doc/${docId}`, { status, note, expiresAt }); }
     catch (e) { setError(e.message); throw e; }
     finally { setLoading(false); }
   };
-  return { verify, loading, error };
+  return { review, loading, error };
+}
+
+export function useReviewMerchantDoc() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState(null);
+  const review = async (docId, { status, note }) => {
+    setLoading(true); setError(null);
+    try { return await apiPatch(`/api/admin/verify/merchant-doc/${docId}`, { status, note }); }
+    catch (e) { setError(e.message); throw e; }
+    finally { setLoading(false); }
+  };
+  return { review, loading, error };
 }
 
 export function useSettle() {

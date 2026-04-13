@@ -29,6 +29,6 @@ export const getShipmentById = catchAsync(async (req, res) => {
 // DELETE /api/merchant/shipments/:id  (cancel before assignment)
 export const cancelShipment = catchAsync(async (req, res) => {
   const merchantId = req.merchantProfileId;
-  const shipment   = await shipmentService.cancelShipment(req.params.id, merchantId);
+  const shipment   = await shipmentService.cancelShipment(req.params.id, merchantId, req.user.id);
   return res.json(shipment);
 });

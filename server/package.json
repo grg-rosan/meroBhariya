@@ -1,40 +1,52 @@
-  {
-    "name": "server",
-    "version": "1.0.0",
-    "description": "",
-    "main": "index.js",
-    "scripts": {
-      "test": "echo \"Error: no test specified\" && exit 1",
-      "dev": "nodemon src/server.js"
-    },
-    "prisma": {
-      "seed": "node prisma/seed.js"
-    },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
-    "type": "module",
-    "dependencies": {
-      "@prisma/adapter-pg": "^7.7.0",
-      "@prisma/client": "^7.7.0",
-      "amqplib": "^1.0.3",
-      "axios": "^1.15.0",
-      "bcrypt": "^6.0.0",
-      "bcryptjs": "^3.0.3",
-      "cloudinary": "^2.9.0",
-      "cookie": "^1.1.1",
-      "cookie-parser": "^1.4.7",
-      "express": "^5.2.1",
-      "jsonwebtoken": "^9.0.3",
-      "multer": "^2.1.1",
-      "pg": "^8.20.0",
-      "socket.io": "^4.8.3"
-    },
-    "devDependencies": {
-      "@types/express": "^5.0.6",
-      "@types/node": "^25.5.2",
-      "dotenv": "^17.4.1",
-      "nodemon": "^3.1.14",
-      "prisma": "^7.7.0"
-    }
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/server.js"
+  },
+  "nodemonConfig": {
+    "watch": [
+      "src",
+      "prisma"
+    ],
+    "ext": "js,json,ts",
+    "ignore": [
+      "node_modules",
+      "*.test.js"
+    ],
+    "delay": 500,
+    "legacyWatch": true,
+    "verbose": true
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.7.0",
+    "@prisma/client": "^7.7.0",
+    "amqplib": "^1.0.3",
+    "axios": "^1.15.0",
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.9.0",
+    "cookie": "^1.1.1",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.4.1",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.1.1",
+    "pg": "^8.20.0",
+    "prisma": "^7.7.0",
+    "socket.io": "^4.8.3"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.5.2",
+    "nodemon": "^3.1.14"
   }
+}

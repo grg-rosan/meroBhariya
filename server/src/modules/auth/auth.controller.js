@@ -27,7 +27,7 @@ export async function loginHandler(req, res) {
 
 // ─── POST /api/auth/register/rider ───────────────────────────────────────────
 
-export async function registerRiderHandler(req, res) {
+export async function  registerRiderHandler(req, res) {
   const { name, email, phone, password, vehicleType, plateNumber, address } = req.body;
   const missing = ["name", "email", "phone", "password", "vehicleType", "plateNumber", "address"]
     .filter(k => !req.body[k]);
@@ -63,7 +63,7 @@ export async function registerMerchantHandler(req, res) {
 
 export async function getMeHandler(req, res) {
   try {
-    const user = await authService.getMe(req.userId);
+    const user = await authService.getMe(req.user.id);
     return res.status(200).json({ user });
   } catch (err) {
     return handleError(res, err);

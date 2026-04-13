@@ -5,6 +5,8 @@ import RiderEarnings from './pages/RiderEarnings';
 import RiderManifest from './pages/RiderManifest';
 import RiderNavigation from './pages/RiderNavigation';
 import RiderScanner from './pages/RiderScanner';
+import RiderDocUpload from "./pages/RiderDocUpload"
+import RiderNotifications from './pages/RiderNotification';
 export const riderRoutes = {
   path: '/rider',
   element: <RiderLayout />,
@@ -15,5 +17,7 @@ export const riderRoutes = {
     { path: 'scanner',    element: <RiderScanner /> },
     { path: 'navigation', element: <RiderNavigation /> },
     { path: 'earnings',   element: <RiderEarnings /> },
+    { path: 'documents', element: <RiderDocUpload /> },
+    {path: 'notifications', element: <RiderNotifications />}
   ],
 };

@@ -1,5 +1,5 @@
-import AppError from "../utils/AppError.js";
-//import {globalMiddleware} from "./middlewares/error.middleware.js"
+import AppError from "../utils/appError.js";
+///import {globalMiddleware} from "./middlewares/error.middleware.js"
 
 // Specialized Handlers
 const handleCastError = (err) => new AppError(`Invalid ${err.path}: ${err.value}`, 400);

@@ -4,9 +4,8 @@ import {config} from "dotenv";
 import {connectDB} from  "./config/db.config.js"
 
 //Import user Routes
-import authRoute from "./modules/auth/auth.route.js"
+import AppError from "./utils/appError.js";
 import cookieParser from "cookie-parser";
-import AppError from "./utils/AppError.js";
 import {globalMiddleware} from "./middlewares/error.middleware.js"
 
 config();
@@ -33,8 +32,8 @@ app.use(cookieParser());
 app.use("/api/auth",authRoutes)
 app.use("/api/admin", adminRoutes);
 app.use("/api/dispatcher",dispatcherRoutes)
-app.use("api/rider/",riderRoutes)
-app.use("api/merchant",merchantRoutes)
+app.use("/api/rider",riderRoutes)
+app.use("/api/merchant",merchantRoutes)
 
 app.all("/{*path}", (req, res, next) => {
   next(new AppError(`Can't find ${req.url} on this server`, 404));

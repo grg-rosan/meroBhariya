@@ -1,6 +1,7 @@
 // src/auth/ProtectedRoute.jsx
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { useAuth, ROLE_HOME } from "./AuthContext";
+import { useAuth } from "./AuthContext";
+import { ROLE_HOME } from "../shared/constants/roles";
 
 export default function ProtectedRoute({ allowedRoles = [] }) {
   const { user, loading } = useAuth();

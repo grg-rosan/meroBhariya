@@ -42,17 +42,27 @@ services:
       - ./server:/app
       - /app/node_modules
     environment:
-      - DATABASE_URL=postgresql://user:password@db:5432/meroBhariya
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - RABBITMQ_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
       - NODE_ENV=development
-      - JWT_SECRET=c4c56025e38a80a4f176b39194c59f1609db98dd81f7f1ba9a920a9d9d6072ba      
-      - JWT_EXPIRES_IN=7d  
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+      - SEED_ADMIN_EMAIL=${SEED_ADMIN_EMAIL}
+      - SEED_ADMIN_PASSWORD=${SEED_ADMIN_PASSWORD}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
     depends_on: 
       db:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    command: sh -c "npm install && until npx prisma migrate deploy; do echo 'Waiting for DB...'; sleep 3; done && npx prisma generate && npm run dev"
+    command: >
+      sh -c "npm install &&
+      until npx prisma migrate deploy; do echo 'Waiting for DB...'; sleep 3; done &&
+      npx prisma generate &&
+      until node prisma/seed.js; do echo 'Seed failed, retrying...'; sleep 3; done &&
+      npm run dev"
   client:
     build: ./client
     ports:

@@ -17,12 +17,15 @@ export function requireAuth(req, res, next) {
 
   try {
     const payload = jwt.verify(token, JWT_SECRET);
-    req.userId   = payload.userId;
+    req.user = { id: payload.userId, role: payload.role };
+    req.userId = payload.userId;
     req.userRole = payload.role;
     next();
   } catch (err) {
     if (err.name === "TokenExpiredError") {
-      return res.status(401).json({ message: "Session expired. Please sign in again." });
+      return res
+        .status(401)
+        .json({ message: "Session expired. Please sign in again." });
     }
     return res.status(401).json({ message: "Invalid token." });
   }

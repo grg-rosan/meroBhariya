@@ -13,25 +13,30 @@ export const initSocketHandlers = (socketIO) => {
   io = socketIO;
 
   io.use(async (socket, next) => {
-    try {
+  try {
+    let token = socket.handshake.auth?.token;
+    
+    if (!token) {
       const cookies = cookie.parse(socket.handshake.headers.cookie || "");
-      const token = cookies.token;
-      if (!token) return next(new Error("No token provided"));
-
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      const user = await prisma.user.findUnique({
-        where: { id: decoded.id },
-        select: { id: true, role: true, fullName: true },
-      });
-      if (!user) return next(new Error("User not found"));
-
-      socket.user = user;
-      next();
-    } catch {
-      return next(new Error("Invalid token"));
+      token = cookies.token;
     }
-  });
+    
+    if (!token) return next(new Error("No token provided"));
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId }, // ← fix: userId not id
+      select: { id: true, role: true, fullName: true },
+    });
+    if (!user) return next(new Error("User not found"));
+
+    socket.user = user;
+    next();
+  } catch {
+    return next(new Error("Invalid token"));
+  }
+});
 
   io.on("connection", (socket) => {
     console.log("socket connected successfully");
