@@ -19,6 +19,7 @@ export async function loginHandler(req, res) {
   }
   try {
     const result = await authService.login({ email, password });
+    console.log("server: ", email,password)
     return res.status(200).json(result);
   } catch (err) {
     return handleError(res, err);

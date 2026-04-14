@@ -1,5 +1,7 @@
 import { LayoutDashboard, Boxes, GitBranch, ScanLine, AlertOctagon } from 'lucide-react';
 import RoleLayout from '../../shared/components/RoleLayout';
+import { useAuth } from '../../auth/AuthContext';
+import { initials } from '../../shared/constants/staffConstants';
 
 const NAV = [
   { to: '/dispatcher/inventory',  label: 'Hub inventory', icon: Boxes },
@@ -9,12 +11,13 @@ const NAV = [
 ];
 
 export default function DispatcherLayout() {
+  const {user}  = useAuth()
   return (
     <RoleLayout
-      role="Dispatcher"
+      role={user?.role ?? "Dispatcher"}
       nav={NAV}
       accentClass="bg-emerald-500"
-      user={{ name: 'Balaju Hub', initials: 'BH' }}
+      user={{ name:user?.fullName ?? "dispatcher", initials: initials(user?.fullName) }}
     />
   );
 }

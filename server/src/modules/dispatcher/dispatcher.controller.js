@@ -17,7 +17,12 @@ export const getAvailableRiders = catchAsync(async (req, res) => {
   const riders = await dispatcherService.getAvailableRiders(vehicleTypeId);
   return res.json(riders);
 });
-
+// GET /api/dispatcher/shipments/stuck
+export const getStuckShipments = catchAsync(async (req, res) => {
+  const { page, limit, skip } = parsePagination(req.query);
+  const result = await dispatcherService.getStuckShipments({ page, limit, skip });
+  return res.json(result);
+});
 // PATCH /api/dispatcher/shipments/:id/assign
 export const assignRider = catchAsync(async (req, res) => {
   const { id }      = req.params;

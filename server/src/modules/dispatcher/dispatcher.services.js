@@ -214,6 +214,27 @@ export async function updateShipmentStatus(shipmentId, newStatus, dispatcherUser
 
   return updated;
 }
+// Shipments stuck in hub beyond expected time (e.g. > 48 hrs with IN_HUB status)
+export async function getStuckShipments({ page, limit, skip }) {
+  const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000); // 48 hours ago
 
+  const [shipments, total] = await Promise.all([
+    prisma.shipment.findMany({
+      where: {
+        status: 'IN_HUB',
+        updatedAt: { lt: cutoff },
+      },
+      skip,
+      take: limit,
+      orderBy: { updatedAt: 'asc' },
+      include: { merchant: true, rider: true },
+    }),
+    prisma.shipment.count({
+      where: { status: 'IN_HUB', updatedAt: { lt: cutoff } },
+    }),
+  ]);
+
+  return { shipments, total, page, limit };
+}
 
 
