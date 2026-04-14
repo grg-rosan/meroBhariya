@@ -54,3 +54,13 @@ export async function apiPatch(path, body) {
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
+export const apiPut = async(path, body) => {
+  const res = await fetch(`${API}${path}`,{
+    method : "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify(body),
+  })
+  if(!res.ok) throw new Error (`HTTP ${res.status}`);
+  return res.json();
+  
+}

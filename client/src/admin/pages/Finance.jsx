@@ -1,27 +1,39 @@
+// src/admin/pages/Finance.jsx
 import { Wallet, AlertTriangle, TrendingUp, Users } from 'lucide-react';
-import { useFinanceSummary } from '../hooks/useAdmin';
+import { useRevenueSummary, usePendingCOD, useRiderSettlements } from '../hooks/useAdmin';
 import StatCard from '../../shared/components/StatCard';
 
-const MOCK = { totalCOD: 1480000, heldByRiders: 210000, owedToMerchants: 1120000, platformRevenue: 150000 };
-
-const RIDERS = [
-  { name: 'Rajan Shrestha', vehicle: 'Bike',       held: 18400, lastDrop: 'Today' },
-  { name: 'Bikash Tamang',  vehicle: 'Mini Truck',  held: 42800, lastDrop: 'Today' },
-  { name: 'Sunil Magar',    vehicle: 'Bike',        held: 9200,  lastDrop: 'Yesterday' },
-  { name: 'Nabin Thapa',    vehicle: 'Covered Van', held: 84000, lastDrop: 'Today' },
-  { name: 'Sagar Rai',      vehicle: 'Bike',        held: 5600,  lastDrop: '2 days ago' },
-];
-
-const MERCHANTS = [
-  { name: 'Himalayan Traders',  owed: 84200,  lastSettled: '9 Apr' },
-  { name: 'Nepal Mart',         owed: 41800,  lastSettled: '10 Apr' },
-  { name: 'Patan Crafts',       owed: 22400,  lastSettled: '7 Apr' },
-  { name: 'Kathmandu Gifts',    owed: 18900,  lastSettled: '11 Apr' },
-];
+function SkeletonRow({ cols }) {
+  return (
+    <tr className="border-b border-zinc-800/50">
+      {[...Array(cols)].map((_, i) => (
+        <td key={i} className="px-4 py-3">
+          <div className="h-3 bg-zinc-800 rounded animate-pulse" />
+        </td>
+      ))}
+    </tr>
+  );
+}
 
 export default function Finance() {
-  const { data } = useFinanceSummary();
-  const s = data ?? MOCK;
+  const { data: summary, loading: summaryLoading } = useRevenueSummary();
+  const { data: codData, loading: codLoading }     = usePendingCOD();
+  const { data: riders,  loading: ridersLoading }  = useRiderSettlements();
+
+  const s = summary ?? {};
+  const codDisplay = (val) => val != null ? `रु ${(val / 100000).toFixed(1)}L` : '—';
+
+  // backend shapes:
+  // /finance/revenue     → { totalCOD, heldByRiders, owedToMerchants, platformRevenue }
+  // /finance/cod/pending → { transactions: [{ id, rider, merchant, amount, ... }] }
+  // /settlements/riders  → { riders: [{ id, fullName, vehicleType, codHeld, lastDrop }] }
+  const transactions = codData?.transactions ?? [];
+  const riderList    = riders?.riders ?? [];
+
+  const totalCOD         = s.totalCOD         ?? 0;
+  const heldByRiders     = s.heldByRiders     ?? 0;
+  const owedToMerchants  = s.owedToMerchants  ?? 0;
+  const platformRevenue  = s.platformRevenue  ?? 0;
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
@@ -30,77 +42,99 @@ export default function Finance() {
         <p className="text-sm text-zinc-500 mt-0.5">COD held vs. owed to merchants — live snapshot</p>
       </div>
 
+      {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <StatCard icon={Wallet}        label="Total COD collected" value={`रु ${(s.totalCOD/100000).toFixed(1)}L`}          color="violet" />
-        <StatCard icon={AlertTriangle} label="Held by riders"      value={`रु ${(s.heldByRiders/100000).toFixed(1)}L`}      color="red"    />
-        <StatCard icon={Users}         label="Owed to merchants"   value={`रु ${(s.owedToMerchants/100000).toFixed(1)}L`}   color="amber"  />
-        <StatCard icon={TrendingUp}    label="Platform revenue"    value={`रु ${(s.platformRevenue/100000).toFixed(1)}L`}   color="green"  />
+        <StatCard icon={Wallet}        label="Total COD collected" value={summaryLoading ? '…' : codDisplay(totalCOD)}        color="violet" />
+        <StatCard icon={AlertTriangle} label="Held by riders"      value={summaryLoading ? '…' : codDisplay(heldByRiders)}     color="red"    />
+        <StatCard icon={Users}         label="Owed to merchants"   value={summaryLoading ? '…' : codDisplay(owedToMerchants)}  color="amber"  />
+        <StatCard icon={TrendingUp}    label="Platform revenue"    value={summaryLoading ? '…' : codDisplay(platformRevenue)}  color="green"  />
       </div>
 
       {/* Cash flow bar */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 mb-4">
-        <h2 className="text-sm font-medium text-white mb-3">Cash flow breakdown</h2>
-        <div className="h-5 bg-zinc-800 rounded-full overflow-hidden flex">
-          <div className="h-full bg-red-500/70 transition-all"    style={{ width: `${(s.heldByRiders/s.totalCOD)*100}%` }} title="Held by riders"/>
-          <div className="h-full bg-amber-500/70 transition-all"  style={{ width: `${(s.owedToMerchants/s.totalCOD)*100}%` }} title="Owed to merchants"/>
-          <div className="h-full bg-violet-500/70 transition-all" style={{ width: `${(s.platformRevenue/s.totalCOD)*100}%` }} title="Platform revenue"/>
+      {!summaryLoading && totalCOD > 0 && (
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 mb-4">
+          <h2 className="text-sm font-medium text-white mb-3">Cash flow breakdown</h2>
+          <div className="h-5 bg-zinc-800 rounded-full overflow-hidden flex">
+            <div className="h-full bg-red-500/70 transition-all"    style={{ width: `${(heldByRiders / totalCOD) * 100}%` }} />
+            <div className="h-full bg-amber-500/70 transition-all"  style={{ width: `${(owedToMerchants / totalCOD) * 100}%` }} />
+            <div className="h-full bg-violet-500/70 transition-all" style={{ width: `${(platformRevenue / totalCOD) * 100}%` }} />
+          </div>
+          <div className="flex gap-4 mt-3 text-xs">
+            <span className="flex items-center gap-1.5 text-zinc-400"><span className="w-2.5 h-2.5 rounded-sm bg-red-500/70 inline-block" />Riders</span>
+            <span className="flex items-center gap-1.5 text-zinc-400"><span className="w-2.5 h-2.5 rounded-sm bg-amber-500/70 inline-block" />Merchants</span>
+            <span className="flex items-center gap-1.5 text-zinc-400"><span className="w-2.5 h-2.5 rounded-sm bg-violet-500/70 inline-block" />Platform</span>
+          </div>
         </div>
-        <div className="flex gap-4 mt-3 text-xs">
-          <span className="flex items-center gap-1.5 text-zinc-400"><span className="w-2.5 h-2.5 rounded-sm bg-red-500/70 inline-block"/>Riders</span>
-          <span className="flex items-center gap-1.5 text-zinc-400"><span className="w-2.5 h-2.5 rounded-sm bg-amber-500/70 inline-block"/>Merchants</span>
-          <span className="flex items-center gap-1.5 text-zinc-400"><span className="w-2.5 h-2.5 rounded-sm bg-violet-500/70 inline-block"/>Platform</span>
-        </div>
-      </div>
+      )}
 
       <div className="grid lg:grid-cols-2 gap-4">
+
         {/* Cash held per rider */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
           <div className="px-5 py-3 border-b border-zinc-800 flex items-center justify-between">
             <h2 className="text-sm font-medium text-white">Cash held by riders</h2>
-            <span className="text-xs text-red-400">रु {s.heldByRiders.toLocaleString()} total</span>
+            <span className="text-xs text-red-400">रु {heldByRiders.toLocaleString()} total</span>
           </div>
           <table className="w-full text-sm">
-            <thead><tr className="border-b border-zinc-800">
-              {['Rider','Vehicle','COD held','Last drop'].map(h => (
-                <th key={h} className="text-left px-4 py-2.5 text-xs text-zinc-500 font-medium">{h}</th>
-              ))}
-            </tr></thead>
+            <thead>
+              <tr className="border-b border-zinc-800">
+                {['Rider', 'Vehicle', 'COD held', 'Last drop'].map(h => (
+                  <th key={h} className="text-left px-4 py-2.5 text-xs text-zinc-500 font-medium">{h}</th>
+                ))}
+              </tr>
+            </thead>
             <tbody>
-              {RIDERS.map(r => (
-                <tr key={r.name} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
-                  <td className="px-4 py-3 text-sm text-zinc-200 font-medium">{r.name}</td>
-                  <td className="px-4 py-3 text-xs text-zinc-500">{r.vehicle}</td>
-                  <td className="px-4 py-3 text-sm font-medium text-red-400">रु {r.held.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-xs text-zinc-500">{r.lastDrop}</td>
-                </tr>
-              ))}
+              {ridersLoading ? (
+                [...Array(4)].map((_, i) => <SkeletonRow key={i} cols={4} />)
+              ) : riderList.length === 0 ? (
+                <tr><td colSpan={4} className="px-4 py-8 text-center text-zinc-600 text-xs">No riders holding COD</td></tr>
+              ) : (
+                riderList.map(r => (
+                  <tr key={r.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
+                    <td className="px-4 py-3 text-sm text-zinc-200 font-medium">{r.fullName ?? r.name}</td>
+                    <td className="px-4 py-3 text-xs text-zinc-500">{r.vehicleType}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-red-400">रु {(r.codHeld ?? r.held ?? 0).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-xs text-zinc-500">{r.lastDrop ?? '—'}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
 
-        {/* Owed per merchant */}
+        {/* Pending COD transactions */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
           <div className="px-5 py-3 border-b border-zinc-800 flex items-center justify-between">
-            <h2 className="text-sm font-medium text-white">Owed to merchants</h2>
-            <span className="text-xs text-amber-400">रु {s.owedToMerchants.toLocaleString()} total</span>
+            <h2 className="text-sm font-medium text-white">Pending COD transactions</h2>
+            <span className="text-xs text-amber-400">रु {owedToMerchants.toLocaleString()} owed</span>
           </div>
           <table className="w-full text-sm">
-            <thead><tr className="border-b border-zinc-800">
-              {['Merchant','Amount owed','Last settled'].map(h => (
-                <th key={h} className="text-left px-4 py-2.5 text-xs text-zinc-500 font-medium">{h}</th>
-              ))}
-            </tr></thead>
+            <thead>
+              <tr className="border-b border-zinc-800">
+                {['Tracking #', 'Merchant', 'Amount', 'Rider'].map(h => (
+                  <th key={h} className="text-left px-4 py-2.5 text-xs text-zinc-500 font-medium">{h}</th>
+                ))}
+              </tr>
+            </thead>
             <tbody>
-              {MERCHANTS.map(m => (
-                <tr key={m.name} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
-                  <td className="px-4 py-3 text-sm text-zinc-200 font-medium">{m.name}</td>
-                  <td className="px-4 py-3 text-sm font-medium text-amber-400">रु {m.owed.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-xs text-zinc-500">{m.lastSettled}</td>
-                </tr>
-              ))}
+              {codLoading ? (
+                [...Array(4)].map((_, i) => <SkeletonRow key={i} cols={4} />)
+              ) : transactions.length === 0 ? (
+                <tr><td colSpan={4} className="px-4 py-8 text-center text-zinc-600 text-xs">No pending COD transactions</td></tr>
+              ) : (
+                transactions.map(t => (
+                  <tr key={t.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
+                    <td className="px-4 py-3 text-xs text-zinc-400 font-mono">{t.trackingNumber ?? t.shipment?.trackingNumber ?? '—'}</td>
+                    <td className="px-4 py-3 text-sm text-zinc-200 font-medium">{t.merchantName ?? t.merchant?.businessName ?? '—'}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-amber-400">रु {(t.codAmount ?? 0).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-xs text-zinc-500">{t.riderName ?? t.rider?.user?.fullName ?? '—'}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
+
       </div>
     </div>
   );

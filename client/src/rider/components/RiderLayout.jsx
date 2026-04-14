@@ -2,7 +2,7 @@ import { LayoutDashboard, ClipboardList, ScanLine, MapPin, Banknote, FileText, B
 import RoleLayout from '../../shared/components/RoleLayout';
 import { useAuth } from '../../auth/AuthContext';
 import { useNotifications } from '../../shared/context/NotificationContext';
-
+import { initials } from '../../shared/constants/staffConstants';
 export default function RiderLayout() {
   const { user } = useAuth();
   const { unreadCount } = useNotifications();
@@ -24,7 +24,7 @@ export default function RiderLayout() {
       accentClass="bg-sky-500"
       user={{
         name: user?.fullName ?? 'Rider',
-        initials: user?.fullName?.split(' ').map(n => n[0]).join('') ?? 'R'
+        initials: initials(user?.fullName)
       }}
     />
   );
