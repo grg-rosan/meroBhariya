@@ -1,9 +1,6 @@
 // src/modules/admin/verify/verify.service.js
 import { prisma } from "../../../config/db.config.js";
-import {
-  sendNotification,
-  NOTIFICATION_TYPE,
-} from "../../../utils/sendNotification.js";
+import { sendNotification,NOTIFICATION_TYPE } from "../../../utils/services/sendNotification.js";
 import { publish } from "../../../infrastructure/rabbitmq/publisher.js";
 //await sendNotification({ type: NOTIFICATION_TYPE.DOC_APPROVED, user, payload: { docType: doc.type } });
 

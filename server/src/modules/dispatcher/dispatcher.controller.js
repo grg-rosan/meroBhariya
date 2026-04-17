@@ -1,7 +1,7 @@
 // src/modules/dispatcher/dispatcher.controller.js
 import * as dispatcherService from "./dispatcher.services.js";
-import { catchAsync }         from "../../utils/errorHandler.js";
-import { parsePagination }    from "../../utils/pagination.js";
+import { catchAsync }         from "../../utils/error/errorHandler.js";
+import { parsePagination }    from "../../utils/others/pagination.js";
 
 // GET /api/dispatcher/shipments?page=&limit=
 export const getPendingShipments = catchAsync(async (req, res) => {

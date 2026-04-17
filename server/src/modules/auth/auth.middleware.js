@@ -1,16 +1,12 @@
-// src/modules/auth/auth.middleware.js
 import jwt from "jsonwebtoken";
-
+import AppError from "../../utils/error/appError.js";
 const JWT_SECRET = process.env.JWT_SECRET;
-
-// ─── requireAuth ─────────────────────────────────────────────────────────────
-// Validates Bearer token and attaches req.userId + req.userRole
 
 export function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "No token provided." });
+    return next(new AppError("No token provided.", 401));
   }
 
   const token = authHeader.split(" ")[1];
@@ -20,24 +16,27 @@ export function requireAuth(req, res, next) {
     req.user = { id: payload.userId, role: payload.role };
     req.userId = payload.userId;
     req.userRole = payload.role;
+
     next();
   } catch (err) {
     if (err.name === "TokenExpiredError") {
-      return res
-        .status(401)
-        .json({ message: "Session expired. Please sign in again." });
+      return next(new AppError("Session expired. Please sign in again.", 401));
     }
-    return res.status(401).json({ message: "Invalid token." });
+    return next(new AppError("Invalid token.", 401));
   }
 }
 
-// ─── requireRole ─────────────────────────────────────────────────────────────
-// Usage: router.get("/admin/...", requireAuth, requireRole("ADMIN"), handler)
-
 export function requireRole(...roles) {
   return (req, res, next) => {
+    // Safety check: ensure requireAuth was called first
+    if (!req.userRole) {
+      return next(new AppError("Authentication required.", 401));
+    }
+
     if (!roles.includes(req.userRole)) {
-      return res.status(403).json({ message: "Access denied." });
+      return next(
+        new AppError("Access denied: Insufficient permissions.", 403),
+      );
     }
     next();
   };

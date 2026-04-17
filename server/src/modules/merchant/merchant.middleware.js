@@ -3,7 +3,7 @@
 // and attaches req.merchantProfileId so services never do this lookup themselves.
 
 import { prisma }   from "../../config/db.config.js";
-import { appError } from "../../utils/errorHandler.js";
+import  AppError  from "../../utils/error/appError.js";
 
 export async function requireMerchantProfile(req, res, next) {
   try {
@@ -12,7 +12,7 @@ export async function requireMerchantProfile(req, res, next) {
     });
 
     if (!profile) {
-      return next(appError(403, "Merchant profile not found."));
+      return next(AppError(403, "Merchant/error profile not found."));
     }
 
     req.merchantProfileId = profile.id;

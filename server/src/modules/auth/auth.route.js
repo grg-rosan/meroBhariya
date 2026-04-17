@@ -6,6 +6,10 @@ import {
   registerMerchantHandler,
   getMeHandler,
   logoutHandler,
+  sendOtpHandler,
+  verifyOtpHandler,
+  forgotPasswordHandler,
+  resetPasswordHandler,
 } from "./auth.controller.js";
 import { requireAuth } from "./auth.middleware.js";
 
@@ -15,6 +19,14 @@ const router = Router();
 router.post("/login", loginHandler);
 router.post("/register/rider", registerRiderHandler);
 router.post("/register/merchant", registerMerchantHandler);
+
+//otp
+router.post("/otp/send",sendOtpHandler)
+router.post('/otp/verify',verifyOtpHandler)
+
+router.post("/password/forgot", forgotPasswordHandler);
+router.post("/password/reset", resetPasswordHandler);
+
 
 // Protected
 router.get("/me", requireAuth, getMeHandler);

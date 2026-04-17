@@ -1,5 +1,5 @@
 // src/modules/admin/overview/overview.service.js
-import { prisma } from '../../../config/prisma.js';
+import { prisma } from '../../../config/db.config.js';
 
 // ─── GET /api/admin/overview/stats ────────────────────────────────────────────
 // Called by: getStatsHandler → overviewService.getPlatformStats()

@@ -1,6 +1,5 @@
 import { prisma } from "../../config/db.config.js";
-import AppError from "../../utils/appError.js";
-import { nanoid } from "nanoid";
+import AppError from "../../utils/error/appError.js";
 import { generateTrackingNumber } from "./helpers/generateTrackingNumber.js";
 
 // ─────────────────────────────────────────

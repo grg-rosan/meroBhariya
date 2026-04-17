@@ -1,7 +1,7 @@
 // src/modules/merchant/shipment/shipment.controller.js
 import * as shipmentService from "./shipment.services.js";
-import { catchAsync } from "../../../utils/errorHandler.js";
-import { parsePagination } from "../../../utils/pagination.js";
+import { catchAsync } from "../../../utils/error/errorHandler.js";
+import { parsePagination } from "../../../utils/others/pagination.js";
 
 // POST /api/merchant/shipments
 export const createShipment = catchAsync(async (req, res) => {

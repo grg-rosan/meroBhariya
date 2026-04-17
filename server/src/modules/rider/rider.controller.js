@@ -1,12 +1,12 @@
-import { catchAsync as asyncHandler } from "../../utils/errorHandler.js";
-import AppError from "../../utils/appError.js";
+import { catchAsync } from "../../utils/error/errorHandler.js";
+import AppError from "../../utils/error/appError.js";
 import * as riderService from "./rider.services.js";
-import { uploadToCloudinary } from "../../utils/cloudinary.js";
+import { uploadToCloudinary } from "../../utils/services/cloudinary.js";
 // ─────────────────────────────────────────
 // GET /rider/dashboard
 // ─────────────────────────────────────────
 
-export const getDashboard = asyncHandler(async (req, res) => {
+export const getDashboard = catchAsync(async (req, res) => {
   const data = await riderService.getShiftSummary(req.user.id);
   res.status(200).json({ success: true, data });
 });
@@ -15,7 +15,7 @@ export const getDashboard = asyncHandler(async (req, res) => {
 // PATCH /rider/duty
 // ─────────────────────────────────────────
 
-export const toggleDuty = asyncHandler(async (req, res) => {
+export const toggleDuty = catchAsync(async (req, res) => {
   const data = await riderService.toggleDutyStatus(req.user.id);
   res.status(200).json({ success: true, data });
 });
@@ -24,7 +24,7 @@ export const toggleDuty = asyncHandler(async (req, res) => {
 // GET /rider/manifest
 // ─────────────────────────────────────────
 
-export const getManifest = asyncHandler(async (req, res) => {
+export const getManifest = catchAsync(async (req, res) => {
   const data = await riderService.getRiderManifest(req.user.id);
   res.status(200).json({ success: true, data });
 });
@@ -34,7 +34,7 @@ export const getManifest = asyncHandler(async (req, res) => {
 // Body: { trackingNumber, codCollected?, note? }
 // ─────────────────────────────────────────
 
-export const deliverPackage = asyncHandler(async (req, res) => {
+export const deliverPackage = catchAsync(async (req, res) => {
   const { trackingNumber, codCollected, note } = req.body;
 
   if (!trackingNumber) throw new AppError("trackingNumber is required", 400);
@@ -52,7 +52,7 @@ export const deliverPackage = asyncHandler(async (req, res) => {
 // Body: { latitude, longitude }
 // ─────────────────────────────────────────
 
-export const updateLocation = asyncHandler(async (req, res) => {
+export const updateLocation = catchAsync(async (req, res) => {
   const { latitude, longitude } = req.body;
 
   if (latitude == null || longitude == null) {
@@ -68,7 +68,7 @@ export const updateLocation = asyncHandler(async (req, res) => {
 // Query: ?page&limit&from=ISO&to=ISO
 // ─────────────────────────────────────────
 
-export const getEarnings = asyncHandler(async (req, res) => {
+export const getEarnings = catchAsync(async (req, res) => {
   const data = await riderService.getRiderEarnings(req.user.id, req.query);
   res.status(200).json({ success: true, ...data });
 });
@@ -77,7 +77,7 @@ export const getEarnings = asyncHandler(async (req, res) => {
 // GET /rider/documents
 // ─────────────────────────────────────────
 
-export const getDocuments = asyncHandler(async (req, res) => {
+export const getDocuments = catchAsync(async (req, res) => {
   const data = await riderService.getRiderDocuments(req.user.id);
   res.status(200).json({ success: true, data });
 });
@@ -87,7 +87,7 @@ export const getDocuments = asyncHandler(async (req, res) => {
 // Multipart — fileUrl + filePublicId attached by cloudinary middleware
 // ─────────────────────────────────────────
 
-export const uploadDocuments = asyncHandler(async (req, res) => {
+export const uploadDocuments = catchAsync(async (req, res) => {
   const uploads = [];
   for (const [type, fileArr] of Object.entries(req.files)) {
     const file   = fileArr[0];
