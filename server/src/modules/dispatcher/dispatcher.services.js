@@ -1,6 +1,7 @@
 // src/modules/dispatcher/dispatcher.service.js
 import { prisma }       from "../../config/prisma.js";
 import { publish } from "../../infrastructure/rabbitmq/publisher.js";
+import { EXCHANGE } from "../../infrastructure/rabbitmq/queue.js";
 import { appError }     from "../../utils/errorHandler.js";
 import { buildPaginationMeta } from "../../utils/pagination.js";
 
@@ -214,6 +215,4 @@ export async function updateShipmentStatus(shipmentId, newStatus, dispatcherUser
 
   return updated;
 }
-
-
 

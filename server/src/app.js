@@ -8,12 +8,13 @@ import AppError from "./utils/appError.js";
 import cookieParser from "cookie-parser";
 import {globalMiddleware} from "./middlewares/error.middleware.js"
 
+
 config();
 connectDB();
 import authRoutes from "./modules/auth/auth.route.js"
 import adminRoutes from "./modules/admin/admin.routes.js";
 import dispatcherRoutes from "./modules/dispatcher/dispatcher.route.js"
-import merchantRoutes from "./modules/merchant/shipment/shipment.route.js"
+import merchantRoutes from "./modules/merchant/merchant.routes.js"
 import riderRoutes from "./modules/rider/rider.route.js"
 
 const app = express();

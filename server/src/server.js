@@ -3,10 +3,7 @@ import { Server as socketIOServer} from "socket.io"
 import app from "./app.js";
 import { disconnectDB } from "./config/db.config.js";
 import { initSocketHandlers } from "./infrastructure/socket/socket.handler.js";
-import { assertQueues } from "./infrastructure/rabbitmq/queue.js";
-import { connectRabbitMQ } from "./infrastructure/rabbitmq/connection.js";
-import { startNotificationConsumers } from "./modules/notification/notification.consumer.js";
-
+//import { connectRabbitMQ } from "./infrastructure/rabbitmq/connection.js";`n//import { assertQueues } from "./infrastructure/rabbitmq/queues.js";`n//import { startNotificationConsumers } from "./modules/notification/notification.consumer.js";`n
 const port = 3000;
 
 //create raw http server from express
@@ -22,9 +19,9 @@ const io = new socketIOServer(server, {
 
 initSocketHandlers(io)
 
-await connectRabbitMQ();
-await assertQueues();
-await startNotificationConsumers(io);   // needs io + channel both ready
+//await connectRabbitMQ();
+//await assertQueues();
+//await startNotificationConsumers(io);
 
 server.listen(port,()=>{
     console.log(`listening to port ${port}`)

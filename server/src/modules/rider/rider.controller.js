@@ -1,5 +1,5 @@
 import { catchAsync as asyncHandler } from "../../utils/errorHandler.js";
-import AppError from "../../utils/appError.js";
+import  AppError  from "../../utils/AppError.js";
 import * as riderService from "./rider.services.js";
 import { uploadToCloudinary } from "../../utils/cloudinary.js";
 // ─────────────────────────────────────────
@@ -7,7 +7,7 @@ import { uploadToCloudinary } from "../../utils/cloudinary.js";
 // ─────────────────────────────────────────
 
 export const getDashboard = asyncHandler(async (req, res) => {
-  const data = await riderService.getShiftSummary(req.user.id);
+  const data = await riderService.getShiftSummary(req.userId);
   res.status(200).json({ success: true, data });
 });
 
@@ -16,7 +16,7 @@ export const getDashboard = asyncHandler(async (req, res) => {
 // ─────────────────────────────────────────
 
 export const toggleDuty = asyncHandler(async (req, res) => {
-  const data = await riderService.toggleDutyStatus(req.user.id);
+  const data = await riderService.toggleDutyStatus(req.userId);
   res.status(200).json({ success: true, data });
 });
 
@@ -25,7 +25,7 @@ export const toggleDuty = asyncHandler(async (req, res) => {
 // ─────────────────────────────────────────
 
 export const getManifest = asyncHandler(async (req, res) => {
-  const data = await riderService.getRiderManifest(req.user.id);
+  const data = await riderService.getRiderManifest(req.userId);
   res.status(200).json({ success: true, data });
 });
 
@@ -39,7 +39,7 @@ export const deliverPackage = asyncHandler(async (req, res) => {
 
   if (!trackingNumber) throw new AppError("trackingNumber is required", 400);
 
-  const data = await riderService.deliverPackage(req.user.id, trackingNumber, {
+  const data = await riderService.deliverPackage(req.userId, trackingNumber, {
     codCollected,
     note,
   });
@@ -59,7 +59,7 @@ export const updateLocation = asyncHandler(async (req, res) => {
     throw new AppError("latitude and longitude are required", 400);
   }
 
-  const data = await riderService.updateRiderLocation(req.user.id, { latitude, longitude });
+  const data = await riderService.updateRiderLocation(req.userId, { latitude, longitude });
   res.status(200).json({ success: true, data });
 });
 
@@ -69,7 +69,7 @@ export const updateLocation = asyncHandler(async (req, res) => {
 // ─────────────────────────────────────────
 
 export const getEarnings = asyncHandler(async (req, res) => {
-  const data = await riderService.getRiderEarnings(req.user.id, req.query);
+  const data = await riderService.getRiderEarnings(req.userId, req.query);
   res.status(200).json({ success: true, ...data });
 });
 
@@ -78,7 +78,7 @@ export const getEarnings = asyncHandler(async (req, res) => {
 // ─────────────────────────────────────────
 
 export const getDocuments = asyncHandler(async (req, res) => {
-  const data = await riderService.getRiderDocuments(req.user.id);
+  const data = await riderService.getRiderDocuments(req.userId);
   res.status(200).json({ success: true, data });
 });
 
@@ -102,4 +102,3 @@ export const uploadDocuments = asyncHandler(async (req, res) => {
   }
   res.status(201).json({ status: "success", data: uploads });
 });
-

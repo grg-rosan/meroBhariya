@@ -40,12 +40,12 @@ async function main() {
       fare: { baseFare: 50, perKmRate: 15, perKgRate: 5, minFare: 80, fragileCharge: 20, codChargeRate: 0.02, nightSurcharge: 30, cancelCharge: 25 },
     },
     {
-      name: "Scooter", maxWeightKg: 15, description: "Scooter for light deliveries",
-      fare: { baseFare: 60, perKmRate: 18, perKgRate: 6, minFare: 90, fragileCharge: 20, codChargeRate: 0.02, nightSurcharge: 30, cancelCharge: 25 },
+      name: "Mini Truck", maxWeightKg: 500, description: "Mini truck for medium shipments",
+      fare: { baseFare: 120, perKmRate: 20, perKgRate: 4, minFare: 150, fragileCharge: 20, codChargeRate: 0.02, nightSurcharge: 30, cancelCharge: 25 },
     },
     {
-      name: "Van", maxWeightKg: 200, description: "Van for large shipments",
-      fare: { baseFare: 150, perKmRate: 25, perKgRate: 3, minFare: 200, fragileCharge: 50, codChargeRate: 0.02, nightSurcharge: 50, cancelCharge: 50 },
+      name: "Covered Van", maxWeightKg: 1500, description: "Covered van for large shipments",
+      fare: { baseFare: 200, perKmRate: 30, perKgRate: 2, minFare: 250, fragileCharge: 50, codChargeRate: 0.02, nightSurcharge: 50, cancelCharge: 50 },
     },
   ];
 
