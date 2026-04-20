@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { LogOut , Lock, ChevronUp } from "lucide-react";
 
-export default function ProfileCard({ user, role, accentClass, onLogout }) {
+export default function ProfileCard({ user, role, accentClass, onLogout, onChangePassword }) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -36,9 +36,12 @@ export default function ProfileCard({ user, role, accentClass, onLogout }) {
           </div>
 
           <div className="space-y-0.5">
-            <button className="flex items-center gap-3 w-full px-3 py-2 text-xs text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-all">
-              <Lock size={14} /> Change Password
-            </button>
+           <button
+    onClick={() => { onChangePassword(); setIsOpen(false); }} // ← close menu + navigate
+    className="flex items-center gap-3 w-full px-3 py-2 text-xs text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-all"
+  >
+    <Lock size={14} /> Change Password
+  </button>
             <div className="h-px bg-zinc-800 my-1 mx-2" />
             <button
               onClick={onLogout}

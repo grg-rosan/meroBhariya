@@ -17,7 +17,7 @@ export default function RoleLayout({ role, nav, accentClass, user }) {
     }
   };
   const handleChangePassword = async() => {
-    console.log("handleChangePassword")
+    navigate("/password/forgot")
   }
  
 
@@ -66,7 +66,7 @@ export default function RoleLayout({ role, nav, accentClass, user }) {
             role={role}
             accentClass={accentClass}
             onLogout={handleLogout}
-            changePassword={handleChangePassword}
+            onChangePassword={handleChangePassword}
           />
         </div>
       </aside>

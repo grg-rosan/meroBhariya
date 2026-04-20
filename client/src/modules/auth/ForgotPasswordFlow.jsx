@@ -5,6 +5,7 @@ import ForgotPasswordForm from "../../shared/components/ForgotPasswordForm";
 import VerifyOtpForm from "../../shared/components/VerifyOtpForm";
 import ResetPasswordForm from "../../shared/components/ResetPasswordForm";
 import { useToast } from "../../shared/context/ToastContext";
+import { useAuth } from "./AuthContext";
 
 export default function ForgotPasswordFlow() {
   const [step, setStep] = useState("forgot"); // "forgot" | "verify" | "reset"
@@ -12,6 +13,7 @@ export default function ForgotPasswordFlow() {
   const [resetCode, setResetCode] = useState(null);
   const navigate = useNavigate();
   const toast  = useToast()
+  const user = useAuth()
 
   const handleForgotSubmit = async (email) => {
     await authAPI.forgotPassword(email); // sends the 6-digit code
@@ -33,8 +35,11 @@ export default function ForgotPasswordFlow() {
   const handleReset = async (password) => {
     await authAPI.resetPassword( email, resetCode, password );
     toast({message:"Password Change Sucessfully",type:"success"})
-    navigate("/login", { replace: true });
-  };
+ if (user) {
+      navigate(-1);        // ← logged in → go back to dashboard
+    } else {
+      navigate("/login", { replace: true }); // ← logged out → go to login
+    }  };
 
   if (step === "forgot")
     return (
