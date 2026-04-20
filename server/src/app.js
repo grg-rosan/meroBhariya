@@ -1,3 +1,4 @@
+import "dotenv/config";`nimport "dotenv/config";`
 import express from "express";
 import cors from "cors"
 import {config} from "dotenv";
@@ -43,3 +44,5 @@ app.all("/{*path}", (req, res, next) => {
 app.use(globalMiddleware)
 
 export default app;
+
+
