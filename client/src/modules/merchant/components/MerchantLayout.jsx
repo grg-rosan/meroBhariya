@@ -1,5 +1,6 @@
 import { LayoutDashboard, Package, Upload, Wallet, FileText } from 'lucide-react';
-import RoleLayout from '../../../shared/components/RoleLayout';
+import RoleLayout from '../../shared/components/RoleLayout';
+import { useAuth } from '../../auth/AuthContext';
 
 const NAV = [
   { to: '/merchant/dashboard',   label: 'Dashboard',   icon: LayoutDashboard },
@@ -10,12 +11,15 @@ const NAV = [
 ];
 
 export default function MerchantLayout() {
+  const { user } = useAuth();
+  const name     = user?.name ?? user?.fullName ?? 'Merchant';
+  const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
   return (
     <RoleLayout
       role="Merchant"
       nav={NAV}
       accentClass="bg-rose-500"
-      user={{ name: 'Himalayan Traders', initials: 'HT' }}
+      user={{ name, initials }}
     />
   );
 }

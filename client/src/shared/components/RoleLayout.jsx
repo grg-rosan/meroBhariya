@@ -5,27 +5,24 @@ import { useAuth } from "../../modules/auth/AuthContext";
 
 export default function RoleLayout({ role, nav, accentClass, user }) {
   const navigate = useNavigate();
-  const { logout, } = useAuth();
+  const { logout } = useAuth();
 
-  const handleLogout = async() => {
-    try{
+  const handleLogout = async () => {
+    try {
       await logout();
-    }catch(error){
+    } catch (error) {
       console.log(error);
-    }finally{
-      navigate("/login")
+    } finally {
+      navigate("/login");
     }
   };
-  const handleChangePassword = async() => {
-    navigate("/password/forgot")
-  }
- 
-
+  const handleChangePassword = async () => {
+    navigate("/password/forgot");
+  };
 
   return (
     <div className="flex h-screen bg-zinc-950 font-['DM_Sans',sans-serif] overflow-hidden">
       <aside className="w-56 flex flex-col bg-zinc-900 border-r border-zinc-800 shrink-0">
-        {/* Logo */}
         <div className="px-5 py-5 border-b border-zinc-800">
           <div className="flex items-center gap-2">
             <div
@@ -39,7 +36,6 @@ export default function RoleLayout({ role, nav, accentClass, user }) {
           </div>
         </div>
 
-        {/* Nav */}
         <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
           {nav.map(({ to, label, icon: Icon }) => (
             <NavLink

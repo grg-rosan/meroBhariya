@@ -215,5 +215,3 @@ export async function updateShipmentStatus(shipmentId, newStatus, dispatcherUser
   return updated;
 }
 
-
-

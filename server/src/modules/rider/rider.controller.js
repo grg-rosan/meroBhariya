@@ -39,7 +39,7 @@ export const deliverPackage = catchAsync(async (req, res) => {
 
   if (!trackingNumber) throw new AppError("trackingNumber is required", 400);
 
-  const data = await riderService.deliverPackage(req.user.id, trackingNumber, {
+  const data = await riderService.deliverPackage(req.userId, trackingNumber, {
     codCollected,
     note,
   });
@@ -59,7 +59,7 @@ export const updateLocation = catchAsync(async (req, res) => {
     throw new AppError("latitude and longitude are required", 400);
   }
 
-  const data = await riderService.updateRiderLocation(req.user.id, { latitude, longitude });
+  const data = await riderService.updateRiderLocation(req.userId, { latitude, longitude });
   res.status(200).json({ success: true, data });
 });
 
@@ -102,4 +102,3 @@ export const uploadDocuments = catchAsync(async (req, res) => {
   }
   res.status(201).json({ status: "success", data: uploads });
 });
-

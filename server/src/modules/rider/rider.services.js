@@ -210,7 +210,8 @@ export const updateRiderLocation = async (userId, { latitude, longitude }) => {
 export const getRiderEarnings = async (userId, query) => {
   const profile = await findProfile(userId);
   const { page, limit, skip } = parsePagination(query);
-const dateFilter = buildDateFilter(query.from, query.to); 
+  const dateFilter = buildDateFilter(query);
+
   const where = {
     riderId: profile.id,
     status: "DELIVERED",
@@ -287,8 +288,5 @@ export const upsertRiderDocument = async (userId, { type, fileUrl, filePublicId,
     data: { riderId: profile.id, type, ...payload },
   });
 };
-
-
-
 
 
