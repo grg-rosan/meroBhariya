@@ -14,7 +14,7 @@ export const useShipment = (id) => useAPI(`/merchant/shipments/${id}`);
 
 // ─── COD ledger ───────────────────────────────────────────────────────────────
 export const useCODLedger = () =>
-  useAPI('/merchant/shipments?status=DELIVERED&paymentType=COD');
+  useAPI('/api/merchant/shipments/cod-ledger');
 
 // ─── Create shipment ──────────────────────────────────────────────────────────
 export function useCreateShipment() {
@@ -93,3 +93,6 @@ export function useBulkUpload() {
 
   return { upload, progress, loading, result, error };
 }
+
+
+
