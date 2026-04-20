@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useToast } from "../context/ToastContext";
 
 export const API = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
@@ -9,30 +10,35 @@ export function authHeaders() {
     "Content-Type": "application/json",
   };
 }
+async function handleResponse(res) {
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || `HTTP ${res.status}`);
+  return data;
+}
 
 export function useAPI(path) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const toast = useToast();
 
   const fetch_ = useCallback(async () => {
+    if (!path) return;
     setLoading(true);
-    setError(null);
     try {
       const res = await fetch(`${API}${path}`, { headers: authHeaders() });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setData(await res.json());
     } catch (e) {
-      setError(e.message);
+      toast(e.message);
     } finally {
       setLoading(false);
     }
-  }, [path]);
+  }, [path, toast]);
 
   useEffect(() => {
     fetch_();
   }, [fetch_]);
-  return { data, loading, error, refetch: fetch_ };
+  return { data, loading, refetch: fetch_ };
 }
 
 export async function apiPost(path, body) {
@@ -41,8 +47,7 @@ export async function apiPost(path, body) {
     headers: authHeaders(),
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
+  return handleResponse(res);
 }
 
 export async function apiPatch(path, body) {
@@ -51,6 +56,13 @@ export async function apiPatch(path, body) {
     headers: authHeaders(),
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
+  return handleResponse(res);
 }
+export const apiPut = async (path, body) => {
+  const res = await fetch(`${API}${path}`, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify(body),
+  });
+  return handleResponse(res);
+};

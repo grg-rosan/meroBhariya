@@ -2,8 +2,8 @@
 import { prisma }       from "../../../config/db.config.js";
 import { publish} from "../../../infrastructure/rabbitmq/publisher.js";
 import { EXCHANGE } from "../../../infrastructure/rabbitmq/queue.js";
-import { appError }     from "../../../utils/errorHandler.js";
-import { buildPaginationMeta } from "../../../utils/pagination.js";
+import  AppError     from "../../../utils/error/appError.js";
+import { buildPaginationMeta } from "../../../utils/others/pagination.js";
 
 // ─── Create shipment ──────────────────────────────────────────────────────────
 
@@ -22,7 +22,7 @@ export async function createShipment(merchantId, data,userId) {
 
   // 1. Validate required fields
   if (!receiverName || !receiverPhone || !deliveryAddress || !vehicleTypeId || !weight || !orderValue || !paymentType) {
-    throw appError(400, "Missing required shipment fields.");
+    throw AppError(400, "Missing required shipment fields.");
   }
 
   // 2. Load vehicle type + fare config
@@ -30,12 +30,12 @@ export async function createShipment(merchantId, data,userId) {
     where:   { id: Number(vehicleTypeId), isActive: true },
     include: { fareConfig: true },
   });
-  if (!vehicleType)            throw appError(404, "Vehicle type not found or inactive.");
-  if (!vehicleType.fareConfig) throw appError(400, `No fare config set for vehicle type: ${vehicleType.name}`);
+  if (!vehicleType)            throw AppError(404, "Vehicle type not found or inactive.");
+  if (!vehicleType.fareConfig) throw AppError(400, `No fare config set for vehicle type: ${vehicleType.name}`);
 
   // 3. Weight check
   if (weight > vehicleType.maxWeightKg) {
-    throw appError(400, `Package weight ${weight}kg exceeds max ${vehicleType.maxWeightKg}kg for ${vehicleType.name}.`);
+    throw AppError(400, `Package weight ${weight}kg exceeds max ${vehicleType.maxWeightKg}kg for ${vehicleType.name}.`);
   }
 
   // 4. Calculate fare
@@ -146,7 +146,7 @@ export async function getShipmentDetail(shipmentId, merchantId) {
     },
   });
 
-  if (!shipment) throw appError(404, "Shipment not found.");
+  if (!shipment) throw AppError(404, "Shipment not found.");
   return shipment;
 }
 
@@ -157,8 +157,8 @@ export async function cancelShipment(shipmentId, merchantId, userId) {
     where: { id: shipmentId, merchantId },
   });
 
-  if (!shipment)                    throw appError(404, "Shipment not found.");
-  if (shipment.status !== "PENDING") throw appError(400, "Only PENDING shipments can be cancelled.");
+  if (!shipment)                    throw AppError(404, "Shipment not found.");
+  if (shipment.status !== "PENDING") throw AppError(400, "Only PENDING shipments can be cancelled.");
 
   const updated = await prisma.$transaction(async (tx) => {
     const s = await tx.shipment.update({

@@ -1,126 +1,145 @@
 // src/modules/auth/auth.controller.js
 
 import * as authService from "./auth.services.js";
-
-function handleError(res, err) {
-  if (err.status && err.message) {
-    return res.status(err.status).json({ message: err.message });
-  }
-  console.error("[Auth] Unhandled error:", err);
-  return res.status(500).json({ message: "Internal server error." });
-}
+import { catchAsync} from "../../utils/error/errorHandler.js";
+import AppError from "../../utils/error/appError.js";
 
 // ─── POST /api/auth/login ─────────────────────────────────────────────────────
 
-export async function loginHandler(req, res) {
+export const loginHandler = catchAsync(async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.status(400).json({ message: "Email and password are required." });
+    throw AppError("Invalid email or password", 401);
   }
-  try {
-    const result = await authService.login({ email, password });
-    return res.status(200).json(result);
-  } catch (err) {
-    return handleError(res, err);
-  }
-}
+  const result = await authService.login({ email, password });
+  return res.status(200).json(result);
+});
 
 // ─── POST /api/auth/register/rider ───────────────────────────────────────────
 
-export async function  registerRiderHandler(req, res) {
-  const { name, email, phone, password, vehicleType, plateNumber, address } = req.body;
-  const missing = ["name", "email", "phone", "password", "vehicleType", "plateNumber", "address"]
-    .filter(k => !req.body[k]);
-  if (missing.length) {
-    return res.status(400).json({ message: `Missing fields: ${missing.join(", ")}` });
-  }
-  try {
-    const result = await authService.registerRider({ name, email, phone, password, vehicleType, plateNumber, address });
-    return res.status(201).json(result);
-  } catch (err) {
-    return handleError(res, err);
-  }
-}
+export const initiateRegistrationHandler = catchAsync(async (req, res) => {
+  const { role, ...payload } = req.body;
+  if (!role) throw new AppError("Role is required.", 400);
+  const result = await authService.initiateRegistration(role, payload);
+  return res.status(200).json(result);
+});
 
-// ─── POST /api/auth/register/merchant ────────────────────────────────────────
+export const completeRegistrationHandler = catchAsync(async (req, res) => {
+  const { email, otp } = req.body;
+  const missing = ["email", "otp"].filter(k => !req.body[k]);
+  if (missing.length) throw new AppError(`Missing: ${missing.join(", ")}`, 400);
+  const result = await authService.completeRegistration(email, otp);
+  return res.status(201).json(result);
+});
 
-export async function registerMerchantHandler(req, res) {
-  const { name, email, phone, password, businessName, address, panNumber } = req.body;
-  const missing = ["name", "email", "phone", "password", "businessName", "address"]
-    .filter(k => !req.body[k]);
-  if (missing.length) {
-    return res.status(400).json({ message: `Missing fields: ${missing.join(", ")}` });
-  }
-  try {
-    const result = await authService.registerMerchant({ name, email, phone, password, businessName, address, panNumber });
-    return res.status(201).json(result);
-  } catch (err) {
-    return handleError(res, err);
-  }
-}
+export const resendRegistrationOtpHandler = catchAsync(async (req, res) => {
+  const { email } = req.body;
+  if (!email) throw new AppError("Email is required.", 400);
+  const result = await authService.resendRegistrationOtp(email);
+  return res.status(200).json(result);
+});
+  // ─── POST /api/auth/otp/send ─────────────────────────────────────────────────
 
-// ─── GET /api/auth/me ─────────────────────────────────────────────────────────
+  export const sendOtpHandler = catchAsync(async (req, res) => {
+    const {  email } = req.body;
+ if (!email) throw new AppError("Email is required.", 400);
 
-export async function getMeHandler(req, res) {
-  try {
-    const user = await authService.getMe(req.user.id);
-    return res.status(200).json({ user });
-  } catch (err) {
-    return handleError(res, err);
-  }
-}
+ const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) throw new AppError("User not found.", 404);
 
-// ─── POST /api/auth/logout ────────────────────────────────────────────────────
+    const result = await authService.sendOtp(user.id, email);
+    return res.status(200).json(result);
+  });
 
-export async function logoutHandler(req, res) {
+  // ─── POST /api/auth/otp/verify ───────────────────────────────────────────────
+
+  export const verifyOtpHandler = catchAsync(async (req, res) => {
+    const { email, otp } = req.body;
+
+    const missing = ["email", "otp"].filter((k) => !req.body[k]);
+    if (missing.length)
+      throw new AppError(`Missing fields: ${missing.join(", ")}`, 400);
+
+    const result = await authService.verifyOtp(user.id, otp);
+    return res.status(200).json(result);
+  });
+
+  // ─── POST /api/auth/password/forgot ──────────────────────────────────────────
+
+  export const forgotPasswordHandler = catchAsync(async (req, res) => {
+    const { email } = req.body;
+    console.log(email)
+    if (!email) throw new AppError("Email is required.", 400);
+
+    const result = await authService.forgotPassword(email);
+    return res.status(200).json(result);
+  });
+
+  // ─── POST /api/auth/password/reset ───────────────────────────────────────────
+
+  export const  resetPasswordHandler = catchAsync(async (req, res) => {
+    const { email,code, newPassword } = req.body;
+
+    const missing = ["token", "newPassword"].filter((k) => !req.body[k]);
+    if (missing.length)
+      throw new AppError(`Missing fields: ${missing.join(", ")}`, 400);
+
+    const result = await authService.resetPassword(code, newPassword);
+    return res.status(200).json(result);
+  });
+
+// ________ GET /api/auth/me ____________
+
+export const getMeHandler = catchAsync(async (req, res) => {
+  const user = await authService.getMe(req.user.id);
+  return res.status(200).json({ user });
+});
+
+// _________ POST /api/auth/logout ____________
+
+export const logoutHandler = catchAsync(async (req, res) => {
   return res.status(200).json({ message: "Logged out successfully." });
-}
+});
 
 // ─── POST /api/admin/staff ────────────────────────────────────────────────────
 // Creates an ADMIN or DISPATCHER account.
 // Only accessible by existing ADMIN (enforced by requireRole in admin.routes.js)
 
-export async function createStaffHandler(req, res) {
+export const createStaffHandler = catchAsync(async (req, res) => {
   const { name, email, phone, password, role } = req.body;
-
-  const missing = ["name", "email", "phone", "password", "role"]
-    .filter(k => !req.body[k]);
+  const missing = ["name", "email", "phone", "password", "role"].filter(
+    (k) => !req.body[k],
+  );
   if (missing.length) {
-    return res.status(400).json({ message: `Missing fields: ${missing.join(", ")}` });
+    throw AppError(`Missing fields: ${missing.join(", ")}`, 400);
   }
-
-  try {
-    const user = await authService.createStaff({
-      name, email, phone, password, role,
-      createdByUserId: req.userId, // from requireAuth middleware
-    });
-    return res.status(201).json({
-      message: `${role} account created. They can now sign in at /login.`,
-      user,
-    });
-  } catch (err) {
-    return handleError(res, err);
-  }
-}
+  const user = await authService.createStaff({
+    name,
+    email,
+    phone,
+    password,
+    role,
+    createdByUserId: req.userId, // from requireAuth middleware
+  });
+  return res.status(201).json({
+    message: `${role} account created. They can now sign in at /login.`,
+    user,
+  });
+});
 
 // ─── GET /api/admin/staff ─────────────────────────────────────────────────────
 
-export async function getStaffListHandler(req, res) {
-  try {
-    const staff = await authService.getStaffList();
-    return res.status(200).json(staff);
-  } catch (err) {
-    return handleError(res, err);
-  }
-}
+export const getStaffListHandler = catchAsync(async (req, res) => {
+  const staff = await authService.getStaffList();
+  return res.status(200).json(staff);
+});
 
 // ─── PATCH /api/admin/staff/:userId/toggle ────────────────────────────────────
 
-export async function toggleStaffStatusHandler(req, res) {
-  try {
-    const user = await authService.toggleStaffStatus(req.params.userId, req.userId);
-    return res.status(200).json(user);
-  } catch (err) {
-    return handleError(res, err);
-  }
-}
+export const toggleStaffStatusHandler = catchAsync(async (req, res) => {
+  const user = await authService.toggleStaffStatus(
+    req.params.userId,
+    req.userId,
+  );
+  return res.status(200).json(user);
+});

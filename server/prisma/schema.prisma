@@ -7,11 +7,7 @@ datasource db {
   provider   = "postgresql"
   extensions = [postgis]
 }
-
-// ─────────────────────────────────────────
-// ENUMS
-// ─────────────────────────────────────────
-
+//_______ENUMS_______
 enum Role {
   MERCHANT
   RIDER
@@ -59,11 +55,7 @@ enum RiderDocType {
   RIDER_PHOTO
   VEHICLE_PHOTO
 }
-
-// ─────────────────────────────────────────
-// USER
-// ─────────────────────────────────────────
-
+//_______USERS___________
 model User {
   id           String   @id @default(cuid())
   fullName     String
@@ -80,9 +72,7 @@ model User {
   logs            ShipmentLog[]
 }
 
-// ─────────────────────────────────────────
-// VEHICLE TYPE
-// ─────────────────────────────────────────
+// ___VEHICLE TYPE___
 
 model VehicleType {
   id          Int     @id @default(autoincrement())
@@ -96,9 +86,7 @@ model VehicleType {
   fareConfig FareConfig?
 }
 
-// ─────────────────────────────────────────
-// FARE CONFIG
-// ─────────────────────────────────────────
+// ____FARE CONFIG____
 
 model FareConfig {
   id            Int         @id @default(autoincrement())
@@ -118,21 +106,19 @@ model FareConfig {
   updatedAt DateTime @updatedAt
 }
 
-// ─────────────────────────────────────────
-// MERCHANT
-// ─────────────────────────────────────────
+// ____MERCHANT___
 
 model MerchantProfile {
-  id            String  @id @default(cuid())
-  userId        String  @unique @map("user_id")
-  user          User    @relation(fields: [userId], references: [id])
-  businessName  String
-  panNumber     String?
-  pickupAddress String
-  location      Unsupported("geography(Point, 4326)")?
-
-  documents MerchantDocument[]
-  shipments Shipment[]
+  id              String                                 @id @default(cuid())
+  userId          String                                 @unique @map("user_id")
+  user            User                                   @relation(fields: [userId], references: [id])
+  businessName    String
+  panNumber       String?
+  pickupAddress   String
+  location        Unsupported("geography(Point, 4326)")?
+  isEmailVerified Boolean                                @default(false)
+  documents       MerchantDocument[]
+  shipments       Shipment[]
 }
 
 model MerchantDocument {
@@ -151,24 +137,22 @@ model MerchantDocument {
   @@index([merchantId, status])
 }
 
-// ─────────────────────────────────────────
-// RIDER
-// ─────────────────────────────────────────
+// _______RIDER________
 
 model RiderProfile {
-  id              String      @id @default(cuid())
-  userId          String      @unique @map("user_id")
-  user            User        @relation(fields: [userId], references: [id])
+  id              String                                 @id @default(cuid())
+  userId          String                                 @unique @map("user_id")
+  user            User                                   @relation(fields: [userId], references: [id])
   vehicleTypeId   Int
-  vehicleType     VehicleType @relation(fields: [vehicleTypeId], references: [id])
-  licenseNumber   String      @unique
-  vehicleNumber   String      @unique
-  isOnline        Boolean     @default(false)
-  isVerified      Boolean     @default(false)
+  vehicleType     VehicleType                            @relation(fields: [vehicleTypeId], references: [id])
+  licenseNumber   String                                 @unique
+  vehicleNumber   String                                 @unique
+  isOnline        Boolean                                @default(false)
+  isVerified      Boolean                                @default(false)
   currentLocation Unsupported("geography(Point, 4326)")?
-
-  documents RiderDocument[]
-  shipments Shipment[]
+  isEmailVerified Boolean                                @default(false)
+  documents       RiderDocument[]
+  shipments       Shipment[]
 
   @@index([vehicleTypeId])
   @@index([isOnline, isVerified])
@@ -191,9 +175,7 @@ model RiderDocument {
   @@index([riderId, status])
 }
 
-// ─────────────────────────────────────────
-// SHIPMENT
-// ─────────────────────────────────────────
+// ________SHIPMENT__________
 
 model Shipment {
   id             String          @id @default(cuid())
@@ -211,19 +193,19 @@ model Shipment {
   deliveryLocation Unsupported("geography(Point, 4326)")?
 
   weight       Float
-  isFragile    Boolean        @default(false)
+  isFragile    Boolean @default(false)
   orderValue   Float
-  codAmount    Float          @default(0)
+  codAmount    Float   @default(0)
   fareSnapshot Float?
 
   status    ShipmentStatus @default(PENDING)
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
-  logs        ShipmentLog[]
-  transaction Transaction?
+  logs               ShipmentLog[]
+  transaction        Transaction?
   // NEW: Tracking the Two-Man Rule handoff
-  isHandoffPending   Boolean @default(false)
+  isHandoffPending   Boolean       @default(false)
   handoffInitiatorId String? // The User ID of the Dispatcher who scanned it first
 
   @@index([merchantId])
@@ -233,10 +215,7 @@ model Shipment {
   @@index([riderId, status])
 }
 
-// ─────────────────────────────────────────
-// SHIPMENT LOG
-// ─────────────────────────────────────────
-
+// _______SHIPMENT LOG_______
 model ShipmentLog {
   id          String         @id @default(cuid())
   shipmentId  String
@@ -251,14 +230,12 @@ model ShipmentLog {
   @@index([updatedById])
 }
 
-// ─────────────────────────────────────────
-// TRANSACTION
-// ─────────────────────────────────────────
+// _______TRANSACTION_______
 
 model Transaction {
-  id         String      @id @default(cuid())
-  shipmentId String      @unique
-  shipment   Shipment    @relation(fields: [shipmentId], references: [id])
+  id         String   @id @default(cuid())
+  shipmentId String   @unique
+  shipment   Shipment @relation(fields: [shipmentId], references: [id])
 
   paymentType      PaymentType
   totalFare        Float

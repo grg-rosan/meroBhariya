@@ -1,7 +1,7 @@
 import { prisma } from "../../config/db.config.js";
-import AppError from "../../utils/appError.js";
-import { buildDateFilter } from "../../utils/dateFilter.js";
-import { parsePagination } from "../../utils/pagination.js";
+import AppError from "../../utils/error/appError.js";
+import { buildDateFilter } from "../../utils/others/dateFilter.js";
+import { parsePagination } from "../../utils/others/pagination.js";
 
 // ─────────────────────────────────────────
 // INTERNAL HELPER

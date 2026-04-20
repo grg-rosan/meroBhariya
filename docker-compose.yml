@@ -33,7 +33,19 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s         
+      start_period: 30s      
+
+  redis:
+    image: redis:alpine   
+    restart: always
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
   server:
     build: ./server
     ports: 
@@ -41,21 +53,18 @@ services:
     volumes:
       - ./server:/app
       - /app/node_modules
+    env_file:
+      - .env
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       - RABBITMQ_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672
       - NODE_ENV=development
-      - JWT_SECRET=${JWT_SECRET}
-      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
-      - SEED_ADMIN_EMAIL=${SEED_ADMIN_EMAIL}
-      - SEED_ADMIN_PASSWORD=${SEED_ADMIN_PASSWORD}
-      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
-      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
-      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
     depends_on: 
       db:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     command: >
       sh -c "npm install &&

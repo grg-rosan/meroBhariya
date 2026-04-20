@@ -1,8 +1,8 @@
 // src/modules/dispatcher/dispatcher.service.js
-import { prisma }       from "../../config/prisma.js";
+import { prisma }       from "../../config/db.config.js";
 import { publish } from "../../infrastructure/rabbitmq/publisher.js";
-import { appError }     from "../../utils/errorHandler.js";
-import { buildPaginationMeta } from "../../utils/pagination.js";
+import AppError from "../../utils/error/appError.js";
+import { buildPaginationMeta } from "../../utils/others/pagination.js";
 
 // ─── Get pending shipments (dispatcher board) ─────────────────────────────────
 
@@ -55,17 +55,17 @@ export async function assignRider(shipmentId, riderId, dispatcherUserId) {
     where:   { id: shipmentId },
     include: { merchant: { select: { userId: true, businessName: true } } },
   });
-  if (!shipment)                     throw appError(404, "Shipment not found.");
-  if (shipment.status !== "PENDING") throw appError(400, `Shipment is already ${shipment.status}.`);
+  if (!shipment)                     throw AppError(404, "Shipment not found.");
+  if (shipment.status !== "PENDING") throw AppError(400, `Shipment is already ${shipment.status}.`);
 
   // 2. Load rider + verify eligibility
   const rider = await prisma.riderProfile.findUnique({
     where:   { id: riderId },
     include: { user: { select: { fullName: true, phoneNumber: true } } },
   });
-  if (!rider)            throw appError(404, "Rider not found.");
-  if (!rider.isVerified) throw appError(400, "Rider is not verified.");
-  if (!rider.isOnline)   throw appError(400, "Rider is not online.");
+  if (!rider)            throw AppError(404, "Rider not found.");
+  if (!rider.isVerified) throw AppError(400, "Rider is not verified.");
+  if (!rider.isOnline)   throw AppError(400, "Rider is not online.");
 
   // 3. Use updateMany with null-guard to prevent race condition
   //    If two dispatchers try to assign simultaneously, only one wins
@@ -75,7 +75,7 @@ export async function assignRider(shipmentId, riderId, dispatcherUserId) {
   });
 
   if (result.count === 0) {
-    throw appError(409, "Shipment was already assigned by another dispatcher.");
+    throw AppError(409, "Shipment was already assigned by another dispatcher.");
   }
 
   // 4. Log the assignment
@@ -118,10 +118,10 @@ export async function assignRider(shipmentId, riderId, dispatcherUserId) {
 
 export async function scanHandoff(shipmentId, dispatcherUserId) {
   const shipment = await prisma.shipment.findUnique({ where: { id: shipmentId } });
-  if (!shipment) throw appError(404, "Shipment not found.");
+  if (!shipment) throw AppError(404, "Shipment not found.");
 
   if (shipment.status !== "PICKED_UP") {
-    throw appError(400, "Shipment must be PICKED_UP before hub handoff.");
+    throw AppError(400, "Shipment must be PICKED_UP before hub handoff.");
   }
 
   // First scan
@@ -136,7 +136,7 @@ export async function scanHandoff(shipmentId, dispatcherUserId) {
 
   // Second scan — must be a different dispatcher
   if (shipment.handoffInitiatorId === dispatcherUserId) {
-    throw appError(400, "Two-man rule: a different dispatcher must perform the second scan.");
+    throw AppError(400, "Two-man rule: a different dispatcher must perform the second scan.");
   }
 
   // Confirm handoff → move to IN_HUB
@@ -179,11 +179,11 @@ const VALID_TRANSITIONS = {
 
 export async function updateShipmentStatus(shipmentId, newStatus, dispatcherUserId) {
   const shipment = await prisma.shipment.findUnique({ where: { id: shipmentId } });
-  if (!shipment) throw appError(404, "Shipment not found.");
+  if (!shipment) throw AppError(404, "Shipment not found.");
 
   const allowed = VALID_TRANSITIONS[shipment.status];
   if (!allowed || !allowed.includes(newStatus)) {
-    throw appError(400, `Cannot transition from ${shipment.status} to ${newStatus}.`);
+    throw AppError(400, `Cannot transition from ${shipment.status} to ${newStatus}.`);
   }
 
   const updated = await prisma.$transaction(async (tx) => {

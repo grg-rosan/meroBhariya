@@ -1,39 +1,27 @@
 // src/modules/admin/overview/overview.service.js
-import { prisma } from "../../../config/db.config.js";
-// ─── Stat Cards ───────────────────────────────────────────────────────────────
+import { prisma } from '../../../config/db.config.js';
+
+// ─── GET /api/admin/overview/stats ────────────────────────────────────────────
+// Called by: getStatsHandler → overviewService.getPlatformStats()
+// Returns:   { activeMerchants, activeRiders, shipmentsToday, codHeld }
 
 export async function getPlatformStats() {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
 
-  const [
-    activeMerchants,
-    activeRiders,
-    shipmentsToday,
-    codHeld,
-  ] = await Promise.all([
-    // Active merchants = users with role MERCHANT and isActive true
-    prisma.user.count({
-      where: { role: "MERCHANT", isActive: true },
+  const [activeMerchants, activeRiders, shipmentsToday, codResult] = await Promise.all([
+    prisma.merchantProfile.count({
+      where: { user: { isActive: true } },
     }),
-
-    // Active riders = riders who are online and verified
     prisma.riderProfile.count({
       where: { isOnline: true, isVerified: true },
     }),
-
-    // Shipments created today (any status)
     prisma.shipment.count({
-      where: { createdAt: { gte: today } },
+      where: { createdAt: { gte: todayStart } },
     }),
-
-    // COD held = sum of codAmount on COD shipments not yet remitted
     prisma.transaction.aggregate({
-      where: {
-        paymentType: "COD",
-        isRemitted:  false,
-      },
-      _sum: { codAmount: true },
+      _sum:  { codAmount: true },
+      where: { isRemitted: false, paymentType: 'COD' },
     }),
   ]);
 
@@ -41,128 +29,113 @@ export async function getPlatformStats() {
     activeMerchants,
     activeRiders,
     shipmentsToday,
-    codHeld: codHeld._sum.codAmount ?? 0,
+    codHeld: codResult._sum.codAmount ?? 0,
   };
 }
 
-// ─── Platform Health ──────────────────────────────────────────────────────────
+// ─── GET /api/admin/overview/health ──────────────────────────────────────────
+// Called by: getHealthHandler → overviewService.getPlatformHealth()
+// Returns:   { successRate, riderAvailability }
 
 export async function getPlatformHealth() {
-  const [
-    totalShipments,
-    deliveredShipments,
-    totalRiders,
-    onlineRiders,
-    pendingMerchantDocs,
-    pendingRiderDocs,
-    expiredRiderDocs,
-  ] = await Promise.all([
-    prisma.shipment.count(),
-
-    prisma.shipment.count({ where: { status: "DELIVERED" } }),
-
-    prisma.riderProfile.count({ where: { isVerified: true } }),
-
-    prisma.riderProfile.count({ where: { isOnline: true, isVerified: true } }),
-
-    // Pending merchant verifications = distinct merchants with at least one PENDING doc
-    prisma.merchantDocument.groupBy({
-      by:     ["merchantId"],
-      where:  { status: "PENDING" },
-    }).then(r => r.length),
-
-    // Pending rider verifications = distinct riders with at least one PENDING doc
-    prisma.riderDocument.groupBy({
-      by:     ["riderId"],
-      where:  { status: "PENDING" },
-    }).then(r => r.length),
-
-    // Expired rider docs = docs past expiresAt that are still APPROVED
-    prisma.riderDocument.count({
-      where: {
-        status:    "APPROVED",
-        expiresAt: { lt: new Date() },
-      },
+  const [total, delivered, totalRiders, onlineRiders] = await Promise.all([
+    prisma.shipment.count({
+      where: { status: { in: ['DELIVERED', 'CANCELLED', 'RETURNED'] } },
+    }),
+    prisma.shipment.count({
+      where: { status: 'DELIVERED' },
+    }),
+    prisma.riderProfile.count({
+      where: { isVerified: true },
+    }),
+    prisma.riderProfile.count({
+      where: { isVerified: true, isOnline: true },
     }),
   ]);
 
-  const deliverySuccessRate = totalShipments > 0
-    ? ((deliveredShipments / totalShipments) * 100).toFixed(1)
-    : 0;
-
-  const riderAvailabilityRate = totalRiders > 0
-    ? ((onlineRiders / totalRiders) * 100).toFixed(1)
-    : 0;
-
   return {
-    deliverySuccessRate:  Number(deliverySuccessRate),
-    riderAvailabilityRate: Number(riderAvailabilityRate),
-    pendingVerifications: {
-      merchants: pendingMerchantDocs,
-      riders:    pendingRiderDocs,
-    },
-    expiredDocuments: expiredRiderDocs,
+    successRate:       total > 0 ? Math.round((delivered / total) * 100) : 0,
+    riderAvailability: totalRiders > 0 ? Math.round((onlineRiders / totalRiders) * 100) : 0,
   };
 }
 
-// ─── Quick Action Counts ──────────────────────────────────────────────────────
+// ─── GET /api/admin/overview/quick-actions ────────────────────────────────────
+// Called by: getQuickActionCountsHandler → overviewService.getQuickActionCounts()
+// Returns:   { pendingMerchants, pendingRiders, expiredDocs }
 
 export async function getQuickActionCounts() {
-  const [pendingMerchants, pendingRiders, pendingCOD] = await Promise.all([
-    prisma.merchantDocument.groupBy({
-      by:    ["merchantId"],
-      where: { status: "PENDING" },
-    }).then(r => r.length),
-
-    prisma.riderDocument.groupBy({
-      by:    ["riderId"],
-      where: { status: "PENDING" },
-    }).then(r => r.length),
-
-    prisma.transaction.count({
-      where: { paymentType: "COD", isRemitted: false },
+  const [pendingMerchants, pendingRiders, expiredDocs] = await Promise.all([
+    prisma.merchantProfile.count({
+      where: { documents: { some: { status: 'PENDING' } } },
+    }),
+    prisma.riderProfile.count({
+      where: { documents: { some: { status: 'PENDING' } } },
+    }),
+    prisma.riderDocument.count({
+      where: { status: 'APPROVED', expiresAt: { lt: new Date() } },
     }),
   ]);
 
-  return { pendingMerchants, pendingRiders, pendingCOD };
+  return { pendingMerchants, pendingRiders, expiredDocs };
 }
 
-// ─── Recent Activity ──────────────────────────────────────────────────────────
-// Pulls recent shipment logs as a unified activity feed
+// ─── GET /api/admin/overview/activity ────────────────────────────────────────
+// Called by: getRecentActivityHandler → overviewService.getRecentActivity(limit)
+// Returns:   [{ time, text, type }]
 
 export async function getRecentActivity(limit = 10) {
   const logs = await prisma.shipmentLog.findMany({
     take:    limit,
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: 'desc' },
     include: {
-      shipment:  { select: { trackingNumber: true, merchant: { select: { businessName: true } } } },
+      shipment:  { select: { trackingNumber: true } },
       updatedBy: { select: { fullName: true, role: true } },
     },
   });
 
   return logs.map(log => ({
-    id:        log.id,
-    type:      log.status,
-    message:   formatActivityMessage(log),
-    createdAt: log.createdAt,
+    time: timeAgo(log.createdAt),
+    text: formatLogText(log),
+    type: statusToType(log.status),
   }));
 }
 
-function formatActivityMessage(log) {
-  const actor   = log.updatedBy.fullName;
-  const tracking = log.shipment.trackingNumber;
-  const merchant = log.shipment.merchant?.businessName ?? "Unknown";
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
+function timeAgo(date) {
+  const diff = Math.floor((Date.now() - new Date(date)) / 1000);
+  if (diff < 60)    return `${diff}s ago`;
+  if (diff < 3600)  return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+}
+
+function formatLogText(log) {
+  const track = log.shipment?.trackingNumber ?? '';
+  const actor = log.updatedBy?.fullName ?? 'System';
   const map = {
-    PENDING:          `New shipment ${tracking} created by ${merchant}`,
-    ASSIGNED:         `Shipment ${tracking} assigned by ${actor}`,
-    PICKED_UP:        `Shipment ${tracking} picked up`,
-    IN_HUB:           `Shipment ${tracking} arrived at hub`,
-    OUT_FOR_DELIVERY: `Shipment ${tracking} out for delivery`,
-    DELIVERED:        `Shipment ${tracking} delivered`,
-    CANCELLED:        `Shipment ${tracking} cancelled by ${actor}`,
-    RETURNED:         `Shipment ${tracking} returned`,
+    PENDING:          `Shipment ${track} created`,
+    ASSIGNED:         `Shipment ${track} assigned by ${actor}`,
+    PICKED_UP:        `Shipment ${track} picked up by ${actor}`,
+    IN_HUB:           `Shipment ${track} arrived at hub`,
+    OUT_FOR_DELIVERY: `Shipment ${track} out for delivery`,
+    DELIVERED:        `Shipment ${track} delivered by ${actor}`,
+    CANCELLED:        `Shipment ${track} cancelled`,
+    RETURNED:         `Shipment ${track} returned`,
   };
+  return map[log.status] ?? `Shipment ${track} updated to ${log.status}`;
+}
 
-  return map[log.status] ?? `Shipment ${tracking} updated`;
+function statusToType(status) {
+  const map = {
+    DELIVERED:        'success',
+    CANCELLED:        'error',
+    RETURNED:         'warning',
+    OUT_FOR_DELIVERY: 'info',
+    ASSIGNED:         'info',
+    PENDING:          'info',
+    IN_HUB:           'info',
+    PICKED_UP:        'info',
+  };
+  return map[status] ?? 'info';
 }

@@ -4,7 +4,7 @@ import {config} from "dotenv";
 import {connectDB} from  "./config/db.config.js"
 
 //Import user Routes
-import AppError from "./utils/appError.js";
+import AppError from "./utils/error/appError.js";
 import cookieParser from "cookie-parser";
 import {globalMiddleware} from "./middlewares/error.middleware.js"
 
