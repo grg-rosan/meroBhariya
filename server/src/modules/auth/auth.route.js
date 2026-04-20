@@ -2,8 +2,9 @@
 import { Router } from "express";
 import {
   loginHandler,
-  registerRiderHandler,
-  registerMerchantHandler,
+  initiateRegistrationHandler,
+  completeRegistrationHandler,
+  resendRegistrationOtpHandler,
   getMeHandler,
   logoutHandler,
   sendOtpHandler,
@@ -17,9 +18,9 @@ const router = Router();
 
 // Public
 router.post("/login", loginHandler);
-router.post("/register/rider", registerRiderHandler);
-router.post("/register/merchant", registerMerchantHandler);
-
+router.post("/register/initiate", initiateRegistrationHandler);
+router.post("/register/complete", completeRegistrationHandler);
+router.post("/register/resend-otp", resendRegistrationOtpHandler);
 //otp
 router.post("/otp/send",sendOtpHandler)
 router.post('/otp/verify',verifyOtpHandler)

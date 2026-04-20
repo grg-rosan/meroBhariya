@@ -1,13 +1,13 @@
 // src/modules/auth/auth.service.js
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { randomInt } from "node:crypto";
 import { prisma } from "../../config/db.config.js";
 import AppError from "../../utils/error/appError.js";
 import { getRedisClient } from "../../config/redis.config.js";
 import { otpEmailTemplate } from "../../utils/services/emailTemplate.js";
 import { transporter } from "../../config/email.config.js";
 import { resetEmailTemplate } from "../../utils/services/resetEmail.js";
-
 
 const SALT_ROUNDS = 12;
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -17,291 +17,268 @@ const RESET_TTL = 10 * 60;
 const OTP_TTL = 5 * 60;
 const RATE_LIMIT_TTL = 60 * 60;
 const MAX_OTP_TRIES = 3;
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-// _______HELPERS_______
 function signToken(payload) {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES });
 }
 
 function sanitizeUser(user) {
-  const { passwordHash, ...safe } = user;
-  return safe;
+  const profile = user.role === "RIDER" ? user.riderProfile : user.merchantProfile;
+  return {
+    id:              user.id,
+    email:           user.email,
+    fullName:        user.fullName,
+    phoneNumber:     user.phoneNumber,
+    role:            user.role,
+    isActive:        user.isActive,
+    isEmailVerified: profile?.isEmailVerified ?? false,
+  };
 }
 
-//_______LOGIN_______
-export async function login({ email, password }) {
-  console.log("server:",email, password)
-
-  const user = await prisma.user.findUnique({ where: { email } });
-
-  if (!user || !user.isActive) {
-    throw new AppError("Invalid email or password", 401);
-  }
-
-  const valid = await bcrypt.compare(password, user.passwordHash);
-  if (!valid) {
-    throw new AppError("Invalid email or password", 401);
-  }
-  const token = signToken({ userId: user.id, role: user.role });
-  return { token, user: sanitizeUser(user) };
+async function sendEmail(to, subject, html) {
+  await transporter.sendMail({
+    from: `MeroBhariya <${process.env.EMAIL_USER}>`,
+    to,
+    subject,
+    html,
+  });
 }
 
-//_______REGISTER RIDER_______
-// Frontend sends:
-//   basicInfo:  { name, email, phone, password }
-//   details:    { vehicleType (name string), plateNumber, address }
-//
-// Schema requires:
-//   User          → fullName, email, passwordHash, phoneNumber, role: RIDER
-//   RiderProfile  → vehicleTypeId (looked up by name), licenseNumber (plateNumber),
-//                   vehicleNumber (plateNumber — same field, adjust if you collect separately)
+// ─── Role creators for registration ──────────────────────────────────────────
 
-export async function registerRider({
-  name,
-  email,
-  phone,
-  password,
-  vehicleType,
-  plateNumber,
-  address,
-}) {
-  // 1. Check duplicates
-  const existing = await prisma.user.findFirst({
-    where: { OR: [{ email }, { phoneNumber: phone }] },
-  });
-  if (existing) {
-    throw {
-      status: 409,
-      message:
-        existing.email === email
-          ? "Email already registered."
-          : "Phone number already registered.",
-    };
-  }
+const ROLE_CREATORS = {
+  rider: async (tx, { name, email, phone, passwordHash, vehicleType, plateNumber }) => {
+    const vehicleTypeRecord = await prisma.vehicleType.findUnique({
+      where: { name: vehicleType },
+    });
+    if (!vehicleTypeRecord?.isActive)
+      throw new AppError(`Vehicle type "${vehicleType}" not found or inactive.`, 400);
 
-  // 2. Resolve vehicleType name → id
-  //    VehicleType.name is unique in the schema
-  const vehicleTypeRecord = await prisma.vehicleType.findUnique({
-    where: { name: vehicleType },
-  });
-  if (!vehicleTypeRecord || !vehicleTypeRecord.isActive) {
-    throw {
-      status: 400,
-      message: `Vehicle type "${vehicleType}" not found or inactive.`,
-    };
-  }
-
-  // 3. Check plate uniqueness (stored as both licenseNumber and vehicleNumber for now)
-  const plateExists = await prisma.riderProfile.findFirst({
-    where: {
-      OR: [{ vehicleNumber: plateNumber }, { licenseNumber: plateNumber }],
-    },
-  });
-  if (plateExists) {
-    throw {
-      status: 409,
-      message: "Vehicle / plate number already registered.",
-    };
-  }
-
-  // 4. Hash password
-  const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-
-  // 5. Create User + RiderProfile in a transaction
-  const user = await prisma.$transaction(async (tx) => {
-    const newUser = await tx.user.create({
+    return tx.user.create({
       data: {
-        fullName: name,
-        email,
-        phoneNumber: phone,
-        passwordHash,
-        role: "RIDER",
+        fullName: name, email, phoneNumber: phone, passwordHash, role: "RIDER",
         riderProfile: {
           create: {
             vehicleTypeId: vehicleTypeRecord.id,
-            licenseNumber: plateNumber, // update if you collect license number separately
+            licenseNumber: plateNumber,
             vehicleNumber: plateNumber,
+            isEmailVerified: true,
           },
         },
       },
+      include: { riderProfile: { select: { isEmailVerified: true } } },
     });
-    return newUser;
-  });
+  },
 
-  const token = signToken({ userId: user.id, role: user.role });
-  return { token, user: sanitizeUser(user) };
-}
-
-// ─── Register Merchant ───────────────────────────────────────────────────────
-//
-// Frontend sends:
-//   basicInfo:  { name, email, phone, password }
-//   details:    { businessName, businessType (unused in schema — stored in businessName), address, panNumber }
-//
-// Schema requires:
-//   User            → fullName, email, passwordHash, phoneNumber, role: MERCHANT
-//   MerchantProfile → businessName, panNumber (optional), pickupAddress
-
-export async function registerMerchant({
-  name,
-  email,
-  phone,
-  password,
-  businessName,
-  address,
-  panNumber,
-}) {
-  // 1. Check duplicates
-  const existing = await prisma.user.findFirst({
-    where: { OR: [{ email }, { phoneNumber: phone }] },
-  });
-  if (existing) {
-    throw {
-      status: 409,
-      message:
-        existing.email === email
-          ? "Email already registered."
-          : "Phone number already registered.",
-    };
-  }
-
-  // 2. Hash password
-  const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-
-  // 3. Create User + MerchantProfile in a transaction
-  const user = await prisma.$transaction(async (tx) => {
-    const newUser = await tx.user.create({
+  merchant: async (tx, { name, email, phone, passwordHash, businessName, address, panNumber }) => {
+    return tx.user.create({
       data: {
-        fullName: name,
-        email,
-        phoneNumber: phone,
-        passwordHash,
-        role: "MERCHANT",
+        fullName: name, email, phoneNumber: phone, passwordHash, role: "MERCHANT",
         merchantProfile: {
           create: {
             businessName,
             panNumber: panNumber || null,
             pickupAddress: address,
+            isEmailVerified: true,
           },
         },
       },
+      include: { merchantProfile: { select: { isEmailVerified: true } } },
     });
-    return newUser;
+  },
+};
+
+// ─── Login ────────────────────────────────────────────────────────────────────
+
+export async function login({ email, password }) {
+  const user = await prisma.user.findUnique({
+    where: { email },
+    include: {
+      riderProfile:    { select: { isEmailVerified: true } },
+      merchantProfile: { select: { isEmailVerified: true } },
+    },
   });
+
+  if (!user || !user.isActive)
+    throw new AppError("Invalid email or password", 401);
+
+  const valid = await bcrypt.compare(password, user.passwordHash);
+  if (!valid) throw new AppError("Invalid email or password", 401);
 
   const token = signToken({ userId: user.id, role: user.role });
   return { token, user: sanitizeUser(user) };
 }
 
-// ─── Send OTP ────────────────────────────────────────────────────────────────
+// ─── Initiate Registration ────────────────────────────────────────────────────
+
+export async function initiateRegistration(role, payload) {
+  const redis = await getRedisClient();
+  const { email, phone } = payload;
+
+  if (!ROLE_CREATORS[role])
+    throw new AppError("Invalid role.", 400);
+
+  const existing = await prisma.user.findFirst({
+    where: { OR: [{ email }, { phoneNumber: phone }] },
+  });
+  if (existing) {
+    throw new AppError(
+      existing.email === email ? "Email already registered." : "Phone number already registered.",
+      409
+    );
+  }
+
+  const otp = randomInt(100000, 1000000).toString();
+  await redis.set(`pending_reg:${email}`, JSON.stringify({ role, payload, otp }), { EX: 600 });
+
+  await sendEmail(email, "Verify Your MeroBhariya Account", otpEmailTemplate(otp));
+  console.log(`[DEV] OTP for ${email}: ${otp}`);
+
+  return { message: "OTP sent to your email." };
+}
+
+// ─── Complete Registration ────────────────────────────────────────────────────
+
+export async function completeRegistration(email, inputOtp) {
+  const redis = await getRedisClient();
+  const raw = await redis.get(`pending_reg:${email}`);
+
+  if (!raw) throw new AppError("Registration expired. Please start again.", 400);
+
+  const { role, payload, otp } = JSON.parse(raw);
+
+  if (otp !== inputOtp) throw new AppError("Invalid OTP.", 400);
+
+  const creator = ROLE_CREATORS[role];
+  if (!creator) throw new AppError("Invalid role.", 400);
+
+  const passwordHash = await bcrypt.hash(payload.password, SALT_ROUNDS);
+
+  await prisma.$transaction(tx => creator(tx, { ...payload, passwordHash }));
+
+  await redis.del(`pending_reg:${email}`);
+
+  return { message: "Registration complete. You can now log in." };
+}
+
+// ─── Resend Registration OTP ──────────────────────────────────────────────────
+
+export async function resendRegistrationOtp(email) {
+  const redis = await getRedisClient();
+  const raw = await redis.get(`pending_reg:${email}`);
+
+  if (!raw) throw new AppError("Registration session expired. Please start again.", 400);
+
+  const parsed = JSON.parse(raw);
+  const otp = randomInt(100000, 1000000).toString();
+  parsed.otp = otp;
+
+  await redis.set(`pending_reg:${email}`, JSON.stringify(parsed), { EX: 600 });
+  await sendEmail(email, "Verify Your MeroBhariya Account", otpEmailTemplate(otp));
+  console.log(`[DEV] Resent OTP for ${email}: ${otp}`);
+
+  return { message: "OTP resent." };
+}
+
+// ─── Send OTP (post-login verification) ──────────────────────────────────────
 
 export async function sendOtp(userId, email) {
   const redis = await getRedisClient();
 
-  // 1. Rate limit — max 3 requests per hour per user
   const limitKey = `otp_limit:${userId}`;
   const attempts = await redis.incr(limitKey);
   if (attempts === 1) await redis.expire(limitKey, RATE_LIMIT_TTL);
-  if (attempts > MAX_OTP_TRIES) {
+  if (attempts > MAX_OTP_TRIES)
     throw new AppError("Too many OTP requests. Try again in 1 hour.", 429);
-  }
 
-  // 2. Generate and store OTP
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const otp = randomInt(100000, 1000000).toString();
   await redis.set(`otp:${userId}`, otp, { EX: OTP_TTL });
 
-  const mailOptions = {
-    from: `MeroBhariya <${process.env.EMAIL_USER}>`,
-    to:email,
-    subject:"Verify Your MeroBhariya Account",
-    html: otpEmailTemplate(otp)
-  }
-
-  await transporter.sendMail(mailOptions);
+  await sendEmail(email, "Verify Your MeroBhariya Account", otpEmailTemplate(otp));
   console.log(`[DEV] OTP for userId ${userId}: ${otp}`);
-
 
   return { message: "OTP sent successfully." };
 }
 
-// ─── Verify OTP ──────────────────────────────────────────────────────────────
+// ─── Verify OTP (post-login verification) ────────────────────────────────────
 
 export async function verifyOtp(userId, inputOtp) {
   const redis = await getRedisClient();
   const stored = await redis.get(`otp:${userId}`);
 
-  if (!stored)
-    throw new AppError("OTP has expired. Please request a new one.", 400);
+  if (!stored) throw new AppError("OTP has expired. Please request a new one.", 400);
   if (stored !== inputOtp) throw new AppError("Invalid OTP.", 400);
 
-  // Single-use — delete immediately after success
   await redis.del(`otp:${userId}`);
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select:{role:true},
+    select: { role: true },
   });
-  if (user.role === "MERCHANT") {
-  await prisma.merchantProfile.update({
-    where: { userId },
-    data: { isEmailVerified: true },
-  });
-} else if (user.role === "RIDER") {
-  await prisma.riderProfile.update({
-    where: { userId },
-    data: { isEmailVerified: true },
-  });
-}
+  if (!user) throw new AppError("User not found.", 404);
+
+  // ← only update the correct profile, not both
+  if (user.role === "RIDER") {
+    await prisma.riderProfile.update({
+      where: { userId },
+      data: { isEmailVerified: true },
+    });
+  } else if (user.role === "MERCHANT") {
+    await prisma.merchantProfile.update({
+      where: { userId },
+      data: { isEmailVerified: true },
+    });
+  }
+
   return { message: "Email verified successfully." };
 }
+
+// ─── Forgot Password ──────────────────────────────────────────────────────────
 
 export async function forgotPassword(email) {
   const redis = await getRedisClient();
   const user = await prisma.user.findUnique({ where: { email } });
 
-  // Always return 200 — never reveal whether the email exists
   if (!user || !user.isActive) {
-    return {
-      message: "If that email is registered, a reset link has been sent.",
-    };
+    return { message: "If that email is registered, a reset code has been sent." };
   }
 
-  // Generate token and store against userId
-  const token = crypto.randomBytes(32).toString("hex");
-  await redis.set(`pwd_reset:${token}`, String(user.id), { EX: RESET_TTL });
+  const limitKey = `pwd_reset_limit:${user.id}`;
+  const attempts = await redis.incr(limitKey);
+  if (attempts === 1) await redis.expire(limitKey, RATE_LIMIT_TTL);
+  if (attempts > MAX_OTP_TRIES)
+    throw new AppError("Too many requests. Try again in 1 hour.", 429);
 
+  const code = randomInt(100000, 1000000).toString();
+  await redis.set(`pwd_reset:${user.id}`, code, { EX: RESET_TTL });
 
-  const resetUrl = `${process.env.APP_URL}/reset-password?token=${token}`;
-  const mailOptions = {
-  from: `MeroBhariya <${process.env.EMAIL_USER}>`,
-  to: email,
-  subject: "Reset Your MeroBhariya Password",
-  html: resetEmailTemplate(resetUrl), 
-  };
-  await transporter.sendMail(mailOptions);
-  console.log(`[DEV] Reset URL for ${email}: ${resetUrl}`); 
-  return {
-    message: "If that email is registered, a reset link has been sent.",
-  };
+  await sendEmail(email, "Reset Your MeroBhariya Password", resetEmailTemplate(code));
+  console.log(`[DEV] Reset code for ${email}: ${code}`);
+
+  return { message: "If that email is registered, a reset code has been sent." };
 }
 
 // ─── Reset Password ───────────────────────────────────────────────────────────
 
-export async function resetPassword(token, newPassword) {
+export async function resetPassword(email, code, newPassword) {
   const redis = await getRedisClient();
-  const key = `pwd_reset:${token}`;
 
-  const userId = await redis.get(key);
-  if (!userId) throw new AppError("Reset link is invalid or has expired.", 400);
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user || !user.isActive) throw new AppError("Invalid request.", 400);
+
+  const key = `pwd_reset:${user.id}`;
+  const stored = await redis.get(key);
+
+  if (!stored) throw new AppError("Reset code has expired. Please request a new one.", 400);
+  if (stored !== code) throw new AppError("Invalid reset code.", 400);
 
   const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+  await prisma.user.update({ where: { id: user.id }, data: { passwordHash } });
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: { passwordHash },
-  });
+  await redis.del(key);
+  await redis.del(`pwd_reset_limit:${user.id}`);
 
-  await redis.del(key); // single-use token
   return { message: "Password reset successfully. You can now log in." };
 }
 
@@ -312,122 +289,78 @@ export async function getMe(userId) {
     where: { id: userId },
     include: {
       merchantProfile: {
-        select: { id: true, businessName: true, pickupAddress: true },
+        select: { id: true, businessName: true, pickupAddress: true, isEmailVerified: true },
       },
       riderProfile: {
-        select: {
-          id: true,
-          isVerified: true,
-          isOnline: true,
-          vehicleTypeId: true,
-        },
+        select: { id: true, isVerified: true, isOnline: true, vehicleTypeId: true, isEmailVerified: true },
       },
     },
   });
 
-  if (!user || !user.isActive) {
-    throw { status: 401, message: "User not found or deactivated." };
-  }
+  if (!user) throw new AppError("User not found.", 404);
 
-  return sanitizeUser(user);
+  const profile = user.role === "RIDER" ? user.riderProfile : user.merchantProfile;
+
+  return {
+    id:              user.id,
+    email:           user.email,
+    fullName:        user.fullName,
+    phoneNumber:     user.phoneNumber,
+    role:            user.role,
+    isActive:        user.isActive,
+    isEmailVerified: profile?.isEmailVerified ?? false,
+    profile,
+  };
 }
-// ─── Create Staff (Admin or Dispatcher) ──────────────────────────────────────
-// Only called by an existing ADMIN via POST /api/admin/staff
-// No public registration — accounts are created internally
 
-export async function createStaff({
-  name,
-  email,
-  phone,
-  password,
-  role,
-  createdByUserId,
-}) {
-  // Only ADMIN and DISPATCHER roles allowed through this path
-  if (!["ADMIN", "DISPATCHER"].includes(role)) {
+// ─── Staff ────────────────────────────────────────────────────────────────────
+
+export async function createStaff({ name, email, phone, password, role, createdByUserId }) {
+  if (!["ADMIN", "DISPATCHER"].includes(role))
     throw new AppError("Invalid staff role. Must be ADMIN or DISPATCHER.", 400);
-  }
 
-  // Check duplicates
   const existing = await prisma.user.findFirst({
     where: { OR: [{ email }, { phoneNumber: phone }] },
   });
   if (existing) {
     throw new AppError(
-      existing.email === email
-        ? "Email already registered."
-        : "Phone number already registered.",
+      existing.email === email ? "Email already registered." : "Phone number already registered.",
       409,
     );
   }
 
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-
   const user = await prisma.user.create({
-    data: {
-      fullName: name,
-      email,
-      phoneNumber: phone,
-      passwordHash,
-      role,
-      isActive: true,
-    },
+    data: { fullName: name, email, phoneNumber: phone, passwordHash, role, isActive: true },
   });
 
-  console.log(
-    `[Auth] Staff created: ${role} — ${email} (by userId: ${createdByUserId})`,
-  );
-
-  // Return user without token — staff accounts are not auto-logged in
-  // They use the normal /login page
+  console.log(`[Auth] Staff created: ${role} — ${email} (by userId: ${createdByUserId})`);
   return sanitizeUser(user);
 }
-
-// ─── Toggle staff active status ──────────────────────────────────────────────
 
 export async function toggleStaffStatus(targetUserId, adminUserId) {
   const user = await prisma.user.findUnique({ where: { id: targetUserId } });
   if (!user) throw new AppError("User not found.", 404);
 
-  // Prevent admin from deactivating themselves
-  if (targetUserId === adminUserId) {
+  if (targetUserId === adminUserId)
     throw new AppError("You cannot deactivate your own account.", 400);
-  }
 
-  // Only staff roles can be toggled this way
-  if (!["ADMIN", "DISPATCHER"].includes(user.role)) {
-    throw new AppError(
-      "Use the verify module to manage riders and merchants.",
-      400,
-    );
-  }
+  if (!["ADMIN", "DISPATCHER"].includes(user.role))
+    throw new AppError("Use the verify module to manage riders and merchants.", 400);
 
   return prisma.user.update({
     where: { id: targetUserId },
     data: { isActive: !user.isActive },
-    select: {
-      id: true,
-      fullName: true,
-      email: true,
-      role: true,
-      isActive: true,
-    },
+    select: { id: true, fullName: true, email: true, role: true, isActive: true },
   });
 }
-
-// ─── List all staff ───────────────────────────────────────────────────────────
 
 export async function getStaffList() {
   return prisma.user.findMany({
     where: { role: { in: ["ADMIN", "DISPATCHER"] } },
     select: {
-      id: true,
-      fullName: true,
-      email: true,
-      phoneNumber: true,
-      role: true,
-      isActive: true,
-      createdAt: true,
+      id: true, fullName: true, email: true,
+      phoneNumber: true, role: true, isActive: true, createdAt: true,
     },
     orderBy: { createdAt: "desc" },
   });

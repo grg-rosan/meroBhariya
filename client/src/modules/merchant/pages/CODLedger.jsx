@@ -1,24 +1,12 @@
 import { Wallet, ArrowDownLeft, Clock, AlertTriangle } from 'lucide-react';
 import { useCODLedger } from '../hooks/useMerchant';
-import StatCard from '../../shared/components/StatCard';
+import StatCard from '../../../shared/components/StatCard';
 
-const MOCK_SUM = { totalCollected:284600, remitted:200400, pending:84200, inDispute:0 };
-const MOCK_REM = [
-  { date:'12 Apr', ref:'REM-0041', amount:45200, method:'Bank transfer', status:'SETTLED' },
-  { date:'9 Apr',  ref:'REM-0040', amount:38700, method:'eSewa',         status:'SETTLED' },
-  { date:'6 Apr',  ref:'REM-0039', amount:84200, method:'Bank transfer', status:'PENDING' },
-  { date:'1 Apr',  ref:'REM-0038', amount:32500, method:'eSewa',         status:'SETTLED' },
-];
-const MOCK_COD = [
-  { trackingNumber:'PTR-2838', receiverName:'Sita Rai',    codAmount:900,  collectedAt:null },
-  { trackingNumber:'PTR-2840', receiverName:'Priya Thapa', codAmount:1800, collectedAt:null },
-  { trackingNumber:'PTR-2841', receiverName:'Aarav Shah',  codAmount:2400, collectedAt:'12 Apr 10:02 AM' },
-  { trackingNumber:'PTR-2837', receiverName:'Manish KC',   codAmount:5200, collectedAt:'9 Apr 3:14 PM' },
-];
+
 
 export default function CODLedger() {
   const { data } = useCODLedger();
-  const sum  = data?.summary ?? MOCK_SUM;
+  const sum  = data?.summary ?? [];
   const rems = data?.remittances ?? MOCK_REM;
 
   return (

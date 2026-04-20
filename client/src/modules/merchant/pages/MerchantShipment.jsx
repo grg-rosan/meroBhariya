@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Search, Plus, Eye, RefreshCw } from 'lucide-react';
 import { useShipments } from '../hooks/useMerchant';
-import StatusBadge from '../../shared/components/StatusBadge';
+import StatusBadge from '../../../shared/components/StatusBadge';
 
 const TABS = [
   { value:'',                 label:'All' },

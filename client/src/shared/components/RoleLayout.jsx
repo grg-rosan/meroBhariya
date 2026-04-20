@@ -5,7 +5,7 @@ import { useAuth } from "../../modules/auth/AuthContext";
 
 export default function RoleLayout({ role, nav, accentClass, user }) {
   const navigate = useNavigate();
-  const { logout, changePassword } = useAuth();
+  const { logout, } = useAuth();
 
   const handleLogout = async() => {
     try{
@@ -21,7 +21,6 @@ export default function RoleLayout({ role, nav, accentClass, user }) {
   }
  
 
-  const handleResetPassword = () => {};
 
   return (
     <div className="flex h-screen bg-zinc-950 font-['DM_Sans',sans-serif] overflow-hidden">

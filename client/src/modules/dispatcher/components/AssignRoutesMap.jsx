@@ -6,7 +6,7 @@
 
 import { useRef, useEffect, useState } from 'react';
 import { Zap, UserCheck, MapPin } from 'lucide-react';
-import { useMapbox } from '../../shared/hooks/useMapbox';
+import {useMapbox} from "../../../shared/hooks/useMapbox"
 import { useAssignRoute } from '../hooks/useDispatcher';
 import { useAPI } from '../../shared/hooks/useAPI';
 

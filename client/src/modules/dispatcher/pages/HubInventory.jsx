@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Search, RefreshCw, Boxes } from 'lucide-react';
 import { useHubInventory } from '../hooks/useDispatcher';
-import StatusBadge from '../../shared/components/StatusBadge';
-import StatCard from '../../shared/components/StatCard';
+import StatusBadge from '../../../shared/components/StatusBadge';
+import StatCard from '../../../shared/components/StatCard';
 
 const MOCK_STATS = { total: 134, unassigned: 47, assigned: 68, outForDelivery: 19 };
 const MOCK_ITEMS = [
@@ -20,8 +20,8 @@ const ZONES = ['All zones', 'Lalitpur', 'Bhaktapur', 'Kirtipur', 'KTM East', 'Ka
 
 export default function HubInventory() {
   const { data, loading, refetch } = useHubInventory();
-  const stats = data?.stats ?? MOCK_STATS;
-  const items = data?.items ?? MOCK_ITEMS;
+  const stats = data?.stats ?? [];
+  const items = data?.items ?? [];
 
   const [search, setSearch]   = useState('');
   const [zone, setZone]       = useState('All zones');

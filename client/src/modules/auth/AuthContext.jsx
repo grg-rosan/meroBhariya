@@ -1,12 +1,19 @@
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import { authAPI } from "../../shared/services/authService";
+import { useToast } from "../../shared/context/ToastContext";
+
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
+  const toast = useToast();
   useEffect(() => {
     authAPI
       .me()
@@ -18,19 +25,21 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false));
   }, []);
 
-  const login = useCallback(async (email, password) => {
-    setError(null);
-    try {
-      const { token, user } = await authAPI.login(email, password);
-      localStorage.setItem("token", token);
-      setUser(user);
-      console.log(user)
-      return user;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    }
-  }, []);
+  const login = useCallback(
+    async (email, password) => {
+      try {
+        const { token, user } = await authAPI.login(email, password);
+        localStorage.setItem("token", token);
+        setUser(user);
+        console.log(user);
+        return user;
+      } catch (e) {
+        toast({ message: e.message, type: "error" });
+        throw e;
+      }
+    },
+    [toast],
+  );
 
   const logout = useCallback(async () => {
     await authAPI.logout();
@@ -38,7 +47,7 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
-  const value = { user, loading, error, login, logout, setError };
+  const value = { user,setUser, loading, login, logout };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

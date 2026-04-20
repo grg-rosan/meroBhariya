@@ -1,29 +1,24 @@
 import { useState } from 'react';
 import { ScanLine, CheckCircle, XCircle } from 'lucide-react';
 import { useScanIn } from '../hooks/useDispatcher';
-
-const SCAN_LOG = [
-  { id:'PTR-2854', merchant:'Kathmandu Gifts', time:'12:10 PM', status:'IN_HUB' },
-  { id:'PTR-2853', merchant:'Nepal Mart',      time:'11:40 AM', status:'IN_HUB' },
-  { id:'PTR-2852', merchant:'Patan Crafts',    time:'11:22 AM', status:'IN_HUB' },
-  { id:'PTR-2851', merchant:'Himalayan Traders',time:'11:00 AM',status:'ASSIGNED' },
-  { id:'PTR-2849', merchant:'Craft Nepal',     time:'10:45 AM', status:'IN_HUB' },
-];
+import { useToast } from '../../../shared/context/ToastContext';
 
 export default function ScanIn() {
-  const { scanIn, loading, result, error } = useScanIn();
+  const { scanIn, loading } = useScanIn();
   const [input, setInput] = useState('');
   const [note, setNote]   = useState('');
-  const [log, setLog]     = useState(SCAN_LOG);
+  const [log, setLog]     = useState([]);
+  const toast = useToast()
 
   const handleScan = async () => {
     if (!input.trim()) return;
     try {
       const data = await scanIn(input.trim(), note);
       setLog(prev => [{ id: input.trim(), merchant: data?.merchant ?? 'Unknown', time: 'Just now', status: 'IN_HUB' }, ...prev]);
+      toast({ message: `${input.trim()} marked as IN_HUB.`, type: 'success' });
       setInput('');
       setNote('');
-    } catch (_) {}
+    } catch{}
   };
 
   return (
@@ -58,19 +53,6 @@ export default function ScanIn() {
             className="w-full px-3 py-2 text-sm bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-emerald-500" />
         </div>
       </div>
-
-      {/* Feedback */}
-      {result && (
-        <div className="bg-green-500/10 border border-green-700/50 rounded-xl p-3 mb-4 flex items-center gap-2">
-          <CheckCircle size={14} className="text-green-400" />
-          <span className="text-sm text-green-300">{result.trackingNumber ?? input} — marked as IN_HUB</span>
-        </div>
-      )}
-      {error && (
-        <div className="bg-red-500/10 border border-red-700/50 rounded-xl p-3 mb-4 flex items-center gap-2">
-          <XCircle size={14} className="text-red-400" /><span className="text-sm text-red-300">{error}</span>
-        </div>
-      )}
 
       {/* Today's scan log */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">

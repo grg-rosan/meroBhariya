@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { authAPI } from "../services/authService";
-export default function ForgotPasswordForm({ onOtpSent }) {
+export default function ForgotPasswordForm({ onSubmit}) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -8,15 +7,12 @@ export default function ForgotPasswordForm({ onOtpSent }) {
 
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!isValidEmail) return;
     setLoading(true);
     setError(null);
     try {
-      await authAPI.forgotPassword(email.trim());
-      setSent(true);
-      onOtpSent?.(email.trim());
+      await onSubmit(email);
     } catch (err) {
       setError(err.message);
     } finally {

@@ -1,5 +1,5 @@
 import { LayoutDashboard, Package, Upload, Wallet, FileText } from 'lucide-react';
-import RoleLayout from '../../shared/components/RoleLayout';
+import RoleLayout from '../../../shared/components/RoleLayout';
 
 const NAV = [
   { to: '/merchant/dashboard',   label: 'Dashboard',   icon: LayoutDashboard },

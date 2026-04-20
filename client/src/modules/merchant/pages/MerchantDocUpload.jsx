@@ -11,7 +11,7 @@ import {
   Button,
   ErrorAlert,
   InfoBanner,
-} from "../../../../shared/ui/porter-ui";
+} from "../../../shared/ui/porter-ui";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 

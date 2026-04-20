@@ -1,9 +1,7 @@
 // src/admin/staff/components/CreateStaffModal.jsx
 import { useState } from 'react';
 import { X, Eye, EyeOff, Shield, Radio } from 'lucide-react';
-// import { useCreateStaff } from '../hooks/useStaff';
-import {useCreateStaff} from "../../hooks/useStaff.js"
-
+import { useCreateStaff } from '../../hooks/useStaff';
 export default function CreateStaffModal({ onClose, onCreate }) {
   const { create, loading, error, clearError } = useCreateStaff();
   const [showPass, setShowPass] = useState(false);

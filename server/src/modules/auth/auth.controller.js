@@ -17,83 +17,50 @@ export const loginHandler = catchAsync(async (req, res) => {
 
 // ─── POST /api/auth/register/rider ───────────────────────────────────────────
 
-export const registerRiderHandler = catchAsync(async (req, res) => {
-  const { name, email, phone, password, vehicleType, plateNumber, address } =
-    req.body;
-  const missing = [
-    "name",
-    "email",
-    "phone",
-    "password",
-    "vehicleType",
-    "plateNumber",
-    "address",
-  ].filter((k) => !req.body[k]);
-  if (missing.length) {
-    throw AppError(`Missing fields: ${missing.join(", ")}`, 400);
-  }
-  const result = await authService.registerRider({
-    name,
-    email,
-    phone,
-    password,
-    vehicleType,
-    plateNumber,
-    address,
-  });
+export const initiateRegistrationHandler = catchAsync(async (req, res) => {
+  const { role, ...payload } = req.body;
+  if (!role) throw new AppError("Role is required.", 400);
+  const result = await authService.initiateRegistration(role, payload);
+  return res.status(200).json(result);
+});
+
+export const completeRegistrationHandler = catchAsync(async (req, res) => {
+  const { email, otp } = req.body;
+  const missing = ["email", "otp"].filter(k => !req.body[k]);
+  if (missing.length) throw new AppError(`Missing: ${missing.join(", ")}`, 400);
+  const result = await authService.completeRegistration(email, otp);
   return res.status(201).json(result);
 });
 
-// ─── POST /api/auth/register/merchant ────────────────────────────────────────
-
-export const registerMerchantHandler = catchAsync(async (req, res) => {
-  const { name, email, phone, password, businessName, address, panNumber } =
-    req.body;
-  const missing = [
-    "name",
-    "email",
-    "phone",
-    "password",
-    "businessName",
-    "address",
-  ].filter((k) => !req.body[k]);
-  if (missing.length) {
-    throw AppError(`Missing fields: ${missing.join(", ")}`, 400);
-  }
-  const result = await authService.registerMerchant({
-    name,
-    email,
-    phone,
-    password,
-    businessName,
-    address,
-    panNumber,
-  });
-  return res.status(201).json(result);
+export const resendRegistrationOtpHandler = catchAsync(async (req, res) => {
+  const { email } = req.body;
+  if (!email) throw new AppError("Email is required.", 400);
+  const result = await authService.resendRegistrationOtp(email);
+  return res.status(200).json(result);
 });
-
   // ─── POST /api/auth/otp/send ─────────────────────────────────────────────────
 
   export const sendOtpHandler = catchAsync(async (req, res) => {
-    const { userId, email } = req.body;
-    const missing = ["userId", "email"].filter((k) => !req.body[k]);
-    if (missing.length)
-      throw new AppError(`Missing fields: ${missing.join(", ")}`, 400);
+    const {  email } = req.body;
+ if (!email) throw new AppError("Email is required.", 400);
 
-    const result = await authService.sendOtp(userId, email);
+ const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) throw new AppError("User not found.", 404);
+
+    const result = await authService.sendOtp(user.id, email);
     return res.status(200).json(result);
   });
 
   // ─── POST /api/auth/otp/verify ───────────────────────────────────────────────
 
   export const verifyOtpHandler = catchAsync(async (req, res) => {
-    const { userId, otp } = req.body;
+    const { email, otp } = req.body;
 
-    const missing = ["userId", "otp"].filter((k) => !req.body[k]);
+    const missing = ["email", "otp"].filter((k) => !req.body[k]);
     if (missing.length)
       throw new AppError(`Missing fields: ${missing.join(", ")}`, 400);
 
-    const result = await authService.verifyOtp(userId, otp);
+    const result = await authService.verifyOtp(user.id, otp);
     return res.status(200).json(result);
   });
 
@@ -101,6 +68,7 @@ export const registerMerchantHandler = catchAsync(async (req, res) => {
 
   export const forgotPasswordHandler = catchAsync(async (req, res) => {
     const { email } = req.body;
+    console.log(email)
     if (!email) throw new AppError("Email is required.", 400);
 
     const result = await authService.forgotPassword(email);
@@ -110,13 +78,13 @@ export const registerMerchantHandler = catchAsync(async (req, res) => {
   // ─── POST /api/auth/password/reset ───────────────────────────────────────────
 
   export const  resetPasswordHandler = catchAsync(async (req, res) => {
-    const { token, newPassword } = req.body;
+    const { email,code, newPassword } = req.body;
 
     const missing = ["token", "newPassword"].filter((k) => !req.body[k]);
     if (missing.length)
       throw new AppError(`Missing fields: ${missing.join(", ")}`, 400);
 
-    const result = await authService.resetPassword(token, newPassword);
+    const result = await authService.resetPassword(code, newPassword);
     return res.status(200).json(result);
   });
 

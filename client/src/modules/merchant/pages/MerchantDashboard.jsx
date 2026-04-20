@@ -1,7 +1,7 @@
 import { Package, TrendingUp, Wallet, AlertCircle, RefreshCw } from 'lucide-react';
 import { useMerchantDashboard, useShipments } from '../hooks/useMerchant';
-import StatCard from '../../shared/components/StatCard';
-import StatusBadge from '../../shared/components/StatusBadge';
+import StatCard from '../../../shared/components/StatCard';
+import StatusBadge from '../../../shared/components/StatusBadge';
 
 const MOCK_STATS = { activeShipments: 47, deliveredToday: 23, codPending: 84200, failedToday: 3, week: 87, month: 91, allTime: 89 };
 const MOCK_RECENT = [

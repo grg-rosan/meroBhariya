@@ -1,6 +1,7 @@
 // src/admin/hooks/useStaff.js
-import { useState, useEffect } from "react";
+import { useState} from "react";
 import { useAPI, apiPost, apiPatch } from "../../../shared/hooks/useApi";
+import { useToast } from "../../../shared/context/ToastContext";
 
 // ─── Fetch staff list ─────────────────────────────────────────────────────────
 
@@ -13,38 +14,38 @@ export function useStaffList() {
 
 export function useCreateStaff() {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
+const toast = useToast();
   const create = async (payload) => {
     setLoading(true);
-    setError(null);
     try {
       const res = await apiPost("/api/admin/staff", payload);
       return res;
     } catch (e) {
-      const msg =
-        e.response?.data?.message ?? e.message ?? "Failed to create staff.";
-      setError(msg);
+ toast({ message: e.message, type: "error" });  
       throw e;
     } finally {
       setLoading(false);
     }
   };
 
-  return { create, loading, error, clearError: () => setError(null) };
+  return { create, loading, };
 }
 
 // ─── Toggle staff active status ───────────────────────────────────────────────
 
 export function useToggleStaff() {
   const [loading, setLoading] = useState(null); // holds userId being toggled
-
+  const toast = useToast();
   const toggle = async (userId) => {
     setLoading(userId);
     try {
       const res = await apiPatch(`/api/admin/staff/${userId}/toggle`);
       return res;
-    } finally {
+    } 
+    catch(e){
+      toast({ message: e.message, type: "error" });
+      throw e;
+    }finally {
       setLoading(null);
     }
   };
@@ -56,13 +57,11 @@ export function useToggleStaff() {
 // Wraps useStaffList with optimistic create + toggle so pages don't re-fetch
 
 export function useStaffManager() {
-  const { staff, loading, error } = useStaffList();
+  const { staff, loading, refetch } = useStaffList();
+  const {create}  = useCreateStaff();
   const { toggle, loading: toggling } = useToggleStaff();
   const [local, setLocal] = useState(null);
 
-  useEffect(() => {
-    if (staff.length) setLocal(staff);
-  }, [staff]);
 
   const list = local ?? staff;
 
@@ -86,10 +85,11 @@ export function useStaffManager() {
     }
   };
 
-  const handleCreate = (newMember) => {
+  const handleCreate = async (payload) => {
+    const newMember = await create(payload);
     setLocal((prev) => [newMember, ...(prev ?? [])]);
+    return newMember;
   };
-
   const counts = {
     total: list.length,
     admins: list.filter((m) => m.role === "ADMIN").length,
@@ -97,5 +97,5 @@ export function useStaffManager() {
     active: list.filter((m) => m.isActive).length,
   };
 
-  return { list, loading, error, counts, toggling, handleToggle, handleCreate };
+  return { list, loading, counts, toggling, handleToggle, handleCreate, refetch };
 }

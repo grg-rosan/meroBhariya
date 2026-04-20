@@ -1,9 +1,10 @@
 // src/auth/ProtectedRoute.jsx
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthContext";
-import { ROLE_HOME } from "../shared/constants/roles";
+import {ROLE_HOME} from "../../shared/constants/roles"
 
-export default function ProtectedRoute({ allowedRoles = [] }) {
+
+export default function ProtectedRoute({ allowedRoles = [] ,requireVerified = true}) {
   const { user, loading } = useAuth();
   const location = useLocation();
 
@@ -11,6 +12,9 @@ export default function ProtectedRoute({ allowedRoles = [] }) {
 
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  if(requireVerified && !user.isEmailVerified){
+    return <Navigate to="/verify-email" state={{ from: location }} replace />;
   }
 
   if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
@@ -20,13 +24,11 @@ export default function ProtectedRoute({ allowedRoles = [] }) {
   return <Outlet />;
 }
 
-// ── Add this ──────────────────────────────────────────────────────────────────
-// Wraps public-only routes (/login, /register)
-// If user is already logged in → send them to their dashboard
 export function PublicOnlyRoute() {
   const { user, loading } = useAuth();
 
   if (loading) return <PageLoader />;
+  if (user && !user.isEmailVerified) return <Outlet />;
   if (user)    return <Navigate to={ROLE_HOME[user.role] ?? "/"} replace />;
 
   return <Outlet />;

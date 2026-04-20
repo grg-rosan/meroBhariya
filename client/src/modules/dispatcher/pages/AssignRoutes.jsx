@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { CheckSquare, Square, Zap, UserCheck } from 'lucide-react';
 import { useAssignRoute, useAvailableRiders } from '../hooks/useDispatcher';
-import StatusBadge from '../../shared/components/StatusBadge';
+import { useToast } from '../../../shared/context/ToastContext';
 
 const UNASSIGNED = [
   { trackingNumber:'PTR-2838', merchant:'Himalayan Traders', destination:'Patan-7',     weight:0.5, zone:'Lalitpur' },
@@ -20,14 +20,14 @@ const MOCK_RIDERS = [
 ];
 
 export default function AssignRoutes() {
-  const { assign, loading, error } = useAssignRoute();
+  const { assign, loading,} = useAssignRoute();
   const { data }                   = useAvailableRiders();
+  const toast = useToast();
 
   const [selected, setSelected]   = useState(new Set());
   const [riderId, setRiderId]      = useState('');
-  const [success, setSuccess]      = useState(false);
 
-  const riders    = data?.riders ?? MOCK_RIDERS;
+  const riders    = data?.riders ?? [];
   const selectedR = riders.find(r => r.id === riderId);
 
   const toggle = (id) => setSelected(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
@@ -37,10 +37,11 @@ export default function AssignRoutes() {
     if (!riderId || selected.size === 0) return;
     try {
       await assign([...selected], riderId);
-      setSuccess(true);
-      setSelected(new Set());
-      setTimeout(() => setSuccess(false), 3000);
-    } catch (_) {}
+   toast({
+        message: `${selected.size} package(s) assigned to ${selectedR?.name}.`,
+        type: 'success',
+      });      setSelected(new Set());
+    } catch {}
   };
 
   const totalWeight = UNASSIGNED.filter(p => selected.has(p.trackingNumber)).reduce((s, p) => s + p.weight, 0);
@@ -58,15 +59,6 @@ export default function AssignRoutes() {
           Assign {selected.size > 0 ? `(${selected.size})` : ''} to rider
         </button>
       </div>
-
-      {success && (
-        <div className="bg-green-500/10 border border-green-700/50 rounded-xl p-3 mb-4 text-sm text-green-300 flex items-center gap-2">
-          <UserCheck size={14} /> Packages assigned successfully to {selectedR?.name}
-        </div>
-      )}
-      {error && (
-        <div className="bg-red-500/10 border border-red-700/50 rounded-xl p-3 mb-4 text-sm text-red-300">{error}</div>
-      )}
 
       <div className="grid lg:grid-cols-3 gap-4">
         {/* Package list */}

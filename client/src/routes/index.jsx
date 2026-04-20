@@ -6,13 +6,16 @@ import ProtectedRoute, {
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
 import RiderDocumentUpload from "../modules/rider/pages/RiderDocUpload";
-import MerchantDocumentUpload from "../modules/admin/merchant/pages/MerchantDocUpload";
+import MerchantDocumentUpload from "../modules/merchant/pages/MerchantDocUpload";
 import { adminRoutes } from "../modules/admin/routes";
-import { merchantRoutes } from "../modules/admin/merchant/route";
+import { merchantRoutes } from "../modules/merchant/route";
 import { riderRoutes } from "../modules/rider/routes";
 import { dispatcherRoutes } from "../modules/dispatcher/routes";
 import LandingPage from "../pages/landing/LandingPage";
 import RootLayout from "../shared/layouts/RootLayout";
+import ForgotPasswordFlow from "../modules/auth/ForgotPasswordFlow";
+import VerifyEmailPage from "../modules/auth/VerifyEmailPage";
+
 
 function protect(allowedRoles, routeGroup) {
   return {
@@ -34,9 +37,13 @@ export const router = createBrowserRouter([
           { path: "login", element: <LoginPage /> },
           { path: "register", element: <RegisterPage /> },
           { path: "register/:role", element: <RegisterPage /> },
+          { path: "password/forgot", element: <ForgotPasswordFlow /> },
         ],
       },
-
+      {
+        element: <ProtectedRoute requireVerified={false} />,
+        children: [{ path: "verify-email", element: <VerifyEmailPage /> }],
+      },
       {
         element: <ProtectedRoute allowedRoles={["RIDER"]} />,
         children: [

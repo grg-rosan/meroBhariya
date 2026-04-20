@@ -1,12 +1,6 @@
 import { AlertOctagon, Clock, Zap, Phone } from 'lucide-react';
 import { useStuckPackages } from '../hooks/useDispatcher';
 
-const MOCK = [
-  { trackingNumber:'PTR-2801', merchant:'Patan Crafts',      destination:'Bhaktapur',   hoursInHub:38, weight:1.4, merchantPhone:'9841111001', reason:'No rider available for zone' },
-  { trackingNumber:'PTR-2789', merchant:'Nepal Mart',        destination:'Kirtipur',    hoursInHub:29, weight:0.9, merchantPhone:'9841111002', reason:'Address unclear' },
-  { trackingNumber:'PTR-2792', merchant:'Himalayan Traders', destination:'Lalitpur-14', hoursInHub:26, weight:2.3, merchantPhone:'9841111003', reason:'Rider rejected — weight limit' },
-  { trackingNumber:'PTR-2798', merchant:'Craft Nepal',       destination:'Banepa',      hoursInHub:25, weight:3.1, merchantPhone:'9841111004', reason:'Out-of-zone — no route assigned' },
-];
 
 function urgencyColor(hrs) {
   if (hrs >= 36) return { dot: 'bg-red-500', text: 'text-red-400', bg: 'bg-red-500/10' };
@@ -16,7 +10,7 @@ function urgencyColor(hrs) {
 
 export default function StuckPackages() {
   const { data, loading } = useStuckPackages();
-  const packages = data?.stuck ?? MOCK;
+  const packages = data?.stuck ?? [];
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
