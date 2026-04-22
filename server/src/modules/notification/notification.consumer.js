@@ -18,6 +18,10 @@ export async function startNotificationConsumers(socketIO) {
 
 async function consumeMerchantNotifications() {
   const ch = getChannel();
+  if (!ch) {
+    console.warn("[RabbitMQ] Cannot start consumer: Channel is null.");
+    return;
+  }
 
   await ch.consume(
     QUEUE.MERCHANT_NOTIFICATIONS,
@@ -25,7 +29,6 @@ async function consumeMerchantNotifications() {
       if (!msg) return;
       try {
         const payload = JSON.parse(msg.content.toString());
-        // payload.merchantUserId is the User.id (not MerchantProfile.id)
         emitToUser(payload.merchantUserId, payload.event, payload);
         ch.ack(msg);
       } catch (err) {
@@ -41,14 +44,16 @@ async function consumeMerchantNotifications() {
 
 async function consumeRiderNotifications() {
   const ch = getChannel();
-
+  if (!ch) {
+    console.warn("[RabbitMQ] Cannot start consumer: Channel is null.");
+    return;
+  }
   await ch.consume(
     QUEUE.RIDER_NOTIFICATIONS,
     (msg) => {
       if (!msg) return;
       try {
         const payload = JSON.parse(msg.content.toString());
-        // payload.riderUserId is the User.id (not RiderProfile.id)
         emitToUser(payload.riderUserId, payload.event, payload);
         ch.ack(msg);
       } catch (err) {

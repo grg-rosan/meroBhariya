@@ -1,34 +1,46 @@
-// src/modules/merchant/shipment/shipment.controller.js
 import * as shipmentService from "./shipment.services.js";
 import { catchAsync } from "../../../utils/error/errorHandler.js";
 import { parsePagination } from "../../../utils/others/pagination.js";
+import AppError from "../../../utils/error/appError.js";
 
-// POST /api/merchant/shipments
 export const createShipment = catchAsync(async (req, res) => {
-  const merchantId = req.merchantProfileId; // set by merchantAuth middleware
-  const shipment   = await shipmentService.createShipment(merchantId, req.body,req.userId);
+  const merchantId = req.merchantProfileId;
+  const shipment   = await shipmentService.createShipment(merchantId, req.body, req.userId);
   return res.status(201).json(shipment);
 });
 
-// GET /api/merchant/shipments
 export const getMyShipments = catchAsync(async (req, res) => {
-  const merchantId          = req.merchantProfileId;
+  const merchantId            = req.merchantProfileId;
   const { page, limit, skip } = parsePagination(req.query);
-  const { status }           = req.query;
-  const result               = await shipmentService.getMerchantShipments(merchantId, { page, limit, skip, status });
+  const { status }            = req.query;
+  const result                = await shipmentService.getMerchantShipments(merchantId, { page, limit, skip, status });
   return res.json(result);
 });
 
-// GET /api/merchant/shipments/:id
 export const getShipmentById = catchAsync(async (req, res) => {
   const merchantId = req.merchantProfileId;
   const shipment   = await shipmentService.getShipmentDetail(req.params.id, merchantId);
   return res.json(shipment);
 });
 
-// DELETE /api/merchant/shipments/:id  (cancel before assignment)
 export const cancelShipment = catchAsync(async (req, res) => {
   const merchantId = req.merchantProfileId;
-  const shipment   = await shipmentService.cancelShipment(req.params.id, merchantId, req.user.id);
+  const shipment   = await shipmentService.cancelShipment(req.params.id, merchantId, req.userId);
   return res.json(shipment);
+});
+
+export const getCODLedger = catchAsync(async (req, res) => {
+  const merchantId = req.merchantProfileId;
+  const result     = await shipmentService.getMerchantCODLedger(merchantId);
+  return res.json(result);
+});
+
+export const bulkCreateShipments = catchAsync(async (req, res) => {
+  if (!req.file) throw AppError(400, 'No file uploaded.');
+  const result = await shipmentService.bulkCreateShipments(
+    req.merchantProfileId,
+    req.file,
+    req.userId
+  );
+  return res.status(201).json(result);
 });
