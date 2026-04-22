@@ -1,8 +1,11 @@
-// src/modules/dispatcher/dispatcher.service.js
-import { prisma }       from "../../config/db.config.js";
+import { prisma } from "../../config/db.config.js";
 import { publish } from "../../infrastructure/rabbitmq/publisher.js";
 import AppError from "../../utils/error/appError.js";
 import { buildPaginationMeta } from "../../utils/others/pagination.js";
+import {
+  publishRiderNotification,
+  publishMerchantNotification,
+} from "../../infrastructure/rabbitmq/publisher.js";
 
 // ─── Get pending shipments (dispatcher board) ─────────────────────────────────
 
@@ -12,13 +15,13 @@ export async function getPendingShipments({ page, limit, skip }) {
   const [shipments, total] = await Promise.all([
     prisma.shipment.findMany({
       skip,
-      take: limit,
+      take:  limit,
       where,
       include: {
         merchant:    { select: { businessName: true, pickupAddress: true } },
         vehicleType: { select: { name: true } },
       },
-      orderBy: { createdAt: "asc" }, // oldest first — FIFO
+      orderBy: { createdAt: "asc" }, // FIFO
     }),
     prisma.shipment.count({ where }),
   ]);
@@ -34,7 +37,6 @@ export async function getAvailableRiders(vehicleTypeId) {
       vehicleTypeId: Number(vehicleTypeId),
       isOnline:      true,
       isVerified:    true,
-      // Not already on an active shipment
       shipments: {
         none: {
           status: { in: ["ASSIGNED", "PICKED_UP", "IN_HUB", "OUT_FOR_DELIVERY"] },
@@ -49,80 +51,68 @@ export async function getAvailableRiders(vehicleTypeId) {
 
 // ─── Assign rider to shipment ─────────────────────────────────────────────────
 
-export async function assignRider(shipmentId, riderId, dispatcherUserId) {
-  // 1. Load shipment
+export async function assignRider(shipmentId, riderId, dispatcherId) {
   const shipment = await prisma.shipment.findUnique({
     where:   { id: shipmentId },
-    include: { merchant: { select: { userId: true, businessName: true } } },
+    include: { merchant: { select: { userId: true } } },
   });
-  if (!shipment)                     throw AppError(404, "Shipment not found.");
-  if (shipment.status !== "PENDING") throw AppError(400, `Shipment is already ${shipment.status}.`);
+  if (!shipment) throw new AppError("Shipment not found.", 404);
+  if (shipment.status !== "PENDING")
+    throw new AppError("Only PENDING shipments can be assigned.", 400);
 
-  // 2. Load rider + verify eligibility
-  const rider = await prisma.riderProfile.findUnique({
-    where:   { id: riderId },
-    include: { user: { select: { fullName: true, phoneNumber: true } } },
+  const rider = await prisma.riderProfile.findFirst({
+    where:   { id: riderId, isVerified: true, isOnline: true },
+    include: { user: { select: { id: true, fullName: true } } },
   });
-  if (!rider)            throw AppError(404, "Rider not found.");
-  if (!rider.isVerified) throw AppError(400, "Rider is not verified.");
-  if (!rider.isOnline)   throw AppError(400, "Rider is not online.");
+  if (!rider) throw new AppError("Rider not found or unavailable.", 404);
 
-  // 3. Use updateMany with null-guard to prevent race condition
-  //    If two dispatchers try to assign simultaneously, only one wins
-  const result = await prisma.shipment.updateMany({
-    where: { id: shipmentId, status: "PENDING", riderId: null },
-    data:  { status: "ASSIGNED", riderId },
-  });
-
-  if (result.count === 0) {
-    throw AppError(409, "Shipment was already assigned by another dispatcher.");
-  }
-
-  // 4. Log the assignment
-  await prisma.shipmentLog.create({
-    data: {
-      shipmentId,
-      status:      "ASSIGNED",
-      note:        `Assigned to ${rider.user.fullName} by dispatcher`,
-      updatedById: dispatcherUserId,
-    },
+  const updated = await prisma.$transaction(async (tx) => {
+    const s = await tx.shipment.update({
+      where: { id: shipmentId },
+      data:  { riderId, status: "ASSIGNED" },
+    });
+    await tx.shipmentLog.create({
+      data: {
+        shipmentId,
+        status:      "ASSIGNED",
+        note:        `Assigned to rider ${rider.user.fullName}`,
+        updatedById: dispatcherId,
+      },
+    });
+    return s;
   });
 
-  // 5. Publish assignment event → notification consumer delivers to rider + merchant
-  publish("shipment.assigned", {
-    shipmentId,
-    trackingNumber:  shipment.trackingNumber,
-    riderId:         rider.id,
-    riderUserId:     rider.userId,
-    riderName:       rider.user.fullName,
-    merchantId:      shipment.merchantId,
-    merchantUserId:  shipment.merchant.userId,
-    merchantName:    shipment.merchant.businessName,
-    deliveryAddress: shipment.deliveryAddress,
-    fareSnapshot:    shipment.fareSnapshot,
-    event:           "shipment:assigned", // Socket.IO event name for the consumer
+  publishRiderNotification({
+    riderUserId:     rider.user.id,
+    shipmentId:      updated.id,
+    trackingNumber:  updated.trackingNumber,
+    deliveryAddress: updated.deliveryAddress,
+    receiverName:    updated.receiverName,
+    receiverPhone:   updated.receiverPhone,
+    fareSnapshot:    updated.fareSnapshot,
   });
 
-  return prisma.shipment.findUnique({
-    where:   { id: shipmentId },
-    include: {
-      rider:    { include: { user: { select: { fullName: true, phoneNumber: true } } } },
-      merchant: { select: { businessName: true } },
-    },
+  publishMerchantNotification({
+    merchantUserId: shipment.merchant.userId,
+    shipmentId:     updated.id,
+    trackingNumber: updated.trackingNumber,
+    status:         "ASSIGNED",
+    message:        `Your shipment ${updated.trackingNumber} has been assigned to a rider.`,
   });
+
+  return updated;
 }
 
 // ─── Two-man hub handoff ──────────────────────────────────────────────────────
-// First dispatcher scans  → isHandoffPending = true
-// Second dispatcher scans → status moves to IN_HUB
 
 export async function scanHandoff(shipmentId, dispatcherUserId) {
-  const shipment = await prisma.shipment.findUnique({ where: { id: shipmentId } });
-  if (!shipment) throw AppError(404, "Shipment not found.");
-
-  if (shipment.status !== "PICKED_UP") {
-    throw AppError(400, "Shipment must be PICKED_UP before hub handoff.");
-  }
+  const shipment = await prisma.shipment.findUnique({
+    where:   { id: shipmentId },
+    include: { merchant: { select: { userId: true } } },
+  });
+  if (!shipment) throw new AppError("Shipment not found.", 404);
+  if (shipment.status !== "PICKED_UP")
+    throw new AppError("Shipment must be PICKED_UP before hub handoff.", 400);
 
   // First scan
   if (!shipment.isHandoffPending) {
@@ -130,22 +120,21 @@ export async function scanHandoff(shipmentId, dispatcherUserId) {
       where: { id: shipmentId },
       data:  { isHandoffPending: true, handoffInitiatorId: dispatcherUserId },
     });
-
-    return { message: "First scan recorded. Waiting for second dispatcher to confirm.", step: 1 };
+    return {
+      message: "First scan recorded. Waiting for second dispatcher to confirm.",
+      step:    1,
+    };
   }
 
   // Second scan — must be a different dispatcher
-  if (shipment.handoffInitiatorId === dispatcherUserId) {
-    throw AppError(400, "Two-man rule: a different dispatcher must perform the second scan.");
-  }
+  if (shipment.handoffInitiatorId === dispatcherUserId)
+    throw new AppError("Two-man rule: a different dispatcher must perform the second scan.", 400);
 
-  // Confirm handoff → move to IN_HUB
   const updated = await prisma.$transaction(async (tx) => {
     const s = await tx.shipment.update({
       where: { id: shipmentId },
       data:  { status: "IN_HUB", isHandoffPending: false, handoffInitiatorId: null },
     });
-
     await tx.shipmentLog.create({
       data: {
         shipmentId,
@@ -154,17 +143,24 @@ export async function scanHandoff(shipmentId, dispatcherUserId) {
         updatedById: dispatcherUserId,
       },
     });
-
     return s;
   });
 
   publish("shipment.status.updated", {
     shipmentId,
-    trackingNumber:  shipment.trackingNumber,
-    status:          "IN_HUB",
-    riderId:         shipment.riderId,
-    merchantId:      shipment.merchantId,
-    event:           "shipment:status_updated",
+    trackingNumber: shipment.trackingNumber,
+    status:         "IN_HUB",
+    riderId:        shipment.riderId,
+    merchantId:     shipment.merchantId,
+    event:          "shipment:status_updated",
+  });
+
+  publishMerchantNotification({
+    merchantUserId: shipment.merchant.userId,
+    shipmentId,
+    trackingNumber: shipment.trackingNumber,
+    status:         "IN_HUB",
+    message:        `Your shipment ${shipment.trackingNumber} has arrived at the hub.`,
   });
 
   return { message: "Handoff confirmed. Shipment is now IN_HUB.", step: 2, shipment: updated };
@@ -178,28 +174,24 @@ const VALID_TRANSITIONS = {
 };
 
 export async function updateShipmentStatus(shipmentId, newStatus, dispatcherUserId) {
-  const shipment = await prisma.shipment.findUnique({ where: { id: shipmentId } });
-  if (!shipment) throw AppError(404, "Shipment not found.");
+  const shipment = await prisma.shipment.findUnique({
+    where:   { id: shipmentId },
+    include: { merchant: { select: { userId: true } } },
+  });
+  if (!shipment) throw new AppError("Shipment not found.", 404);
 
   const allowed = VALID_TRANSITIONS[shipment.status];
-  if (!allowed || !allowed.includes(newStatus)) {
-    throw AppError(400, `Cannot transition from ${shipment.status} to ${newStatus}.`);
-  }
+  if (!allowed || !allowed.includes(newStatus))
+    throw new AppError(`Cannot transition from ${shipment.status} to ${newStatus}.`, 400);
 
   const updated = await prisma.$transaction(async (tx) => {
     const s = await tx.shipment.update({
       where: { id: shipmentId },
       data:  { status: newStatus },
     });
-
     await tx.shipmentLog.create({
-      data: {
-        shipmentId,
-        status:      newStatus,
-        updatedById: dispatcherUserId,
-      },
+      data: { shipmentId, status: newStatus, updatedById: dispatcherUserId },
     });
-
     return s;
   });
 
@@ -212,6 +204,13 @@ export async function updateShipmentStatus(shipmentId, newStatus, dispatcherUser
     event:          "shipment:status_updated",
   });
 
+  publishMerchantNotification({
+    merchantUserId: shipment.merchant.userId,
+    shipmentId,
+    trackingNumber: shipment.trackingNumber,
+    status:         newStatus,
+    message:        `Your shipment ${shipment.trackingNumber} is now ${newStatus}.`,
+  });
+
   return updated;
 }
-

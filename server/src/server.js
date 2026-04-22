@@ -8,6 +8,7 @@ import { assertQueues } from "./infrastructure/rabbitmq/queue.js";
 import { connectRabbitMQ } from "./infrastructure/rabbitmq/connection.js";
 import { startNotificationConsumers } from "./modules/notification/notification.consumer.js";
 import { getRedisClient } from "./config/redis.config.js";
+import { startDeliveryConsumer } from "./infrastructure/rabbitmq/consumers/delivery.consumer.js";
 
 const port = 3000;
 
@@ -30,6 +31,7 @@ initSocketHandlers(io);
 await connectRabbitMQ();
 await assertQueues();
 await startNotificationConsumers(io);
+await startDeliveryConsumer()
 await getRedisClient();
 
 server.listen(port, () => {

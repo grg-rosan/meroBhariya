@@ -1,51 +1,51 @@
-// src/modules/admin/settlements/settlements.service.js
 import { prisma } from "../../../config/db.config.js";
+import { buildPaginationMeta } from "../../../utils/others/pagination.js";
+import AppError from "../../../utils/error/appError.js";
+
 // ─── Rider settlement summary ─────────────────────────────────────────────────
-// Shows each rider's unremitted COD balance
 
 export async function getRiderSettlementSummary({ page = 1, limit = 20 } = {}) {
   const skip = (page - 1) * limit;
 
-  // Get all riders who have unremitted COD
-  const riders = await prisma.riderProfile.findMany({
-    skip,
-    take: limit,
-    where: {
-      shipments: {
-        some: {
-          transaction: { paymentType: "COD", isRemitted: false },
+  const [riders, total] = await Promise.all([
+    prisma.riderProfile.findMany({
+      skip,
+      take: limit,
+      where: {
+        shipments: {
+          some: {
+            transaction: { paymentType: "COD", isRemitted: false },
+          },
         },
       },
-    },
-    include: {
-      user: { select: { fullName: true, phoneNumber: true, email: true } },
-      shipments: {
-        where: {
-          transaction: { paymentType: "COD", isRemitted: false },
-        },
-        include: {
-          transaction: { select: { codAmount: true, isRemitted: true } },
-        },
-      },
-    },
-  });
-
-  const total = await prisma.riderProfile.count({
-    where: {
-      shipments: {
-        some: {
-          transaction: { paymentType: "COD", isRemitted: false },
+      include: {
+        user: { select: { fullName: true, phoneNumber: true, email: true } },
+        shipments: {
+          where: {
+            transaction: { paymentType: "COD", isRemitted: false },
+          },
+          include: {
+            transaction: { select: { codAmount: true, isRemitted: true } },
+          },
         },
       },
-    },
-  });
+    }),
+    prisma.riderProfile.count({
+      where: {
+        shipments: {
+          some: {
+            transaction: { paymentType: "COD", isRemitted: false },
+          },
+        },
+      },
+    }),
+  ]);
 
-  // Aggregate unremitted COD per rider
-  const summary = riders.map(rider => {
-    const unremittedTotal = rider.shipments.reduce((sum, s) => {
-      return sum + (s.transaction?.codAmount ?? 0);
-    }, 0);
-
+  const summary = riders.map((rider) => {
+    const unremittedTotal = rider.shipments.reduce(
+      (sum, s) => sum + (s.transaction?.codAmount ?? 0),
+      0,
+    );
     return {
       riderId:        rider.id,
       riderName:      rider.user.fullName,
@@ -56,7 +56,7 @@ export async function getRiderSettlementSummary({ page = 1, limit = 20 } = {}) {
     };
   });
 
-  return { summary, total, page, limit };
+  return { summary, ...buildPaginationMeta(total, page, limit) };
 }
 
 // ─── Rider settlement detail ──────────────────────────────────────────────────
@@ -66,7 +66,7 @@ export async function getRiderSettlementDetail(riderId) {
     where:   { id: riderId },
     include: { user: { select: { fullName: true, phoneNumber: true } } },
   });
-  if (!rider) throw { status: 404, message: "Rider not found." };
+  if (!rider) throw new AppError("Rider not found.", 404);
 
   const [pending, settled] = await Promise.all([
     prisma.transaction.findMany({
@@ -87,7 +87,6 @@ export async function getRiderSettlementDetail(riderId) {
       },
       orderBy: { createdAt: "asc" },
     }),
-
     prisma.transaction.findMany({
       where: {
         paymentType: "COD",
@@ -97,22 +96,22 @@ export async function getRiderSettlementDetail(riderId) {
       include: {
         shipment: {
           select: {
-            trackingNumber:  true,
-            receiverName:    true,
-            createdAt:       true,
+            trackingNumber: true,
+            receiverName:   true,
+            createdAt:      true,
           },
         },
       },
       orderBy: { remittedAt: "desc" },
-      take: 20, // last 20 settled for history
+      take: 20,
     }),
   ]);
 
-  const pendingTotal  = pending.reduce((s, t) => s + t.codAmount, 0);
-  const settledTotal  = settled.reduce((s, t) => s + t.codAmount, 0);
+  const pendingTotal = pending.reduce((s, t) => s + t.codAmount, 0);
+  const settledTotal = settled.reduce((s, t) => s + t.codAmount, 0);
 
   return {
-    rider:        { id: rider.id, name: rider.user.fullName, phone: rider.user.phoneNumber },
+    rider:               { id: rider.id, name: rider.user.fullName, phone: rider.user.phoneNumber },
     pendingTotal,
     settledTotal,
     pendingTransactions: pending,
@@ -130,7 +129,7 @@ export async function getShipmentLogs(shipmentId) {
       rider:    { select: { user: { select: { fullName: true } } } },
     },
   });
-  if (!shipment) throw { status: 404, message: "Shipment not found." };
+  if (!shipment) throw new AppError("Shipment not found.", 404);
 
   const logs = await prisma.shipmentLog.findMany({
     where:   { shipmentId },

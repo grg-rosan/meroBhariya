@@ -1,5 +1,5 @@
 import { Wallet, ArrowDownLeft, Clock, CheckCircle, XCircle, Truck, Package, RefreshCw } from 'lucide-react';
-import { useCODLedger } from '../hooks/useMerchant';
+import { useCODLedger } from '../hooks/useShipment';
 import StatCard from '../../../shared/components/StatCard';
 
 

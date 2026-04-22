@@ -2,8 +2,7 @@ import pkg from "@prisma/client";
 const { PrismaClient } = pkg;
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
-
-const DATABASE_URL = "postgresql://user:password@localhost:5433/meroBhariya";
+const DATABASE_URL = process.env.DATABASE_URL
 
 const pool = new pg.Pool({ connectionString: DATABASE_URL });
 const adapter = new PrismaPg(pool);

@@ -1,6 +1,7 @@
 import * as shipmentService from "./shipment.services.js";
 import { catchAsync } from "../../../utils/error/errorHandler.js";
 import { parsePagination } from "../../../utils/others/pagination.js";
+import AppError from "../../../utils/error/appError.js";
 
 export const createShipment = catchAsync(async (req, res) => {
   const merchantId = req.merchantProfileId;
@@ -32,4 +33,14 @@ export const getCODLedger = catchAsync(async (req, res) => {
   const merchantId = req.merchantProfileId;
   const result     = await shipmentService.getMerchantCODLedger(merchantId);
   return res.json(result);
+});
+
+export const bulkCreateShipments = catchAsync(async (req, res) => {
+  if (!req.file) throw AppError(400, 'No file uploaded.');
+  const result = await shipmentService.bulkCreateShipments(
+    req.merchantProfileId,
+    req.file,
+    req.userId
+  );
+  return res.status(201).json(result);
 });

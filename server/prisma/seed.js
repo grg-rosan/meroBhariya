@@ -28,6 +28,7 @@ async function main() {
         phoneNumber: "9800000000",
         role:        "ADMIN",
         isActive:    true,
+        isEmailVerified: true
       },
     });
     console.log(`[Seed] Super Admin created: ${admin.email}`);

@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Upload, FileSpreadsheet, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
-import { useBulkUpload } from '../hooks/useMerchant';
+import { useBulkUpload } from '../hooks/useShipment';
 
 const HISTORY = [
   { date:'14 Apr 2025', filename:'orders-apr14.csv',  total:52, processed:49, errors:3 },

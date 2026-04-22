@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Search, Plus, Eye, RefreshCw, X, Loader2, Package, AlertCircle } from "lucide-react";
-import { useShipments, useCreateShipment } from "../hooks/useMerchant";
-import StatusBadge from "../../shared/components/StatusBadge";
-
+import { useShipments, useCreateShipment } from "../hooks/useShipment";
+import StatusBadge from "../../../shared/components/StatusBadge";
 const ALL_TABS = [
   { value: "",                 label: "All" },
   { value: "PENDING",          label: "Pending" },

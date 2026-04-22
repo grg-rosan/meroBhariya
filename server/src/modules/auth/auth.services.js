@@ -13,10 +13,10 @@ const SALT_ROUNDS = 12;
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES = process.env.JWT_EXPIRES_IN || "7d";
 const RESET_TTL = 10 * 60;
-
 const OTP_TTL = 5 * 60;
 const RATE_LIMIT_TTL = 60 * 60;
 const MAX_OTP_TRIES = 3;
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function signToken(payload) {
@@ -24,7 +24,6 @@ function signToken(payload) {
 }
 
 function sanitizeUser(user) {
-  const profile = user.role === "RIDER" ? user.riderProfile : user.merchantProfile;
   return {
     id:              user.id,
     email:           user.email,
@@ -32,7 +31,7 @@ function sanitizeUser(user) {
     phoneNumber:     user.phoneNumber,
     role:            user.role,
     isActive:        user.isActive,
-    isEmailVerified: profile?.isEmailVerified ?? false,
+    isEmailVerified: user.isEmailVerified ?? false,
   };
 }
 
@@ -58,16 +57,15 @@ const ROLE_CREATORS = {
     return tx.user.create({
       data: {
         fullName: name, email, phoneNumber: phone, passwordHash, role: "RIDER",
+        isEmailVerified: true, // verified via OTP during registration
         riderProfile: {
           create: {
             vehicleTypeId: vehicleTypeRecord.id,
             licenseNumber: plateNumber,
             vehicleNumber: plateNumber,
-            isEmailVerified: true,
           },
         },
       },
-      include: { riderProfile: { select: { isEmailVerified: true } } },
     });
   },
 
@@ -75,16 +73,15 @@ const ROLE_CREATORS = {
     return tx.user.create({
       data: {
         fullName: name, email, phoneNumber: phone, passwordHash, role: "MERCHANT",
+        isEmailVerified: true, // verified via OTP during registration
         merchantProfile: {
           create: {
             businessName,
             panNumber: panNumber || null,
             pickupAddress: address,
-            isEmailVerified: true,
           },
         },
       },
-      include: { merchantProfile: { select: { isEmailVerified: true } } },
     });
   },
 };
@@ -92,13 +89,7 @@ const ROLE_CREATORS = {
 // ─── Login ────────────────────────────────────────────────────────────────────
 
 export async function login({ email, password }) {
-  const user = await prisma.user.findUnique({
-    where: { email },
-    include: {
-      riderProfile:    { select: { isEmailVerified: true } },
-      merchantProfile: { select: { isEmailVerified: true } },
-    },
-  });
+  const user = await prisma.user.findUnique({ where: { email } });
 
   if (!user || !user.isActive)
     throw new AppError("Invalid email or password", 401);
@@ -212,24 +203,10 @@ export async function verifyOtp(userId, inputOtp) {
 
   await redis.del(`otp:${userId}`);
 
-  const user = await prisma.user.findUnique({
+  await prisma.user.update({
     where: { id: userId },
-    select: { role: true },
+    data: { isEmailVerified: true },
   });
-  if (!user) throw new AppError("User not found.", 404);
-
-  // ← only update the correct profile, not both
-  if (user.role === "RIDER") {
-    await prisma.riderProfile.update({
-      where: { userId },
-      data: { isEmailVerified: true },
-    });
-  } else if (user.role === "MERCHANT") {
-    await prisma.merchantProfile.update({
-      where: { userId },
-      data: { isEmailVerified: true },
-    });
-  }
 
   return { message: "Email verified successfully." };
 }
@@ -289,10 +266,10 @@ export async function getMe(userId) {
     where: { id: userId },
     include: {
       merchantProfile: {
-        select: { id: true, businessName: true, pickupAddress: true, isEmailVerified: true },
+        select: { id: true, businessName: true, pickupAddress: true },
       },
       riderProfile: {
-        select: { id: true, isVerified: true, isOnline: true, vehicleTypeId: true, isEmailVerified: true },
+        select: { id: true, isVerified: true, isOnline: true, vehicleTypeId: true },
       },
     },
   });
@@ -308,7 +285,7 @@ export async function getMe(userId) {
     phoneNumber:     user.phoneNumber,
     role:            user.role,
     isActive:        user.isActive,
-    isEmailVerified: profile?.isEmailVerified ?? false,
+    isEmailVerified: user.isEmailVerified,
     profile,
   };
 }
@@ -331,7 +308,15 @@ export async function createStaff({ name, email, phone, password, role, createdB
 
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
   const user = await prisma.user.create({
-    data: { fullName: name, email, phoneNumber: phone, passwordHash, role, isActive: true },
+    data: {
+      fullName: name,
+      email,
+      phoneNumber: phone,
+      passwordHash,
+      role,
+      isActive: true,
+      isEmailVerified: true, // admin-created staff, no email verification needed
+    },
   });
 
   console.log(`[Auth] Staff created: ${role} — ${email} (by userId: ${createdByUserId})`);

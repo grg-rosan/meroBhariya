@@ -1,40 +1,35 @@
-<<<<<<< HEAD
-// src/modules/merchant/shipment/shipment.service.js
-import { prisma }       from "../../../config/db.config.js";
-import { publish} from "../../../infrastructure/rabbitmq/publisher.js";
-import { EXCHANGE } from "../../../infrastructure/rabbitmq/queue.js";
-import  AppError     from "../../../utils/error/appError.js";
-import { buildPaginationMeta } from "../../../utils/others/pagination.js";
-=======
 import { prisma } from "../../../config/db.config.js";
-import { publish } from "../../../infrastructure/rabbitmq/publisher.js";
-import { appError } from "../../../utils/errorHandler.js";
-import { buildPaginationMeta } from "../../../utils/pagination.js";
->>>>>>> origin/merchant
+import { buildPaginationMeta } from "../../../utils/others/pagination.js";
+import AppError from "../../../utils/error/appError.js";
+import { calculateFare, generateTrackingNumber } from "./shipment.helpers.js";
+import { parseExcelBuffer, validateRow } from "./shipment.excel.js";
+import { publishShipmentNew, publishShipmentCancelled } from "./shipment.events.js";
 
 export async function createShipment(merchantId, data, userId) {
-  const { receiverName, receiverPhone, deliveryAddress, vehicleTypeId, weight, isFragile, orderValue, codAmount, paymentType } = data;
+  const {
+    receiverName, receiverPhone, deliveryAddress,
+    vehicleTypeId, weight, isFragile, orderValue, codAmount, paymentType,
+  } = data;
+
   if (!receiverName || !receiverPhone || !deliveryAddress || !vehicleTypeId || !weight || !orderValue || !paymentType) {
-    throw AppError(400, "Missing required shipment fields.");
+    throw new AppError("Missing required shipment fields.", 400);
   }
+
   const vehicleType = await prisma.vehicleType.findFirst({
     where: { id: Number(vehicleTypeId), isActive: true },
     include: { fareConfig: true },
   });
-<<<<<<< HEAD
-  if (!vehicleType)            throw AppError(404, "Vehicle type not found or inactive.");
-  if (!vehicleType.fareConfig) throw AppError(400, `No fare config set for vehicle type: ${vehicleType.name}`);
-
-  // 3. Weight check
-=======
-  if (!vehicleType) throw appError(404, "Vehicle type not found or inactive.");
-  if (!vehicleType.fareConfig) throw appError(400, `No fare config set for vehicle type: ${vehicleType.name}`);
->>>>>>> origin/merchant
+  if (!vehicleType) throw new AppError("Vehicle type not found or inactive.", 404);
+  if (!vehicleType.fareConfig) throw new AppError(`No fare config set for vehicle type: ${vehicleType.name}`, 400);
   if (weight > vehicleType.maxWeightKg) {
-    throw AppError(400, `Package weight ${weight}kg exceeds max ${vehicleType.maxWeightKg}kg for ${vehicleType.name}.`);
+    throw new AppError(`Package weight ${weight}kg exceeds max ${vehicleType.maxWeightKg}kg for ${vehicleType.name}.`, 400);
   }
-  const fareSnapshot = calculateFare(vehicleType.fareConfig, { weight, isFragile: isFragile ?? false, codAmount: codAmount ?? 0, paymentType });
+
+  const fareSnapshot = calculateFare(vehicleType.fareConfig, {
+    weight, isFragile: isFragile ?? false, codAmount: codAmount ?? 0, paymentType,
+  });
   const trackingNumber = generateTrackingNumber();
+
   const shipment = await prisma.$transaction(async (tx) => {
     const newShipment = await tx.shipment.create({
       data: {
@@ -50,14 +45,8 @@ export async function createShipment(merchantId, data, userId) {
     });
     return newShipment;
   });
-  publish("shipment.new", {
-    shipmentId: shipment.id, trackingNumber: shipment.trackingNumber,
-    merchantId: shipment.merchantId, vehicleTypeId: shipment.vehicleTypeId,
-    vehicleTypeName: vehicleType.name, deliveryAddress: shipment.deliveryAddress,
-    weight: shipment.weight, isFragile: shipment.isFragile,
-    codAmount: shipment.codAmount, fareSnapshot: shipment.fareSnapshot,
-    paymentType, createdAt: shipment.createdAt,
-  });
+
+  publishShipmentNew(shipment, vehicleType, paymentType);
   return shipment;
 }
 
@@ -87,29 +76,15 @@ export async function getShipmentDetail(shipmentId, merchantId) {
       transaction: true,
     },
   });
-<<<<<<< HEAD
-
-  if (!shipment) throw AppError(404, "Shipment not found.");
-=======
-  if (!shipment) throw appError(404, "Shipment not found.");
->>>>>>> origin/merchant
+  if (!shipment) throw new AppError("Shipment not found.", 404);
   return shipment;
 }
 
 export async function cancelShipment(shipmentId, merchantId, userId) {
-<<<<<<< HEAD
-  const shipment = await prisma.shipment.findFirst({
-    where: { id: shipmentId, merchantId },
-  });
-
-  if (!shipment)                    throw AppError(404, "Shipment not found.");
-  if (shipment.status !== "PENDING") throw AppError(400, "Only PENDING shipments can be cancelled.");
-
-=======
   const shipment = await prisma.shipment.findFirst({ where: { id: shipmentId, merchantId } });
-  if (!shipment) throw appError(404, "Shipment not found.");
-  if (shipment.status !== "PENDING") throw appError(400, "Only PENDING shipments can be cancelled.");
->>>>>>> origin/merchant
+  if (!shipment) throw new AppError("Shipment not found.", 404);
+  if (shipment.status !== "PENDING") throw new AppError("Only PENDING shipments can be cancelled.", 400);
+
   const updated = await prisma.$transaction(async (tx) => {
     const s = await tx.shipment.update({ where: { id: shipmentId }, data: { status: "CANCELLED" } });
     await tx.shipmentLog.create({
@@ -117,10 +92,8 @@ export async function cancelShipment(shipmentId, merchantId, userId) {
     });
     return s;
   });
-  publish("shipment.cancelled", {
-    shipmentId: updated.id, trackingNumber: updated.trackingNumber,
-    merchantId: updated.merchantId, reason: "Cancelled by merchant",
-  });
+
+  publishShipmentCancelled(updated);
   return updated;
 }
 
@@ -130,26 +103,63 @@ export async function getMerchantCODLedger(merchantId) {
     include: { transaction: true, logs: { orderBy: { createdAt: "asc" } } },
     orderBy: { createdAt: "desc" },
   });
-  const totalCOD  = shipments.reduce((sum, s) => sum + s.codAmount, 0);
-  const collected = shipments.filter(s => s.status === "DELIVERED").reduce((sum, s) => sum + s.codAmount, 0);
-  const pending   = shipments.filter(s => s.status !== "DELIVERED" && s.status !== "CANCELLED").reduce((sum, s) => sum + s.codAmount, 0);
-  const remitted  = shipments.filter(s => s.transaction?.isRemitted).reduce((sum, s) => sum + s.codAmount, 0);
+  const totalCOD = shipments.reduce((sum, s) => sum + s.codAmount, 0);
+  const collected = shipments.filter((s) => s.status === "DELIVERED").reduce((sum, s) => sum + s.codAmount, 0);
+  const pending = shipments.filter((s) => s.status !== "DELIVERED" && s.status !== "CANCELLED").reduce((sum, s) => sum + s.codAmount, 0);
+  const remitted = shipments.filter((s) => s.transaction?.isRemitted).reduce((sum, s) => sum + s.codAmount, 0);
   return { shipments, totalCOD, collected, pending, remitted };
 }
 
-export function calculateFare(config, { weight, isFragile, codAmount, paymentType }) {
-  const distanceKm = 5;
-  let fare = config.baseFare + (config.perKmRate * distanceKm) + (config.perKgRate * weight);
-  if (isFragile) fare += config.fragileCharge;
-  if (paymentType === "COD") fare += codAmount * config.codChargeRate;
-  const hour = new Date().getHours();
-  if (hour >= 21 || hour < 6) fare += config.nightSurcharge;
-  return Math.max(fare, config.minFare);
-}
+export async function bulkCreateShipments(merchantId, file, userId) {
+  const rows = parseExcelBuffer(file.buffer);
 
-function generateTrackingNumber() {
-  const prefix = "MB";
-  const timestamp = Date.now().toString(36).toUpperCase();
-  const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `${prefix}-${timestamp}-${random}`;
+  const validationErrors = rows.flatMap((row) => {
+    const errs = validateRow(row);
+    return errs.length ? [{ row: row._rowIndex, errors: errs }] : [];
+  });
+  if (validationErrors.length) throw new AppError("Validation failed", 400);
+
+  const vehicleTypeIds = [...new Set(rows.map((r) => r.vehicleTypeId))];
+  const vehicleTypes = await prisma.vehicleType.findMany({
+    where: { id: { in: vehicleTypeIds }, isActive: true },
+    include: { fareConfig: true },
+  });
+  const vehicleTypeMap = Object.fromEntries(vehicleTypes.map((v) => [v.id, v]));
+
+  const missingTypes = vehicleTypeIds.filter((id) => !vehicleTypeMap[id]);
+  if (missingTypes.length) throw new AppError(`Invalid or inactive vehicleTypeIds: ${missingTypes.join(", ")}`, 400);
+
+  const created = await prisma.$transaction(async (tx) => {
+    const results = [];
+    for (const row of rows) {
+      const { _rowIndex, ...data } = row;
+      const vehicleType = vehicleTypeMap[data.vehicleTypeId];
+      if (data.weight > vehicleType.maxWeightKg) {
+        throw new AppError(`Row ${_rowIndex}: weight ${data.weight}kg exceeds max ${vehicleType.maxWeightKg}kg for ${vehicleType.name}`, 400);
+      }
+      const fareSnapshot = calculateFare(vehicleType.fareConfig, data);
+      const trackingNumber = generateTrackingNumber();
+      const shipment = await tx.shipment.create({
+        data: {
+          trackingNumber, merchantId, vehicleTypeId: data.vehicleTypeId,
+          receiverName: data.receiverName, receiverPhone: data.receiverPhone,
+          deliveryAddress: data.deliveryAddress, weight: data.weight,
+          isFragile: data.isFragile, orderValue: data.orderValue,
+          codAmount: data.codAmount, fareSnapshot, status: "PENDING",
+        },
+      });
+      await tx.shipmentLog.create({
+        data: { shipmentId: shipment.id, status: "PENDING", note: "Created via bulk upload", updatedById: userId },
+      });
+      results.push(shipment);
+    }
+    return results;
+  });
+
+  created.forEach((shipment, i) => publishShipmentNew(shipment, vehicleTypeMap[shipment.vehicleTypeId], rows[i].paymentType));
+
+  return {
+    total: created.length,
+    created: created.map((s) => ({ id: s.id, trackingNumber: s.trackingNumber, receiverName: s.receiverName, status: s.status })),
+  };
 }

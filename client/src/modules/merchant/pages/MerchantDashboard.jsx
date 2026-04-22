@@ -1,9 +1,8 @@
 import { Package, TrendingUp, Wallet, AlertCircle, RefreshCw } from 'lucide-react';
-import { useShipments } from '../hooks/useMerchant';
+import { useShipments } from '../hooks/useShipment';
 import { useAuth } from '../../auth/AuthContext';
-import StatCard from '../../shared/components/StatCard';
-import StatusBadge from '../../shared/components/StatusBadge';
-
+import StatCard from '../../../shared/components/StatCard';
+import StatusBadge from "../../../shared/components/StatusBadge"
 function Bar({ label, pct }) {
   return (
     <div className="mb-3 last:mb-0">

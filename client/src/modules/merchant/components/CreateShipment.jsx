@@ -9,7 +9,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Package, Loader2, ChevronRight, AlertCircle, MapPin } from 'lucide-react';
 import AddressAutocomplete from './AddressAutocomplete';
-import { useMapbox } from '../../../shared/hooks/useMapbox';
+import { useMapLibre } from '../../../shared/hooks/useMapLibre';
 import { apiPost } from '../../../shared/hooks/useApi';
 const VEHICLE_TYPES = [
   { id: 1, label: 'Bike (up to 20 kg)',        icon: '🏍️' },
@@ -37,7 +37,7 @@ export default function CreateShipment() {
 
   // Map for preview
   const mapContainerRef = useRef(null);
-  const { mapRef, upsertMarker, drawRoute,} = useMapbox(mapContainerRef, {
+  const { mapRef, upsertMarker, drawRoute,} = useMapLibre(mapContainerRef, {
     center: [85.314, 27.717],
     zoom: 11,
     style: 'mapbox://styles/mapbox/dark-v11',
@@ -80,7 +80,7 @@ export default function CreateShipment() {
           drawRoute('preview', [pickupLngLat, deliveryLngLat]);
 
           // Fit bounds
-          const bounds = new mapboxgl.LngLatBounds(pickupLngLat, deliveryLngLat);
+          const bounds = new maplibregl.LngLatBounds(pickupLngLat, deliveryLngLat);
           mapRef.current.fitBounds(bounds, { padding: 60 });
         }
       } catch (e) {

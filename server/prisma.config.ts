@@ -1,5 +1,4 @@
 import { defineConfig } from "prisma/config";
-
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
@@ -7,6 +6,6 @@ export default defineConfig({
     seed: "node prisma/seed.js",
   },
   datasource: {
-    url: "postgresql://user:password@localhost:5433/meroBhariya",
+    url: process.env.DATABASE_URL,
   },
 });

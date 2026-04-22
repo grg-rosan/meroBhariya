@@ -44,7 +44,8 @@
     "pg": "^8.20.0",
     "prisma": "^7.7.0",
     "redis": "^5.12.1",
-    "socket.io": "^4.8.3"
+    "socket.io": "^4.8.3",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
