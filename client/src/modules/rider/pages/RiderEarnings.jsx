@@ -1,6 +1,6 @@
 import { Banknote, TrendingUp, Package, Star } from "lucide-react";
 import { useRiderEarnings } from "../hooks/useRider";
-import StatCard from "../../../shared/components/StatCard";
+import StatCard from "../../../components/common/StatCard";
 
 const MOCK = { week: 6840, month: 24200, pending: 1240, totalDrops: 342 };
 const PAYOUTS = [

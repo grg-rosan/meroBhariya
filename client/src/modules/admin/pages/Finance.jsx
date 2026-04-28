@@ -5,7 +5,7 @@ import {
   usePendingCOD,
   useRiderSettlements,
 } from "../hooks/useAdmin";
-import StatCard from "../../../shared/components/StatCard";
+import StatCard from "../../../components/common/StatCard";
 
 function SkeletonRow({ cols }) {
   return (

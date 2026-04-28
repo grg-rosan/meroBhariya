@@ -116,6 +116,7 @@ model MerchantProfile {
   businessName    String
   panNumber       String?
   pickupAddress   String
+  isVerified      Boolean @default(false)
   location        Unsupported("geography(Point, 4326)")?
   documents       MerchantDocument[]
   shipments       Shipment[]

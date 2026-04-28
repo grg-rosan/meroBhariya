@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authAPI } from "../../shared/services/authService";
-import ForgotPasswordForm from "../../shared/components/ForgotPasswordForm";
-import VerifyOtpForm from "../../shared/components/VerifyOtpForm";
-import ResetPasswordForm from "../../shared/components/ResetPasswordForm";
-import { useToast } from "../../shared/context/ToastContext";
+import ForgotPasswordForm from "../../components/forms/ForgotPasswordForm";
+import VerifyOtpForm from "../../components/forms/VerifyOtpForm";
+import ResetPasswordForm from "../../components/forms/ResetPasswordForm";
+import { useToast } from "../../context/ToastContext";
 import { useAuth } from "./AuthContext";
 
 export default function ForgotPasswordFlow() {

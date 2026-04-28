@@ -6,6 +6,10 @@ import BulkUpload from './pages/BulkUpload';
 import CODLedger from './pages/CODLedger';
 import Manifests from './pages/Manifest';
 import CreateShipment from './components/CreateShipment';
+import MerchantDocumentUpload from "./pages/MerchantDocumentUpload"
+import MerchantNotifications from "./Pages/MerchantNotification"
+
+
 export const merchantRoutes = {
   path: '/merchant',
   element: <MerchantLayout />,
@@ -17,5 +21,7 @@ export const merchantRoutes = {
     { path: 'bulk-upload', element: <BulkUpload /> },
     { path: 'cod-ledger',  element: <CODLedger /> },
     { path: 'manifests',   element: <Manifests /> },
+    {path:'documents', element : < MerchantDocumentUpload /> },
+    {path: 'notifications', element: <MerchantNotifications /> }
   ],
 };

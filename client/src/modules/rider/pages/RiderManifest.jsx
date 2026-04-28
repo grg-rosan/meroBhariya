@@ -1,5 +1,5 @@
 import { useRiderManifest } from "../hooks/useRider";
-import StatusBadge from "../../../shared/components/StatusBadge";
+import StatusBadge from "../../../components/common/StatusBadge";
 import { Navigation, Phone } from "lucide-react";
 
 const MOCK = [

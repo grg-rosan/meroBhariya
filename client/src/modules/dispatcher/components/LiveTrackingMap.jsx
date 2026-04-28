@@ -5,7 +5,7 @@
 
 import { useRef, useEffect } from 'react';
 import { Navigation2, Clock, MapPin, Radio } from 'lucide-react';
-import { useMapbox } from '../../../shared/hooks/useMapbox';
+import { useMapLibre } from '../../../shared/hooks/useMapLibre';
 import { useRiderLocation } from '../../../shared/hooks/useRiderLocation';
 
 export default function LiveTrackingMap({ shipment }) {

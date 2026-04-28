@@ -83,15 +83,22 @@ export const forgotPasswordHandler = catchAsync(async (req, res) => {
 export const resetPasswordHandler = catchAsync(async (req, res) => {
   const { email, code, newPassword } = req.body;
 
-  // fix: was checking for "token" which doesn't exist; correct fields are email/code/newPassword
   const missing = ["email", "code", "newPassword"].filter(k => !req.body[k]);
   if (missing.length) throw new AppError(`Missing fields: ${missing.join(", ")}`, 400);
 
-  // fix: email and code were not being passed to the service
   const result = await authService.resetPassword(email, code, newPassword);
   return res.status(200).json(result);
 });
 
+export const changePasswordHandler = catchAsync(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  const missing = ["currentPassword", "newPassword"].filter(k => !req.body[k]);
+  if (missing.length) throw new AppError(`Missing fields: ${missing.join(", ")}`, 400);
+
+  const result = await authService.changePassword(req.user.id, currentPassword, newPassword);
+  return res.status(200).json(result);
+});
 // ─── GET /api/auth/me ─────────────────────────────────────────────────────────
 
 export const getMeHandler = catchAsync(async (req, res) => {

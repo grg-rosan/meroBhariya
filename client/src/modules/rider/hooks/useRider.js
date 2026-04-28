@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { useAPI, apiPatch, apiPost } from "../../../shared/hooks/useApi";
-import { useToast } from "../../../shared/context/ToastContext";
+import { useToast } from "../../../context/ToastContext";
 
-export const useRiderDashboard = () => useAPI("/api/rider/dashboard");
-export const useRiderManifest = () => useAPI("/api/rider/manifest");
-export const useRiderEarnings = () => useAPI("/api/rider/earnings");
 
 export function useToggleDuty() {
   const toast = useToast();
@@ -61,3 +58,18 @@ export function useConfirmDelivery() {
   };
   return { deliver, loading};
 }
+// src/modules/rider/hooks/useRider.js
+export const useRiderDashboard = () => {
+  const result = useAPI("/api/rider/dashboard");
+  return { ...result, data: result.data?.data ?? null };
+};
+
+export const useRiderManifest = () => {
+  const result = useAPI("/api/rider/manifest");
+  return { ...result, data: result.data?.data ?? null };
+};
+
+export const useRiderEarnings = () => {
+  const result = useAPI("/api/rider/earnings");
+  return { ...result, data: result.data?.data ?? null };
+};

@@ -1,16 +1,23 @@
 // src/shared/context/NotificationContext.jsx
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
-
+import { useAuth } from '../modules/auth/AuthContext';
 const NotificationContext = createContext(null);
-const STORAGE_KEY = 'porter_notifications';
+const STORAGE_KEY = (userId) => `porter_notifications_${userId}`;
 
 export function NotificationProvider({ children }) {
+  const { user } = useAuth()
   const [notifications, setNotifications] = useState(() => {
+    if (!user?.id) return [];
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = localStorage.getItem(STORAGE_KEY(user.id));
       return stored ? JSON.parse(stored) : [];
     } catch { return []; }
   });
+
+  useEffect(() => {
+    if (!user?.id) return;
+    localStorage.setItem(STORAGE_KEY(user.id), JSON.stringify(notifications));
+  }, [notifications, user?.id]);
 
   // persist to localStorage on every change
   useEffect(() => {

@@ -16,11 +16,11 @@ export function ToastProvider({ children }) {
     <ToastContext.Provider value={{ toast }}>
       {children}
       {/* Toast UI */}
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+      <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`px-4 py-3 rounded-xl text-sm font-medium shadow-lg transition-all
+            className={`px-4 py-3 rounded-xl text-base font-medium shadow-lg transition-all
               ${t.type === "error" ? "bg-red-500/10 border border-red-500/20 text-red-400" : ""}
               ${t.type === "success" ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" : ""}
               ${t.type === "info" ? "bg-zinc-800 border border-zinc-700 text-zinc-300" : ""}

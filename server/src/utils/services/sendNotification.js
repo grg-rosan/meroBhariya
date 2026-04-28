@@ -15,6 +15,7 @@ export const NOTIFICATION_TYPE = {
   SHIPMENT_ASSIGNED:  "SHIPMENT_ASSIGNED",
   SHIPMENT_DELIVERED: "SHIPMENT_DELIVERED",
   COD_SETTLED:        "COD_SETTLED",
+  MERCHANT_VERIFIED: "MERCHANT_VERIFIED"
 };
 
 // ─── Main dispatcher ──────────────────────────────────────────────────────────

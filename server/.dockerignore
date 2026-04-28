@@ -1,0 +1,8 @@
+# server/.dockerignore
+node_modules
+prisma/migrations/*.sql  # keep migrations but exclude if needed
+.env
+.env.*
+*.log
+.DS_Store
+uploads/tmp

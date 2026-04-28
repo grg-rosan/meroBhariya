@@ -7,9 +7,9 @@ import {
   FileText,
   Bell,
 } from "lucide-react";
-import RoleLayout from "../../../shared/components/RoleLayout";
+import RoleLayout from "../../../layouts/RoleLayout";
 import { useAuth } from "../../auth/AuthContext";
-import { useNotifications } from "../../../shared/context/NotificationContext";
+import { useNotifications } from "../../../context/NotificationContext";
 import { initials } from "../../../shared/constants/staffConstants";
 export default function RiderLayout() {
   const { user } = useAuth();

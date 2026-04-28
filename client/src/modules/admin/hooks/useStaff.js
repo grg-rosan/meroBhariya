@@ -1,7 +1,7 @@
 // src/admin/hooks/useStaff.js
 import { useState} from "react";
 import { useAPI, apiPost, apiPatch } from "../../../shared/hooks/useApi";
-import { useToast } from "../../../shared/context/ToastContext";
+import { useToast } from "../../../context/ToastContext";
 
 // ─── Fetch staff list ─────────────────────────────────────────────────────────
 

@@ -1,6 +1,6 @@
 import { Wallet, ArrowDownLeft, Clock, CheckCircle, XCircle, Truck, Package, RefreshCw } from 'lucide-react';
 import { useCODLedger } from '../hooks/useShipment';
-import StatCard from '../../../shared/components/StatCard';
+import StatCard from '../../../components/common/StatCard';
 
 
 const STATUS_STEPS = ['PENDING','ASSIGNED','PICKED_UP','IN_HUB','OUT_FOR_DELIVERY','DELIVERED'];

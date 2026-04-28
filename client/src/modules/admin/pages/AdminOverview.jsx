@@ -7,7 +7,7 @@ import {
   useOverviewQuickActions,
   useOverviewActivity,
 } from "../hooks/useAdmin";
-import StatCard from "../../../shared/components/StatCard";
+import StatCard from "../../../components/common/StatCard";
 
 const DOT = {
   success: "bg-green-500",

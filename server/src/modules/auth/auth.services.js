@@ -230,7 +230,7 @@ export async function forgotPassword(email) {
   const code = randomInt(100000, 1000000).toString();
   await redis.set(`pwd_reset:${user.id}`, code, { EX: RESET_TTL });
 
-  await sendEmail(email, "Reset Your MeroBhariya Password", resetEmailTemplate(code));
+ await sendEmail(email, "Reset Your MeroBhariya Password", resetEmailTemplate(user.name, code));
   console.log(`[DEV] Reset code for ${email}: ${code}`);
 
   return { message: "If that email is registered, a reset code has been sent." };
@@ -257,6 +257,22 @@ export async function resetPassword(email, code, newPassword) {
   await redis.del(`pwd_reset_limit:${user.id}`);
 
   return { message: "Password reset successfully. You can now log in." };
+}
+
+export async function changePassword(userId, currentPassword, newPassword) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user || !user.isActive) throw new AppError("User not found.", 404);
+
+  const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!isMatch) throw new AppError("Current password is incorrect.", 400);
+
+  if (currentPassword === newPassword)
+    throw new AppError("New password must be different from current password.", 400);
+
+  const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+  await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+
+  return { message: "Password changed successfully." };
 }
 
 // ─── Get Me ───────────────────────────────────────────────────────────────────

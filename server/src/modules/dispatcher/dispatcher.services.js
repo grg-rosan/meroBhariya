@@ -214,3 +214,49 @@ export async function updateShipmentStatus(shipmentId, newStatus, dispatcherUser
 
   return updated;
 }
+
+// ─── Get hub inventory (IN_HUB + ASSIGNED + OUT_FOR_DELIVERY) ────────────────
+
+export async function getHubInventory({ page, limit, skip }) {
+  const where = {
+    status: { in: ["IN_HUB", "ASSIGNED", "OUT_FOR_DELIVERY"] },
+  };
+
+  const [shipments, total] = await Promise.all([
+    prisma.shipment.findMany({
+      skip,
+      take:  limit,
+      where,
+      include: {
+        merchant:    { select: { businessName: true } },
+        vehicleType: { select: { name: true } },
+        rider: {
+          select: { user: { select: { fullName: true } } },
+        },
+      },
+      orderBy: { updatedAt: "desc" },
+    }),
+    prisma.shipment.count({ where }),
+  ]);
+
+  const stats = {
+    total:          await prisma.shipment.count({ where: { status: "IN_HUB" } }),
+    unassigned:     await prisma.shipment.count({ where: { status: "IN_HUB", riderId: null } }),
+    assigned:       await prisma.shipment.count({ where: { status: "ASSIGNED" } }),
+    outForDelivery: await prisma.shipment.count({ where: { status: "OUT_FOR_DELIVERY" } }),
+  };
+
+  return { shipments, stats, ...buildPaginationMeta(total, page, limit) };
+}
+
+// ─── Scan handoff by tracking number (wraps existing scanHandoff) ─────────────
+// Frontend sends trackingNumber, backend resolves to shipment ID
+
+export async function scanHandoffByTracking(trackingNumber, dispatcherUserId) {
+  const shipment = await prisma.shipment.findUnique({
+    where: { trackingNumber },
+  });
+  if (!shipment) throw new AppError(`Shipment ${trackingNumber} not found.`, 404);
+
+  return scanHandoff(shipment.id, dispatcherUserId);
+}

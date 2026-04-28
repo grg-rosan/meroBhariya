@@ -66,5 +66,8 @@ Password    Admin@1234
 You can override these by setting SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD in your .env file.
 
 
+
+
+
 License
 This project is licensed under the MIT License.

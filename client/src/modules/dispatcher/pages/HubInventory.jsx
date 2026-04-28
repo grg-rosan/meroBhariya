@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Search, RefreshCw, Boxes } from 'lucide-react';
 import { useHubInventory } from '../hooks/useDispatcher';
-import StatusBadge from '../../../shared/components/StatusBadge';
-import StatCard from '../../../shared/components/StatCard';
+import StatusBadge from '../../../components/common/StatusBadge';
+import StatCard from '../../../components/common/StatCard';
 
 const MOCK_STATS = { total: 134, unassigned: 47, assigned: 68, outForDelivery: 19 };
 const MOCK_ITEMS = [

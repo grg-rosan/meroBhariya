@@ -1,6 +1,6 @@
     // src/shared/hooks/useGeolocation.js
     import { useState } from "react";
-    import { useToast } from "../context/ToastContext";
+    import { useToast } from "../../context/ToastContext";
 
     export function useGeolocation() {
     const [loc, setLoc]         = useState(null);

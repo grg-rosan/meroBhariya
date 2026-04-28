@@ -8,8 +8,7 @@ import {
   cancelShipment,
   handoff,
 } from "./shipment.controller.js";
-import { authMiddleware } from "../../infrastructure/middlewares/auth.middleware.js";
-import { requireRole } from "../../infrastructure/middlewares/role.middleware.js";
+import { requireAuth, requireRole } from "../auth/auth.middleware.js";
 
 const router = express.Router();
 

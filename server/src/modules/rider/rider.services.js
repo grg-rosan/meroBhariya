@@ -97,12 +97,13 @@ export const getShiftSummary = async (userId) => {
       vehicleType: profile.vehicleType?.name ?? "—",
       vehicleNumber: profile.vehicleNumber,
       isOnline: profile.isOnline,
+      isVerified:    profile.isVerified,
     },
     stats: {
       deliveriesToday,
       codCollected,
       todayEarnings,
-      kmCovered: null, // derived from GPS tracks — future extension
+      kmCovered: null, 
     },
     activity: activityLogs.map((log) => ({
       id: log.id,
@@ -290,3 +291,15 @@ export const upsertRiderDocument = async (userId, { type, fileUrl, filePublicId,
 };
 
 
+export const getRiderDocumentByType = async (userId, type) => {
+  const profile = await prisma.riderProfile.findUnique({
+    where:  { userId },
+    select: { id: true },
+  });
+  if (!profile) return null;
+ 
+  return prisma.riderDocument.findFirst({
+    where:  { riderId: profile.id, type },
+    select: { id: true, filePublicId: true },
+  });
+};

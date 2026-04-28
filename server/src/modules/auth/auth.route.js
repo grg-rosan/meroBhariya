@@ -11,6 +11,7 @@ import {
   verifyOtpHandler,
   forgotPasswordHandler,
   resetPasswordHandler,
+  changePasswordHandler
 } from "./auth.controller.js";
 import { requireAuth } from "./auth.middleware.js";
 
@@ -31,6 +32,7 @@ router.post("/password/reset", resetPasswordHandler);
 
 // Protected
 router.get("/me", requireAuth, getMeHandler);
+router.patch("/password/change", requireAuth, changePasswordHandler);
 router.post("/logout", requireAuth, logoutHandler);
 
 export default router;

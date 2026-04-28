@@ -40,13 +40,13 @@ async function getAuth(url) {
 
 export const authAPI = {
   initiateRegistration: (role, payload) =>
-  postJSON(`${API}/api/auth/register/initiate`, { role, ...payload }),
+    postJSON(`${API}/api/auth/register/initiate`, { role, ...payload }),
 
-completeRegistration: (email, otp) =>
-  postJSON(`${API}/api/auth/register/complete`, { email, otp }),
+  completeRegistration: (email, otp) =>
+    postJSON(`${API}/api/auth/register/complete`, { email, otp }),
 
-resendRegistrationOtp: (email) =>
-  postJSON(`${API}/api/auth/register/resend-otp`, { email }),
+  resendRegistrationOtp: (email) =>
+    postJSON(`${API}/api/auth/register/resend-otp`, { email }),
 
   logout: () => postAuth(`${API}/api/auth/logout`).catch(() => {}),
   me: () => getAuth(`${API}/api/auth/me`),
@@ -67,5 +67,10 @@ resendRegistrationOtp: (email) =>
       email,
       resetCode,
       newPassword: password,
+    }),
+  changePassword: ( currentPassword, newPassword) =>
+    postAuth(`${API}/api/auth/password/change`, {
+      currentPassword,
+      newPassword,
     }),
 };

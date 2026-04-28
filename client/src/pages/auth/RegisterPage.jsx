@@ -15,9 +15,8 @@ import {
   Divider,
 } from "../../shared/ui/porter-ui";
 import { authAPI } from "../../shared/services/authService";
-import VerifyOtpForm from "../../shared/components/VerifyOtpForm";
-// import VerifyOtpForm from "../../shared/components/VerifyOtpForm";
-// ─── Step 0: Role picker ────────────────────────────────────────────────────
+import VerifyOtpForm from "../../components/forms/VerifyOtpForm";
+import { useToast } from "../../context/ToastContext";
 
 function RolePicker({ onSelect }) {
   return (
@@ -297,10 +296,10 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const [registeredEmail, setRegisteredEmail] = useState(null);
 
+  const toast = useToast()
   const [step, setStep] = useState(urlRole ? 1 : 0);
   const [role, setRole] = useState(urlRole || null);
   const [basicInfo, setBasicInfo] = useState(null);
-  const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
   function handleRolePick(r) {
@@ -313,15 +312,14 @@ export default function RegisterPage() {
   }
 
 async function handleDetailsNext(details) {
-  setError(null);
   setSubmitting(true);
   try {
     const payload = { ...basicInfo, ...details };
      await authAPI.initiateRegistration(role, payload);
     setRegisteredEmail(basicInfo.email);
     setStep(3);
-  } catch (err) {
-    setError(err.message);
+  } catch  {
+    toast({message:"Registration Failed",type:"error"})
   } finally {
     setSubmitting(false);
   }
@@ -365,7 +363,6 @@ async function handleVerify(otp) {
             <Button onClick={() => navigate("/login")}>Go to login →</Button>
           </>
         )}
-        <ErrorAlert message={error} />
       </Card>
     </PageShell>
   );

@@ -2,8 +2,8 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../modules/auth/AuthContext";
 import { authAPI } from "../../shared/services/authService";
-import { useToast } from "../../shared/context/ToastContext";
-import VerifyOtpForm from "../../shared/components/VerifyOtpForm";
+import { useToast } from "../../context/ToastContext";
+import VerifyOtpForm from "../../components/forms/VerifyOtpForm";
 import { ROLE_HOME } from "../../shared/constants/roles";
 
 export default function VerifyEmailPage() {

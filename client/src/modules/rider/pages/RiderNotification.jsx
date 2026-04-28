@@ -1,6 +1,6 @@
 import { Bell, CheckCheck } from "lucide-react";
 import { TYPE_ICON } from "../../../shared/constants/typeIcon";
-import { useNotifications } from "../../../shared/context/NotificationContext";
+import { useNotifications } from "../../../context/NotificationContext";
 
 export default function RiderNotifications() {
   const { notifications, markRead, markAllRead, unreadCount } =

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiPost } from "../../../shared/hooks/useApi";
-import { useToast } from "../../../shared/context/ToastContext";
+import { useToast } from "../../../context/ToastContext";
 
 function useGeolocation() {
   const [loc, setLoc]         = useState(null);

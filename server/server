@@ -44,3 +44,8 @@ Queue: notifications.rider + notifications.merchant
 notification.consumer.js
   → io.to("user:riderId").emit("shipment:assigned", ...)
   → io.to("user:merchantId").emit("shipment:assigned", ...)
+
+
+
+after schema was changed
+  docker compose exec server npx prisma migrate dev --name describe_what_changed

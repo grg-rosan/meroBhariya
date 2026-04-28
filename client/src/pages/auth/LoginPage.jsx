@@ -6,29 +6,29 @@ import {
   PageShell, Card, Brand, Heading,
   Field, Input, Button, ErrorAlert, Divider,
 } from "../../shared/ui/porter-ui";
+import { useToast } from "../../context/ToastContext";
 
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast()
 
-  const [email, setEmail]         = useState("");
-  const [password, setPassword]   = useState("");
-  const [error, setError]         = useState(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError(null);
     setSubmitting(true);
     try {
       const user = await login(email, password);
       if (!user.isEmailVerified) {
-        navigate("/verify-email");              
+        navigate("/verify-email");
       } else {
-        navigate(ROLE_HOME[user.role] ?? "/");   
+        navigate(ROLE_HOME[user.role] ?? "/");
       }
-    } catch (err) {
-      setError(err.message || "Invalid email or password.");
+    } catch {
+      toast({ message: "Invalid Email or Password", type: "error" })
     } finally {
       setSubmitting(false);
     }
@@ -40,7 +40,6 @@ export default function LoginPage() {
         <Brand subtitle="Ride & delivery · Kathmandu" />
         <Heading title="Welcome back" sub="Sign in to continue to your dashboard." />
 
-        <ErrorAlert message={error} />
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <Field label="Email">

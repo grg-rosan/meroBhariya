@@ -1,13 +1,15 @@
-import { catchAsync } from "../../utils/error/errorHandler.js";
-import AppError from "../../utils/error/appError.js";
-import * as riderService from "./rider.services.js";
-import { uploadToCloudinary } from "../../utils/services/cloudinary.js";
+// src/modules/rider/rider.controller.js
+import { catchAsync }        from "../../utils/error/errorHandler.js";
+import AppError              from "../../utils/error/appError.js";
+import * as riderService     from "./rider.services.js";
+import { uploadToCloudinary, deleteFromCloudinary } from "../../utils/services/cloudinary.js";
+
 // ─────────────────────────────────────────
 // GET /rider/dashboard
 // ─────────────────────────────────────────
 
 export const getDashboard = catchAsync(async (req, res) => {
-  const data = await riderService.getShiftSummary(req.user.id);
+  const data = await riderService.getShiftSummary(req.userId);
   res.status(200).json({ success: true, data });
 });
 
@@ -16,7 +18,7 @@ export const getDashboard = catchAsync(async (req, res) => {
 // ─────────────────────────────────────────
 
 export const toggleDuty = catchAsync(async (req, res) => {
-  const data = await riderService.toggleDutyStatus(req.user.id);
+  const data = await riderService.toggleDutyStatus(req.userId);
   res.status(200).json({ success: true, data });
 });
 
@@ -25,7 +27,7 @@ export const toggleDuty = catchAsync(async (req, res) => {
 // ─────────────────────────────────────────
 
 export const getManifest = catchAsync(async (req, res) => {
-  const data = await riderService.getRiderManifest(req.user.id);
+  const data = await riderService.getRiderManifest(req.userId);
   res.status(200).json({ success: true, data });
 });
 
@@ -36,14 +38,12 @@ export const getManifest = catchAsync(async (req, res) => {
 
 export const deliverPackage = catchAsync(async (req, res) => {
   const { trackingNumber, codCollected, note } = req.body;
-
   if (!trackingNumber) throw new AppError("trackingNumber is required", 400);
 
   const data = await riderService.deliverPackage(req.userId, trackingNumber, {
     codCollected,
     note,
   });
-
   res.status(200).json({ success: true, data });
 });
 
@@ -54,11 +54,9 @@ export const deliverPackage = catchAsync(async (req, res) => {
 
 export const updateLocation = catchAsync(async (req, res) => {
   const { latitude, longitude } = req.body;
-
   if (latitude == null || longitude == null) {
     throw new AppError("latitude and longitude are required", 400);
   }
-
   const data = await riderService.updateRiderLocation(req.userId, { latitude, longitude });
   res.status(200).json({ success: true, data });
 });
@@ -69,7 +67,7 @@ export const updateLocation = catchAsync(async (req, res) => {
 // ─────────────────────────────────────────
 
 export const getEarnings = catchAsync(async (req, res) => {
-  const data = await riderService.getRiderEarnings(req.user.id, req.query);
+  const data = await riderService.getRiderEarnings(req.userId, req.query);
   res.status(200).json({ success: true, ...data });
 });
 
@@ -78,27 +76,48 @@ export const getEarnings = catchAsync(async (req, res) => {
 // ─────────────────────────────────────────
 
 export const getDocuments = catchAsync(async (req, res) => {
-  const data = await riderService.getRiderDocuments(req.user.id);
+  const data = await riderService.getRiderDocuments(req.userId);
   res.status(200).json({ success: true, data });
 });
 
 // ─────────────────────────────────────────
 // POST /rider/documents
-// Multipart — fileUrl + filePublicId attached by cloudinary middleware
+// Multipart — field names = RiderDocType enum values
 // ─────────────────────────────────────────
 
 export const uploadDocuments = catchAsync(async (req, res) => {
+  if (!req.files || Object.keys(req.files).length === 0) {
+    throw new AppError("No files provided.", 400);
+  }
+
   const uploads = [];
+
   for (const [type, fileArr] of Object.entries(req.files)) {
-    const file   = fileArr[0];
-    const result = await uploadToCloudinary(file.path, "porter/rider-docs");
-    const doc    = await riderService.upsertRiderDocument(req.user.id, {
+    const file = Array.isArray(fileArr) ? fileArr[0] : fileArr;
+
+    // Get existing doc to delete old Cloudinary asset on replace
+    const existing = await riderService.getRiderDocumentByType(req.userId, type);
+    if (existing?.filePublicId) {
+      await deleteFromCloudinary(existing.filePublicId).catch((err) =>
+        console.warn(`[RiderDocs] Failed to delete old asset ${existing.filePublicId}: ${err.message}`)
+      );
+    }
+
+    // Upload to rider-specific folder
+    const result = await uploadToCloudinary(
+      file.path,
+      `porter/rider/${req.userId}/documents`  // ← scoped per rider, not shared folder
+    );
+
+    const doc = await riderService.upsertRiderDocument(req.userId, {
       type,
       fileUrl:      result.secure_url,
       filePublicId: result.public_id,
       expiresAt:    req.body.expiresAt ?? null,
     });
+
     uploads.push(doc);
   }
-  res.status(201).json({ status: "success", data: uploads });
+
+  res.status(201).json({ success: true, data: uploads });
 });

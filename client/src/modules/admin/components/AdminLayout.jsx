@@ -6,7 +6,7 @@ import {
   Landmark,
   Users,
 } from "lucide-react";
-import RoleLayout from "../../../shared/components/RoleLayout";
+import RoleLayout from "../../../layouts/RoleLayout";
 import { useAuth } from "../../auth/AuthContext";
 import { initials } from "../../../shared/constants/staffConstants";
 

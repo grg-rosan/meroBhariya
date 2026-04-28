@@ -1,5 +1,3 @@
-// src/shared/ui/porter-ui.jsx
-// Reusable primitives used across Login, Register, and Doc upload pages
 
 /** Full-page shell */
 export function PageShell({ children, wide = false }) {

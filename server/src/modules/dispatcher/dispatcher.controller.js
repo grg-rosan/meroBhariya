@@ -40,3 +40,34 @@ export const updateStatus = catchAsync(async (req, res) => {
   const shipment = await dispatcherService.updateShipmentStatus(req.params.id, status, req.userId);
   return res.json(shipment);
 });
+
+// ── ADD to dispatcher.controller.js ──────────────────────────────────────────
+
+// GET /api/dispatcher/shipments/hub
+export const getHubInventory = catchAsync(async (req, res) => {
+  const { page, limit, skip } = parsePagination(req.query);
+  const result = await dispatcherService.getHubInventory({ page, limit, skip });
+  return res.json({ success: true, data: result });
+});
+
+// POST /api/dispatcher/shipments/:trackingNumber/scan
+// Override existing scanHandoff to accept trackingNumber instead of ID
+export const scanHandoffByTracking = catchAsync(async (req, res) => {
+  const result = await dispatcherService.scanHandoffByTracking(
+    req.params.trackingNumber,
+    req.userId
+  );
+  return res.json(result);
+});
+
+
+// ── ADD to dispatcher.route.js ────────────────────────────────────────────────
+// IMPORTANT: /shipments/hub must be registered BEFORE /shipments/:id
+// otherwise Express matches "hub" as the :id param
+
+// router.get ("/shipments/hub",                    dispatcherCtrl.getHubInventory);
+// router.get ("/shipments",                        dispatcherCtrl.getPendingShipments);
+// router.get ("/riders/available",                 dispatcherCtrl.getAvailableRiders);
+// router.patch("/shipments/:id/assign",            dispatcherCtrl.assignRider);
+// router.post ("/shipments/:trackingNumber/scan",  dispatcherCtrl.scanHandoffByTracking);
+// router.patch("/shipments/:id/status",            dispatcherCtrl.updateStatus);

@@ -6,7 +6,7 @@ import {
   useReviewRiderDoc,
   useReviewMerchantDoc,
 } from "../hooks/useAdmin";
-import { useToast } from "../../../shared/context/ToastContext";
+import { useToast } from "../../../context/ToastContext";
 
 const DOC_LABELS = {
   PAN_CERTIFICATE: "PAN cert",

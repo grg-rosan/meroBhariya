@@ -2,9 +2,9 @@ import { useState } from "react";
 import { Package, MapPin, Banknote, TrendingUp } from "lucide-react";
 import { useRiderDashboard, useToggleDuty } from "../hooks/useRider";
 import { useSocket } from "../../../shared/hooks/useSocket";
-import { useNotifications } from "../../../shared/context/NotificationContext";
+import { useNotifications } from "../../../context/NotificationContext";
 import { useAuth } from "../../auth/AuthContext";
-import StatCard from "../../../shared/components/StatCard";
+import StatCard from "../../../components/common/StatCard";
 
 export default function RiderDashboard() {
   const { user, refreshUser } = useAuth();

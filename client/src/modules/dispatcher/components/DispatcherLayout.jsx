@@ -5,7 +5,7 @@ import {
   ScanLine,
   AlertOctagon,
 } from "lucide-react";
-import RoleLayout from "../../../shared/components/RoleLayout";
+import RoleLayout from "../../../layouts/RoleLayout";
 
 const NAV = [
   { to: "/dispatcher/inventory", label: "Hub inventory", icon: Boxes },
