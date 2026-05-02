@@ -10,7 +10,7 @@ export function ManifestStopRow({ stop }) {
   };
 
   return (
-    <div className="flex items-center gap-4 px-5 py-4 border-b border-zinc-800/50 last:border-none hover:bg-gray-100 dark:bg-blue-950/20 transition-colors">
+    <div className="flex items-center gap-4 px-5 py-4 border-b border-gray-200/50 dark:border-zinc-800/50 last:border-none hover:bg-gray-100 dark:bg-blue-950/20 transition-colors">
       {/* Stop number badge */}
       <div
         className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 ${
@@ -18,7 +18,7 @@ export function ManifestStopRow({ stop }) {
             ? "bg-green-500/20 text-green-400"
             : stop.isActive
               ? "bg-sky-500 text-white"
-              : "bg-gray-100 dark:bg-blue-950 text-zinc-500"
+              : "bg-gray-100 dark:bg-blue-950 text-gray-400 dark:text-zinc-500"
         }`}
       >
         {stop.stopNum}
@@ -27,7 +27,7 @@ export function ManifestStopRow({ stop }) {
       {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <p className="text-sm font-medium text-zinc-200">
+          <p className="text-sm font-medium text-gray-800 dark:text-zinc-200">
             {stop.receiverName}
           </p>
           {stop.codAmount > 0 && (
@@ -36,7 +36,7 @@ export function ManifestStopRow({ stop }) {
             </span>
           )}
         </div>
-        <p className="text-xs text-zinc-500 truncate mt-0.5">
+        <p className="text-xs text-gray-400 dark:text-zinc-500 truncate mt-0.5">
           {stop.trackingNumber} · {stop.deliveryAddress} · {stop.weight}
         </p>
       </div>
@@ -59,13 +59,13 @@ export function ManifestStopRow({ stop }) {
           {/* Fixed: Added missing <a tag start */}
           <a
             href={`tel:${stop.phone}`}
-            className="w-8 h-8 flex items-center justify-center border border-zinc-700 hover:bg-gray-100 dark:bg-blue-950 text-zinc-400 rounded-lg transition-all"
+            className="w-8 h-8 flex items-center justify-center border border-gray-300 dark:border-zinc-700 hover:bg-gray-100 dark:bg-blue-950 text-gray-500 dark:text-zinc-400 rounded-lg transition-all"
           >
             <Phone size={13} />
           </a>
         </div>
       ) : (
-        <span className="text-xs text-zinc-500 font-medium shrink-0">
+        <span className="text-xs text-gray-400 dark:text-zinc-500 font-medium shrink-0">
           Pending
         </span>
       )}

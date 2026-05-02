@@ -111,13 +111,13 @@ export default function HubInventory() {
           <h1 className="text-xl font-semibold text-white">
             Balaju hub — inventory
           </h1>
-          <p className="text-sm text-zinc-500 mt-0.5">
+          <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
             Live count of packages at this hub
           </p>
         </div>
         <button
           onClick={refetch}
-          className="flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-400 border border-zinc-800 rounded-lg hover:bg-gray-100 dark:bg-blue-950 transition-all"
+          className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-500 dark:text-zinc-400 border border-gray-200 dark:border-zinc-800 rounded-lg hover:bg-gray-100 dark:bg-blue-950 transition-all"
         >
           <RefreshCw size={12} className={loading ? "animate-spin" : ""} />{" "}
           Refresh
@@ -156,25 +156,25 @@ export default function HubInventory() {
         <div className="relative">
           <Search
             size={13}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"
           />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search tracking or merchant…"
-            className="pl-8 pr-3 py-1.5 text-sm bg-white dark:bg-gray-900 border border-zinc-800 rounded-lg text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-600 w-56"
+            className="pl-8 pr-3 py-1.5 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-lg text-gray-800 dark:text-zinc-200 placeholder-gray-400 dark:placeholder-zinc-600 focus:outline-none focus:border-gray-400 dark:border-zinc-600 w-56"
           />
         </div>
         <select
           value={zone}
           onChange={(e) => setZone(e.target.value)}
-          className="px-3 py-1.5 text-sm bg-white dark:bg-gray-900 border border-zinc-800 rounded-lg text-zinc-300 focus:outline-none focus:border-zinc-600"
+          className="px-3 py-1.5 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-lg text-gray-700 dark:text-zinc-300 focus:outline-none focus:border-gray-400 dark:border-zinc-600"
         >
           {ZONES.map((z) => (
             <option key={z}>{z}</option>
           ))}
         </select>
-        <div className="flex items-center gap-1 bg-white dark:bg-gray-900 border border-zinc-800 rounded-lg p-1">
+        <div className="flex items-center gap-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-lg p-1">
           {[
             { v: "", l: "All" },
             { v: "IN_HUB", l: "At hub" },
@@ -184,7 +184,7 @@ export default function HubInventory() {
             <button
               key={f.v}
               onClick={() => setStatusF(f.v)}
-              className={`px-3 py-1 text-xs rounded-md font-medium transition-all ${statusF === f.v ? "bg-emerald-500 text-white" : "text-zinc-400 hover:text-zinc-200"}`}
+              className={`px-3 py-1 text-xs rounded-md font-medium transition-all ${statusF === f.v ? "bg-emerald-500 text-white" : "text-gray-500  hover:text-gray-800 dark:text-zinc-200"}`}
             >
               {f.l}
             </button>
@@ -192,10 +192,10 @@ export default function HubInventory() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-zinc-800">
+            <tr className="border-b border-gray-200 dark:border-zinc-800">
               {[
                 "Tracking #",
                 "Merchant",
@@ -206,7 +206,7 @@ export default function HubInventory() {
               ].map((h) => (
                 <th
                   key={h}
-                  className="text-left px-4 py-3 text-xs text-zinc-500 font-medium"
+                  className="text-left px-4 py-3 text-xs text-gray-400 dark:text-zinc-500 font-medium"
                 >
                   {h}
                 </th>
@@ -218,7 +218,7 @@ export default function HubInventory() {
               <tr>
                 <td
                   colSpan={6}
-                  className="px-4 py-10 text-center text-zinc-600 text-sm"
+                  className="px-4 py-10 text-center text-gray-300 dark:text-zinc-600 text-sm"
                 >
                   No packages match filters
                 </td>
@@ -227,23 +227,23 @@ export default function HubInventory() {
               filtered.map((i) => (
                 <tr
                   key={i.trackingNumber}
-                  className="border-b border-zinc-800/50 hover:bg-gray-100 dark:bg-blue-950/30 transition-colors"
+                  className="border-b border-gray-200/50 dark:border-zinc-800/50 hover:bg-gray-100 dark:bg-blue-950/30 transition-colors"
                 >
-                  <td className="px-4 py-3 font-mono text-xs text-zinc-400">
+                  <td className="px-4 py-3 font-mono text-xs text-gray-500 dark:text-zinc-400">
                     {i.trackingNumber}
                   </td>
-                  <td className="px-4 py-3 text-sm text-zinc-200">
+                  <td className="px-4 py-3 text-sm text-gray-800 dark:text-zinc-200">
                     {i.merchant}
                   </td>
-                  <td className="px-4 py-3 text-xs text-zinc-400">
+                  <td className="px-4 py-3 text-xs text-gray-500 dark:text-zinc-400">
                     {i.destination}
                   </td>
                   <td className="px-4 py-3">
-                    <span className="text-xs bg-gray-100 dark:bg-blue-950 text-zinc-400 px-2 py-0.5 rounded">
+                    <span className="text-xs bg-gray-100 dark:bg-blue-950 text-gray-500 dark:text-zinc-400 px-2 py-0.5 rounded">
                       {i.zone}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-xs text-zinc-500">
+                  <td className="px-4 py-3 text-xs text-gray-400 dark:text-zinc-500">
                     {i.arrivedAt}
                   </td>
                   <td className="px-4 py-3">
@@ -254,8 +254,8 @@ export default function HubInventory() {
             )}
           </tbody>
         </table>
-        <div className="px-4 py-3 border-t border-zinc-800">
-          <span className="text-xs text-zinc-600">
+        <div className="px-4 py-3 border-t border-gray-200 dark:border-zinc-800">
+          <span className="text-xs text-gray-300 dark:text-zinc-600">
             Showing {filtered.length} of {items.length} packages
           </span>
         </div>

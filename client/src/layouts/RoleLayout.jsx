@@ -48,7 +48,7 @@ export default function RoleLayout({ role, nav, accentClass, user }) {
                 `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all ${
                   isActive
                     ? "bg-gray-100 dark:bg-gray-100 dark:bg-blue-950 text-gray-900 dark:text-white font-medium"
-                    : "text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-zinc-200 hover:bg-gray-100 dark:hover:bg-gray-100 dark:bg-blue-950"
+                    : "text-gray-500 dark:text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-gray-800 dark:text-zinc-200 hover:bg-gray-100 dark:hover:bg-gray-100 dark:bg-blue-950"
                 }`
               }
             >

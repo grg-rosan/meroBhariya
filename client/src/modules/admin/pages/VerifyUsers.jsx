@@ -36,7 +36,7 @@ function UserCard({ user, type, onReviewDoc, loading }) {
   const allApproved = user.documents.every((d) => d.status === "APPROVED");
 
   return (
-    <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl overflow-hidden mb-3 last:mb-0">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden mb-3 last:mb-0">
       <div className="p-4 flex items-start gap-4">
         <div className="w-10 h-10 rounded-full bg-violet-500/20 text-violet-400 text-sm font-semibold flex items-center justify-center shrink-0">
           {initials}
@@ -44,14 +44,16 @@ function UserCard({ user, type, onReviewDoc, loading }) {
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
-            <p className="text-sm font-medium text-zinc-200">
+            <p className="text-sm font-medium text-gray-800 dark:text-zinc-200">
               {user.user.fullName}
             </p>
-            <span className="text-xs bg-gray-100 dark:bg-blue-950 text-zinc-400 px-2 py-0.5 rounded">
+            <span className="text-xs bg-gray-100 dark:bg-blue-950 text-gray-500 dark:text-zinc-400 px-2 py-0.5 rounded">
               {type === "MERCHANT" ? user.businessName : user.vehicleType?.name}
             </span>
           </div>
-          <p className="text-xs text-zinc-500 mb-3">{user.user.email}</p>
+          <p className="text-xs text-gray-400 dark:text-zinc-500 mb-3">
+            {user.user.email}
+          </p>
 
           {/* Doc pills — each clickable to review */}
           <div className="flex flex-wrap gap-1.5 mb-3">
@@ -79,7 +81,7 @@ function UserCard({ user, type, onReviewDoc, loading }) {
             (() => {
               const doc = user.documents.find((d) => d.id === expandedDoc);
               return doc ? (
-                <div className="mb-3 p-3 bg-gray-100 dark:bg-blue-950 rounded-lg border border-zinc-700">
+                <div className="mb-3 p-3 bg-gray-100 dark:bg-blue-950 rounded-lg border border-gray-300 dark:border-zinc-700">
                   <a
                     href={doc.fileUrl}
                     target="_blank"
@@ -92,7 +94,7 @@ function UserCard({ user, type, onReviewDoc, loading }) {
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
                     placeholder="Note (optional)…"
-                    className="w-full px-3 py-2 text-xs bg-white dark:bg-gray-900 border border-zinc-700 rounded-lg text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-violet-500 mb-2"
+                    className="w-full px-3 py-2 text-xs bg-white dark:bg-gray-900 border border-gray-300 dark:border-zinc-700 rounded-lg text-gray-800 dark:text-zinc-200 placeholder-gray-400 dark:placeholder-zinc-600 focus:outline-none focus:border-violet-500 mb-2"
                   />
                   <div className="flex gap-2">
                     <button
@@ -126,7 +128,7 @@ function UserCard({ user, type, onReviewDoc, loading }) {
           href={user.documents[0]?.fileUrl}
           target="_blank"
           rel="noreferrer"
-          className="flex items-center gap-1.5 px-3 py-1.5 border border-zinc-700 text-zinc-400 hover:bg-gray-100 dark:bg-blue-950 text-xs rounded-lg transition-all"
+          className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 dark:border-zinc-700 text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:bg-blue-950 text-xs rounded-lg transition-all"
         >
           <FileText size={12} /> Docs
         </a>
@@ -184,12 +186,12 @@ export default function VerifyUsers() {
     <div className="p-6 max-w-3xl mx-auto">
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-white">User verification</h1>
-        <p className="text-sm text-zinc-500 mt-0.5">
+        <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
           Review KYC documents and approve accounts
         </p>
       </div>
 
-      <div className="flex items-center gap-1 bg-white dark:bg-gray-900 border border-zinc-800 rounded-lg p-1 mb-5 w-fit">
+      <div className="flex items-center gap-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-lg p-1 mb-5 w-fit">
         {[
           { key: "merchants", label: `Merchants (${merchants.length})` },
           { key: "riders", label: `Riders (${riders.length})` },
@@ -197,7 +199,7 @@ export default function VerifyUsers() {
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`px-4 py-1.5 text-xs rounded-md font-medium transition-all ${tab === t.key ? "bg-violet-500 text-white" : "text-zinc-400 hover:text-zinc-200"}`}
+            className={`px-4 py-1.5 text-xs rounded-md font-medium transition-all ${tab === t.key ? "bg-violet-500 text-white" : "text-gray-500  hover:text-gray-800 dark:text-zinc-200"}`}
           >
             {t.label}
           </button>
@@ -205,9 +207,9 @@ export default function VerifyUsers() {
       </div>
 
       {loading ? (
-        <p className="text-zinc-500 text-sm">Loading...</p>
+        <p className="text-gray-400 dark:text-zinc-500 text-sm">Loading...</p>
       ) : list.length === 0 ? (
-        <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-10 text-center text-zinc-600 text-sm">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-10 text-center text-gray-300 dark:text-zinc-600 text-sm">
           No pending {tab} — all caught up!
         </div>
       ) : (

@@ -33,21 +33,21 @@ export default function CreateStaffModal({ onClose, onCreate }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-md shadow-2xl">
+      <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl w-full max-w-md shadow-2xl">
         {/* header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-zinc-800">
           <div>
             <h2 className="text-sm font-semibold text-white">
               New staff account
             </h2>
-            <p className="text-xs text-zinc-500 mt-0.5">
+            <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
               They can log in immediately after creation
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-gray-100 dark:bg-blue-950 text-zinc-500 hover:text-white transition-colors"
+            className="p-1.5 rounded-lg hover:bg-gray-100 dark:bg-blue-950 text-gray-400 dark:text-zinc-500 hover:text-white transition-colors"
           >
             <X size={16} />
           </button>
@@ -57,7 +57,7 @@ export default function CreateStaffModal({ onClose, onCreate }) {
         <div className="px-5 py-4 space-y-4">
           {/* role selector */}
           <div>
-            <label className="block text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-medium text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-2">
               Role
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -74,7 +74,7 @@ export default function CreateStaffModal({ onClose, onCreate }) {
                       ? value === "DISPATCHER"
                         ? "border-sky-500/50 bg-sky-500/10 text-sky-300"
                         : "border-violet-500/50 bg-violet-500/10 text-violet-300"
-                      : "border-zinc-800 text-zinc-500 hover:border-zinc-700"
+                      : "border-gray-200  text-gray-400 dark:text-zinc-500 hover:border-gray-300 dark:border-zinc-700"
                   }`}
                 >
                   <Icon size={15} />
@@ -86,7 +86,7 @@ export default function CreateStaffModal({ onClose, onCreate }) {
 
           {/* name */}
           <div>
-            <label className="block text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-medium text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-1.5">
               Full name
             </label>
             <input
@@ -94,14 +94,14 @@ export default function CreateStaffModal({ onClose, onCreate }) {
               value={form.name}
               onChange={(e) => set("name", e.target.value)}
               placeholder="Bikash Tamang"
-              className="w-full bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-600 transition-colors"
+              className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-gray-400 dark:placeholder-zinc-600 focus:outline-none focus:border-gray-400 dark:border-zinc-600 transition-colors"
             />
           </div>
 
           {/* email + phone */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-medium text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-1.5">
                 Email
               </label>
               <input
@@ -109,11 +109,11 @@ export default function CreateStaffModal({ onClose, onCreate }) {
                 value={form.email}
                 onChange={(e) => set("email", e.target.value)}
                 placeholder="bikash@merobhariya.com"
-                className="w-full bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-600 transition-colors"
+                className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-gray-400 dark:placeholder-zinc-600 focus:outline-none focus:border-gray-400 dark:border-zinc-600 transition-colors"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-medium text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-1.5">
                 Phone
               </label>
               <input
@@ -121,14 +121,14 @@ export default function CreateStaffModal({ onClose, onCreate }) {
                 value={form.phone}
                 onChange={(e) => set("phone", e.target.value)}
                 placeholder="98XXXXXXXX"
-                className="w-full bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-600 transition-colors"
+                className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-gray-400 dark:placeholder-zinc-600 focus:outline-none focus:border-gray-400 dark:border-zinc-600 transition-colors"
               />
             </div>
           </div>
 
           {/* password */}
           <div>
-            <label className="block text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-medium text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-1.5">
               Password
             </label>
             <div className="relative">
@@ -137,12 +137,12 @@ export default function CreateStaffModal({ onClose, onCreate }) {
                 value={form.password}
                 onChange={(e) => set("password", e.target.value)}
                 placeholder="Minimum 8 characters"
-                className="w-full bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl px-3.5 py-2.5 pr-10 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-600 transition-colors"
+                className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 pr-10 text-sm text-white placeholder-gray-400 dark:placeholder-zinc-600 focus:outline-none focus:border-gray-400 dark:border-zinc-600 transition-colors"
               />
               <button
                 type="button"
                 onClick={() => setShowPass((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-400 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300  hover:text-gray-500 dark:text-zinc-400 transition-colors"
               >
                 {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
@@ -151,11 +151,11 @@ export default function CreateStaffModal({ onClose, onCreate }) {
         </div>
 
         {/* footer */}
-        <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-zinc-800">
+        <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-gray-200 dark:border-zinc-800">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-sm text-zinc-400 hover:text-white hover:bg-gray-100 dark:bg-blue-950 transition-all"
+            className="px-4 py-2 rounded-xl text-sm text-gray-500 dark:text-zinc-400 hover:text-white hover:bg-gray-100 dark:bg-blue-950 transition-all"
           >
             Cancel
           </button>

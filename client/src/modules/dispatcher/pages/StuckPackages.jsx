@@ -25,7 +25,7 @@ export default function StuckPackages() {
     <div className="p-6 max-w-4xl mx-auto">
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-white">Stuck packages</h1>
-        <p className="text-sm text-zinc-500 mt-0.5">
+        <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
           Packages in hub for more than 24 hours
         </p>
       </div>
@@ -37,7 +37,7 @@ export default function StuckPackages() {
           <p className="text-sm font-medium text-red-300">
             {packages.length} packages require immediate attention
           </p>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
             These packages have exceeded the 24-hour hub dwell limit
           </p>
         </div>
@@ -49,7 +49,7 @@ export default function StuckPackages() {
           return (
             <div
               key={pkg.trackingNumber}
-              className={`bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-4 border-l-4 ${pkg.hoursInHub >= 36 ? "border-l-red-500" : "border-l-amber-500"}`}
+              className={`bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-4 border-l-4 ${pkg.hoursInHub >= 36 ? "border-l-red-500" : "border-l-amber-500"}`}
             >
               <div className="flex items-start gap-4">
                 {/* Time badge */}
@@ -65,7 +65,7 @@ export default function StuckPackages() {
                 {/* Details */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-mono text-xs text-zinc-500">
+                    <span className="font-mono text-xs text-gray-400 dark:text-zinc-500">
                       {pkg.trackingNumber}
                     </span>
                     <div className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
@@ -77,10 +77,10 @@ export default function StuckPackages() {
                           : "Needs attention"}
                     </span>
                   </div>
-                  <p className="text-sm font-medium text-zinc-200 mb-0.5">
+                  <p className="text-sm font-medium text-gray-800 dark:text-zinc-200 mb-0.5">
                     {pkg.merchant} → {pkg.destination}
                   </p>
-                  <p className="text-xs text-zinc-500 mb-2">
+                  <p className="text-xs text-gray-400 dark:text-zinc-500 mb-2">
                     {pkg.weight} kg · {pkg.reason}
                   </p>
 
@@ -89,10 +89,10 @@ export default function StuckPackages() {
                     <button className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs rounded-lg font-medium transition-all">
                       <Zap size={11} /> Force assign
                     </button>
-                    <button className="flex items-center gap-1.5 px-3 py-1.5 border border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:bg-gray-100 dark:bg-blue-950 text-xs rounded-lg transition-all">
+                    <button className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 dark:border-zinc-700 text-gray-500  hover:text-gray-800 dark:text-zinc-200 hover:bg-gray-100 dark:bg-blue-950 text-xs rounded-lg transition-all">
                       <Phone size={11} /> Call merchant
                     </button>
-                    <button className="flex items-center gap-1.5 px-3 py-1.5 border border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:bg-gray-100 dark:bg-blue-950 text-xs rounded-lg transition-all">
+                    <button className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 dark:border-zinc-700 text-gray-500  hover:text-gray-800 dark:text-zinc-200 hover:bg-gray-100 dark:bg-blue-950 text-xs rounded-lg transition-all">
                       <Clock size={11} /> Escalate to admin
                     </button>
                   </div>

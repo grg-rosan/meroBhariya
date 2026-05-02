@@ -1,13 +1,17 @@
 // src/rider/components/navigation/UpcomingStopRow.jsx
 export function UpcomingStopRow({ stop }) {
   return (
-    <div className="flex items-center gap-4 px-5 py-3 border-b border-zinc-800/50 last:border-none hover:bg-gray-100 dark:bg-blue-950/20 transition-colors">
-      <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-blue-950 text-zinc-500 flex items-center justify-center text-xs font-medium shrink-0">
+    <div className="flex items-center gap-4 px-5 py-3 border-b border-gray-200/50 dark:border-zinc-800/50 last:border-none hover:bg-gray-100 dark:bg-blue-950/20 transition-colors">
+      <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-blue-950 text-gray-400 dark:text-zinc-500 flex items-center justify-center text-xs font-medium shrink-0">
         {stop.stopNum}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-zinc-300 font-medium">{stop.receiverName}</p>
-        <p className="text-xs text-zinc-600 truncate">{stop.deliveryAddress}</p>
+        <p className="text-sm text-gray-700 dark:text-zinc-300 font-medium">
+          {stop.receiverName}
+        </p>
+        <p className="text-xs text-gray-300 dark:text-zinc-600 truncate">
+          {stop.deliveryAddress}
+        </p>
       </div>
       {stop.codAmount > 0 && (
         <span className="text-xs text-amber-400 shrink-0">

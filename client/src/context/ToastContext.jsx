@@ -26,7 +26,7 @@ export function ToastProvider({ children }) {
             className={`px-4 py-3 rounded-xl text-base font-medium shadow-lg transition-all
               ${t.type === "error" ? "bg-red-500/10 border border-red-500/20 text-red-400" : ""}
               ${t.type === "success" ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" : ""}
-              ${t.type === "info" ? "bg-gray-100 dark:bg-blue-950 border border-zinc-700 text-zinc-300" : ""}
+              ${t.type === "info" ? "bg-gray-100 dark:bg-blue-950 border border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-zinc-300" : ""}
             `}
           >
             {t.message}

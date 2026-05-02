@@ -96,30 +96,30 @@ function CreateShipmentModal({ onClose, onSuccess }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 sticky top-0 bg-white dark:bg-gray-900">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-zinc-800 sticky top-0 bg-white dark:bg-gray-900">
           <h2 className="text-base font-semibold text-white">New shipment</h2>
           <button
             onClick={onClose}
-            className="p-1.5 text-zinc-500 hover:text-zinc-300 hover:bg-gray-100 dark:bg-blue-950 rounded-lg transition-all"
+            className="p-1.5 text-gray-400 dark:text-zinc-500 hover:text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:bg-blue-950 rounded-lg transition-all"
           >
             <X size={16} />
           </button>
         </div>
         <div className="p-6 space-y-5">
           <div>
-            <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-3">
+            <h3 className="text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
               Receiver details
             </h3>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs text-zinc-400 mb-1.5">
+                <label className="block text-xs text-gray-500 dark:text-zinc-400 mb-1.5">
                   Full name <span className="text-rose-400">*</span>
                 </label>
                 <input
                   value={form.receiverName}
                   onChange={(e) => set("receiverName", e.target.value)}
-                  className={`w-full px-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border rounded-lg text-zinc-200 placeholder-zinc-600 focus:outline-none transition-colors ${errors.receiverName ? "border-red-500" : "border-zinc-700 focus:border-zinc-500"}`}
+                  className={`w-full px-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border rounded-lg text-gray-800 dark:text-zinc-200 placeholder-gray-400 dark:placeholder-zinc-600 focus:outline-none transition-colors ${errors.receiverName ? "border-red-500" : "border-gray-300 dark:border-zinc-700 focus:border-zinc-500"}`}
                   placeholder="Aarav Shah"
                 />
                 {errors.receiverName && (
@@ -129,13 +129,13 @@ function CreateShipmentModal({ onClose, onSuccess }) {
                 )}
               </div>
               <div>
-                <label className="block text-xs text-zinc-400 mb-1.5">
+                <label className="block text-xs text-gray-500 dark:text-zinc-400 mb-1.5">
                   Phone <span className="text-rose-400">*</span>
                 </label>
                 <input
                   value={form.receiverPhone}
                   onChange={(e) => set("receiverPhone", e.target.value)}
-                  className={`w-full px-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border rounded-lg text-zinc-200 placeholder-zinc-600 focus:outline-none transition-colors ${errors.receiverPhone ? "border-red-500" : "border-zinc-700 focus:border-zinc-500"}`}
+                  className={`w-full px-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border rounded-lg text-gray-800 dark:text-zinc-200 placeholder-gray-400 dark:placeholder-zinc-600 focus:outline-none transition-colors ${errors.receiverPhone ? "border-red-500" : "border-gray-300 dark:border-zinc-700 focus:border-zinc-500"}`}
                   placeholder="98XXXXXXXX"
                 />
                 {errors.receiverPhone && (
@@ -145,13 +145,13 @@ function CreateShipmentModal({ onClose, onSuccess }) {
                 )}
               </div>
               <div>
-                <label className="block text-xs text-zinc-400 mb-1.5">
+                <label className="block text-xs text-gray-500 dark:text-zinc-400 mb-1.5">
                   Delivery address <span className="text-rose-400">*</span>
                 </label>
                 <input
                   value={form.deliveryAddress}
                   onChange={(e) => set("deliveryAddress", e.target.value)}
-                  className={`w-full px-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border rounded-lg text-zinc-200 placeholder-zinc-600 focus:outline-none transition-colors ${errors.deliveryAddress ? "border-red-500" : "border-zinc-700 focus:border-zinc-500"}`}
+                  className={`w-full px-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border rounded-lg text-gray-800 dark:text-zinc-200 placeholder-gray-400 dark:placeholder-zinc-600 focus:outline-none transition-colors ${errors.deliveryAddress ? "border-red-500" : "border-gray-300 dark:border-zinc-700 focus:border-zinc-500"}`}
                   placeholder="Thamel, Kathmandu"
                 />
                 {errors.deliveryAddress && (
@@ -164,12 +164,12 @@ function CreateShipmentModal({ onClose, onSuccess }) {
           </div>
 
           <div>
-            <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-3">
+            <h3 className="text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
               Package details
             </h3>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-zinc-400 mb-1.5">
+                <label className="block text-xs text-gray-500 dark:text-zinc-400 mb-1.5">
                   Weight (kg) <span className="text-rose-400">*</span>
                 </label>
                 <input
@@ -178,7 +178,7 @@ function CreateShipmentModal({ onClose, onSuccess }) {
                   step="0.1"
                   value={form.weight}
                   onChange={(e) => set("weight", e.target.value)}
-                  className={`w-full px-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border rounded-lg text-zinc-200 focus:outline-none transition-colors ${errors.weight ? "border-red-500" : "border-zinc-700 focus:border-zinc-500"}`}
+                  className={`w-full px-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border rounded-lg text-gray-800 dark:text-zinc-200 focus:outline-none transition-colors ${errors.weight ? "border-red-500" : "border-gray-300 dark:border-zinc-700 focus:border-zinc-500"}`}
                   placeholder="1.5"
                 />
                 {errors.weight && (
@@ -186,7 +186,7 @@ function CreateShipmentModal({ onClose, onSuccess }) {
                 )}
               </div>
               <div>
-                <label className="block text-xs text-zinc-400 mb-1.5">
+                <label className="block text-xs text-gray-500 dark:text-zinc-400 mb-1.5">
                   Order value (??) <span className="text-rose-400">*</span>
                 </label>
                 <input
@@ -194,7 +194,7 @@ function CreateShipmentModal({ onClose, onSuccess }) {
                   min="0"
                   value={form.orderValue}
                   onChange={(e) => set("orderValue", e.target.value)}
-                  className={`w-full px-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border rounded-lg text-zinc-200 focus:outline-none transition-colors ${errors.orderValue ? "border-red-500" : "border-zinc-700 focus:border-zinc-500"}`}
+                  className={`w-full px-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border rounded-lg text-gray-800 dark:text-zinc-200 focus:outline-none transition-colors ${errors.orderValue ? "border-red-500" : "border-gray-300 dark:border-zinc-700 focus:border-zinc-500"}`}
                   placeholder="2400"
                 />
                 {errors.orderValue && (
@@ -204,7 +204,7 @@ function CreateShipmentModal({ onClose, onSuccess }) {
                 )}
               </div>
               <div>
-                <label className="block text-xs text-zinc-400 mb-1.5">
+                <label className="block text-xs text-gray-500 dark:text-zinc-400 mb-1.5">
                   COD amount (??)
                 </label>
                 <input
@@ -212,18 +212,18 @@ function CreateShipmentModal({ onClose, onSuccess }) {
                   min="0"
                   value={form.codAmount}
                   onChange={(e) => set("codAmount", e.target.value)}
-                  className="w-full px-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border border-zinc-700 focus:border-zinc-500 rounded-lg text-zinc-200 focus:outline-none transition-colors"
+                  className="w-full px-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border border-gray-300 dark:border-zinc-700 focus:border-zinc-500 rounded-lg text-gray-800 dark:text-zinc-200 focus:outline-none transition-colors"
                   placeholder="0"
                 />
               </div>
               <div>
-                <label className="block text-xs text-zinc-400 mb-1.5">
+                <label className="block text-xs text-gray-500 dark:text-zinc-400 mb-1.5">
                   Payment type
                 </label>
                 <select
                   value={form.paymentType}
                   onChange={(e) => set("paymentType", e.target.value)}
-                  className="w-full px-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border border-zinc-700 focus:border-zinc-500 rounded-lg text-zinc-200 focus:outline-none transition-colors"
+                  className="w-full px-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border border-gray-300 dark:border-zinc-700 focus:border-zinc-500 rounded-lg text-gray-800 dark:text-zinc-200 focus:outline-none transition-colors"
                 >
                   <option value="PREPAID">Prepaid</option>
                   <option value="COD">COD</option>
@@ -239,7 +239,7 @@ function CreateShipmentModal({ onClose, onSuccess }) {
                 />
                 <label
                   htmlFor="fragile"
-                  className="text-sm text-zinc-400 cursor-pointer"
+                  className="text-sm text-gray-500 dark:text-zinc-400 cursor-pointer"
                 >
                   Fragile package
                 </label>
@@ -248,7 +248,7 @@ function CreateShipmentModal({ onClose, onSuccess }) {
           </div>
 
           <div>
-            <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-3">
+            <h3 className="text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
               Vehicle type
             </h3>
             <div className="space-y-2">
@@ -256,10 +256,12 @@ function CreateShipmentModal({ onClose, onSuccess }) {
                 <button
                   key={v.id}
                   onClick={() => set("vehicleTypeId", v.id)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${form.vehicleTypeId === v.id ? "border-rose-500 bg-rose-500/5" : "border-zinc-800 hover:bg-gray-100 dark:bg-blue-950"}`}
+                  className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${form.vehicleTypeId === v.id ? "border-rose-500 bg-rose-500/5" : "border-gray-200 dark:border-zinc-800 hover:bg-gray-100 dark:bg-blue-950"}`}
                 >
                   <span className="text-lg">{v.icon}</span>
-                  <span className="text-sm text-zinc-300">{v.label}</span>
+                  <span className="text-sm text-gray-700 dark:text-zinc-300">
+                    {v.label}
+                  </span>
                   {form.vehicleTypeId === v.id && (
                     <span className="ml-auto text-xs text-rose-400 font-medium">
                       Selected
@@ -345,14 +347,14 @@ export default function MerchantShipments() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-semibold text-white">Shipments</h1>
-          <p className="text-sm text-zinc-500 mt-0.5">
+          <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
             {data?.total ?? 0} total orders
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={refetch}
-            className="p-2 text-zinc-400 border border-zinc-800 rounded-lg hover:bg-gray-100 dark:bg-blue-950 transition-all"
+            className="p-2 text-gray-500 dark:text-zinc-400 border border-gray-200 dark:border-zinc-800 rounded-lg hover:bg-gray-100 dark:bg-blue-950 transition-all"
           >
             <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
           </button>
@@ -366,7 +368,7 @@ export default function MerchantShipments() {
       </div>
 
       <div className="flex items-center gap-3 mb-4 flex-wrap">
-        <div className="flex items-center gap-1 bg-white dark:bg-gray-900 border border-zinc-800 rounded-lg p-1 flex-wrap">
+        <div className="flex items-center gap-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-lg p-1 flex-wrap">
           {visibleTabs.map((t) => (
             <button
               key={t.value}
@@ -374,12 +376,12 @@ export default function MerchantShipments() {
                 setActiveStatus(t.value);
                 setPage(1);
               }}
-              className={`px-3 py-1 text-xs rounded-md font-medium transition-all flex items-center gap-1.5 ${activeStatus === t.value ? "bg-rose-500 text-white" : "text-zinc-400 hover:text-zinc-200"}`}
+              className={`px-3 py-1 text-xs rounded-md font-medium transition-all flex items-center gap-1.5 ${activeStatus === t.value ? "bg-rose-500 text-white" : "text-gray-500  hover:text-gray-800 dark:text-zinc-200"}`}
             >
               {t.label}
               {t.value !== "" && countByStatus[t.value] > 0 && (
                 <span
-                  className={`text-xs px-1.5 py-0.5 rounded-full ${activeStatus === t.value ? "bg-white/20 text-white" : "bg-gray-100 dark:bg-blue-950 text-zinc-500"}`}
+                  className={`text-xs px-1.5 py-0.5 rounded-full ${activeStatus === t.value ? "bg-white/20 text-white" : "bg-gray-100 dark:bg-blue-950 text-gray-400 dark:text-zinc-500"}`}
                 >
                   {countByStatus[t.value]}
                 </span>
@@ -390,22 +392,22 @@ export default function MerchantShipments() {
         <div className="relative ml-auto">
           <Search
             size={13}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"
           />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search�"
-            className="pl-8 pr-3 py-1.5 text-sm bg-white dark:bg-gray-900 border border-zinc-800 rounded-lg text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-600 w-52"
+            className="pl-8 pr-3 py-1.5 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-lg text-gray-800 dark:text-zinc-200 placeholder-gray-400 dark:placeholder-zinc-600 focus:outline-none focus:border-gray-400 dark:border-zinc-600 w-52"
           />
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-zinc-800">
+              <tr className="border-b border-gray-200 dark:border-zinc-800">
                 {[
                   "Tracking #",
                   "Receiver",
@@ -418,7 +420,7 @@ export default function MerchantShipments() {
                 ].map((h) => (
                   <th
                     key={h}
-                    className="text-left px-4 py-3 text-xs text-zinc-500 font-medium whitespace-nowrap"
+                    className="text-left px-4 py-3 text-xs text-gray-400 dark:text-zinc-500 font-medium whitespace-nowrap"
                   >
                     {h}
                   </th>
@@ -430,7 +432,7 @@ export default function MerchantShipments() {
                 <tr>
                   <td
                     colSpan={8}
-                    className="px-4 py-10 text-center text-zinc-600 text-sm"
+                    className="px-4 py-10 text-center text-gray-300 dark:text-zinc-600 text-sm"
                   >
                     Loading...
                   </td>
@@ -439,7 +441,7 @@ export default function MerchantShipments() {
                 <tr>
                   <td
                     colSpan={8}
-                    className="px-4 py-10 text-center text-zinc-600 text-sm"
+                    className="px-4 py-10 text-center text-gray-300 dark:text-zinc-600 text-sm"
                   >
                     No shipments found
                   </td>
@@ -448,35 +450,37 @@ export default function MerchantShipments() {
                 filtered.map((s) => (
                   <tr
                     key={s.trackingNumber}
-                    className="border-b border-zinc-800/50 hover:bg-gray-100 dark:bg-blue-950/30 transition-colors"
+                    className="border-b border-gray-200/50 dark:border-zinc-800/50 hover:bg-gray-100 dark:bg-blue-950/30 transition-colors"
                   >
-                    <td className="px-4 py-3 font-mono text-xs text-zinc-400">
+                    <td className="px-4 py-3 font-mono text-xs text-gray-500 dark:text-zinc-400">
                       {s.trackingNumber}
                     </td>
-                    <td className="px-4 py-3 text-zinc-200 font-medium">
+                    <td className="px-4 py-3 text-gray-800 dark:text-zinc-200 font-medium">
                       {s.receiverName}
                     </td>
-                    <td className="px-4 py-3 text-xs text-zinc-500">
+                    <td className="px-4 py-3 text-xs text-gray-400 dark:text-zinc-500">
                       {s.receiverPhone}
                     </td>
-                    <td className="px-4 py-3 text-xs text-zinc-500 max-w-[140px] truncate">
+                    <td className="px-4 py-3 text-xs text-gray-400 dark:text-zinc-500 max-w-[140px] truncate">
                       {s.deliveryAddress}
                     </td>
-                    <td className="px-4 py-3 text-xs text-zinc-400">
+                    <td className="px-4 py-3 text-xs text-gray-500 dark:text-zinc-400">
                       {s.weight} kg
                     </td>
-                    <td className="px-4 py-3 text-xs text-zinc-400">
+                    <td className="px-4 py-3 text-xs text-gray-500 dark:text-zinc-400">
                       {s.codAmount > 0 ? (
                         `?? ${s.codAmount.toLocaleString()}`
                       ) : (
-                        <span className="text-zinc-600">�</span>
+                        <span className="text-gray-300 dark:text-zinc-600">
+                          �
+                        </span>
                       )}
                     </td>
                     <td className="px-4 py-3">
                       <StatusBadge status={s.status} />
                     </td>
                     <td className="px-4 py-3">
-                      <button className="p-1.5 text-zinc-600 hover:text-zinc-300 hover:bg-gray-100 dark:bg-blue-950 rounded transition-all">
+                      <button className="p-1.5 text-gray-300  hover:text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:bg-blue-950 rounded transition-all">
                         <Eye size={13} />
                       </button>
                     </td>
@@ -486,22 +490,22 @@ export default function MerchantShipments() {
             </tbody>
           </table>
         </div>
-        <div className="px-4 py-3 border-t border-zinc-800 flex items-center justify-between">
-          <span className="text-xs text-zinc-600">
+        <div className="px-4 py-3 border-t border-gray-200 dark:border-zinc-800 flex items-center justify-between">
+          <span className="text-xs text-gray-300 dark:text-zinc-600">
             Showing {filtered.length}
           </span>
           <div className="flex gap-1">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-3 py-1 text-xs border border-zinc-800 rounded text-zinc-400 hover:bg-gray-100 dark:bg-blue-950 disabled:opacity-30"
+              className="px-3 py-1 text-xs border border-gray-200 dark:border-zinc-800 rounded text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:bg-blue-950 disabled:opacity-30"
             >
               Prev
             </button>
             <button
               onClick={() => setPage((p) => p + 1)}
               disabled={filtered.length < 20}
-              className="px-3 py-1 text-xs border border-zinc-800 rounded text-zinc-400 hover:bg-gray-100 dark:bg-blue-950 disabled:opacity-30"
+              className="px-3 py-1 text-xs border border-gray-200 dark:border-zinc-800 rounded text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:bg-blue-950 disabled:opacity-30"
             >
               Next
             </button>

@@ -13,7 +13,9 @@ export function CurrentStop({ stop, stopCount }) {
       <h2 className="text-lg font-semibold text-white mt-2 mb-0.5">
         {stop.receiverName}
       </h2>
-      <p className="text-sm text-zinc-400 mb-3">{stop.deliveryAddress}</p>
+      <p className="text-sm text-gray-500 dark:text-zinc-400 mb-3">
+        {stop.deliveryAddress}
+      </p>
 
       {stop.codAmount > 0 && (
         <div className="mb-3 px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-lg inline-flex items-center gap-2">
@@ -35,7 +37,7 @@ export function CurrentStop({ stop, stopCount }) {
         </a>
         <a
           href={`tel:${stop.phone}`}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 border border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:bg-gray-100 dark:bg-blue-950 text-sm rounded-lg transition-all"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 dark:border-zinc-700 text-gray-500  hover:bg-gray-100 dark:bg-blue-950 text-sm rounded-lg transition-all"
         >
           <Phone size={14} />
           Call

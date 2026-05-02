@@ -88,19 +88,19 @@ export default function AddressAutocomplete({
   return (
     <div>
       {label && (
-        <label className="block text-xs text-zinc-400 mb-1.5 font-medium">
+        <label className="block text-xs text-gray-500 dark:text-zinc-400 mb-1.5 font-medium">
           {label} {required && <span className="text-rose-400">*</span>}
         </label>
       )}
       <div className="relative">
         <MapPin
           size={13}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500 pointer-events-none"
         />
         {!ready && (
           <Loader2
             size={13}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 animate-spin"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500 animate-spin"
           />
         )}
         <input
@@ -109,10 +109,10 @@ export default function AddressAutocomplete({
           defaultValue={value}
           placeholder={placeholder}
           required={required}
-          className={`w-full pl-8 pr-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border rounded-lg text-zinc-200 placeholder-zinc-600 focus:outline-none transition-colors ${
+          className={`w-full pl-8 pr-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border rounded-lg text-gray-800 dark:text-zinc-200 placeholder-gray-400 dark:placeholder-zinc-600 focus:outline-none transition-colors ${
             error
               ? "border-red-500 focus:border-red-400"
-              : "border-zinc-700 focus:border-zinc-500"
+              : "border-gray-300 dark:border-zinc-700 focus:border-zinc-500"
           }`}
         />
       </div>

@@ -81,7 +81,7 @@ export default function AssignRoutes() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-semibold text-white">Assign routes</h1>
-          <p className="text-sm text-zinc-500 mt-0.5">
+          <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
             {shipments.length} pending shipment
             {shipments.length !== 1 ? "s" : ""} waiting for assignment
           </p>
@@ -89,7 +89,7 @@ export default function AssignRoutes() {
         <div className="flex items-center gap-2">
           <button
             onClick={refetch}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-zinc-400 border border-zinc-800 rounded-lg hover:bg-gray-100 dark:bg-blue-950 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 dark:text-zinc-400 border border-gray-200 dark:border-zinc-800 rounded-lg hover:bg-gray-100 dark:bg-blue-950 transition-all"
           >
             <RefreshCw
               size={12}
@@ -112,15 +112,15 @@ export default function AssignRoutes() {
 
       <div className="grid lg:grid-cols-3 gap-4">
         {/* Shipment list */}
-        <div className="lg:col-span-2 bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl overflow-hidden">
-          <div className="px-5 py-3 border-b border-zinc-800 flex items-center justify-between">
+        <div className="lg:col-span-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden">
+          <div className="px-5 py-3 border-b border-gray-200 dark:border-zinc-800 flex items-center justify-between">
             <h2 className="text-sm font-medium text-white">
               Pending shipments ({shipments.length})
             </h2>
             {shipments.length > 0 && (
               <button
                 onClick={toggleAll}
-                className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
+                className="flex items-center gap-1.5 text-xs text-gray-500  hover:text-gray-800 dark:text-zinc-200 transition-colors"
               >
                 {selected.size === shipments.length ? (
                   <CheckSquare size={13} className="text-emerald-400" />
@@ -135,17 +135,17 @@ export default function AssignRoutes() {
           </div>
 
           {loadingShipments ? (
-            <div className="px-5 py-10 text-center text-zinc-600 text-sm">
+            <div className="px-5 py-10 text-center text-gray-300 dark:text-zinc-600 text-sm">
               Loading…
             </div>
           ) : shipments.length === 0 ? (
-            <div className="px-5 py-10 text-center text-zinc-600 text-sm">
+            <div className="px-5 py-10 text-center text-gray-300 dark:text-zinc-600 text-sm">
               No pending shipments
             </div>
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-zinc-800">
+                <tr className="border-b border-gray-200 dark:border-zinc-800">
                   <th className="px-4 py-2.5 text-left w-8" />
                   {[
                     "Tracking #",
@@ -157,7 +157,7 @@ export default function AssignRoutes() {
                   ].map((h) => (
                     <th
                       key={h}
-                      className="text-left px-3 py-2.5 text-xs text-zinc-500 font-medium"
+                      className="text-left px-3 py-2.5 text-xs text-gray-400 dark:text-zinc-500 font-medium"
                     >
                       {h}
                     </th>
@@ -169,7 +169,7 @@ export default function AssignRoutes() {
                   <tr
                     key={s.id}
                     onClick={() => toggle(s.id)}
-                    className={`border-b border-zinc-800/50 cursor-pointer transition-colors ${
+                    className={`border-b border-gray-200/50 dark:border-zinc-800/50 cursor-pointer transition-colors ${
                       selected.has(s.id)
                         ? "bg-emerald-500/5"
                         : "hover:bg-gray-100 dark:bg-blue-950/30"
@@ -179,26 +179,29 @@ export default function AssignRoutes() {
                       {selected.has(s.id) ? (
                         <CheckSquare size={14} className="text-emerald-400" />
                       ) : (
-                        <Square size={14} className="text-zinc-600" />
+                        <Square
+                          size={14}
+                          className="text-gray-300 dark:text-zinc-600"
+                        />
                       )}
                     </td>
-                    <td className="px-3 py-3 font-mono text-xs text-zinc-400">
+                    <td className="px-3 py-3 font-mono text-xs text-gray-500 dark:text-zinc-400">
                       {s.trackingNumber}
                     </td>
-                    <td className="px-3 py-3 text-xs text-zinc-300">
+                    <td className="px-3 py-3 text-xs text-gray-700 dark:text-zinc-300">
                       {s.merchant?.businessName ?? "—"}
                     </td>
-                    <td className="px-3 py-3 text-xs text-zinc-400">
+                    <td className="px-3 py-3 text-xs text-gray-500 dark:text-zinc-400">
                       {s.receiverName}
                     </td>
-                    <td className="px-3 py-3 text-xs text-zinc-500 truncate max-w-[120px]">
+                    <td className="px-3 py-3 text-xs text-gray-400 dark:text-zinc-500 truncate max-w-[120px]">
                       {s.deliveryAddress}
                     </td>
-                    <td className="px-3 py-3 text-xs text-zinc-400">
+                    <td className="px-3 py-3 text-xs text-gray-500 dark:text-zinc-400">
                       {s.weight} kg
                     </td>
                     <td className="px-3 py-3">
-                      <span className="text-xs bg-gray-100 dark:bg-blue-950 text-zinc-400 px-2 py-0.5 rounded">
+                      <span className="text-xs bg-gray-100 dark:bg-blue-950 text-gray-500 dark:text-zinc-400 px-2 py-0.5 rounded">
                         {s.vehicleType?.name ?? "—"}
                       </span>
                     </td>
@@ -209,7 +212,7 @@ export default function AssignRoutes() {
           )}
 
           {selected.size > 0 && (
-            <div className="px-5 py-3 border-t border-zinc-800 bg-emerald-500/5 flex items-center justify-between">
+            <div className="px-5 py-3 border-t border-gray-200 dark:border-zinc-800 bg-emerald-500/5 flex items-center justify-between">
               <span className="text-xs text-emerald-400">
                 {selected.size} selected · {totalWeight.toFixed(1)} kg total
               </span>
@@ -221,8 +224,8 @@ export default function AssignRoutes() {
         <div className="space-y-3">
           {/* Vehicle type filter — built from riders, not shipments */}
           {vehicleTypes.length > 0 && (
-            <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-4">
-              <label className="text-xs text-zinc-500 block mb-2">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-4">
+              <label className="text-xs text-gray-400 dark:text-zinc-500 block mb-2">
                 Filter by vehicle type
               </label>
               <select
@@ -231,7 +234,7 @@ export default function AssignRoutes() {
                   setVehicleTypeId(e.target.value);
                   setRiderId("");
                 }}
-                className="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-blue-950 border border-zinc-700 rounded-lg text-zinc-300 focus:outline-none focus:border-zinc-600"
+                className="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-blue-950 border border-gray-300 dark:border-zinc-700 rounded-lg text-gray-700 dark:text-zinc-300 focus:outline-none focus:border-gray-400 dark:border-zinc-600"
               >
                 <option value="">All vehicle types</option>
                 {vehicleTypes.map((v) => (
@@ -244,22 +247,22 @@ export default function AssignRoutes() {
           )}
 
           {/* Rider list */}
-          <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-4">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-4">
             <h2 className="text-sm font-medium text-white mb-3">
               Available riders
               {riders.length > 0 && (
-                <span className="ml-2 text-xs text-zinc-500 font-normal">
+                <span className="ml-2 text-xs text-gray-400 dark:text-zinc-500 font-normal">
                   ({riders.length})
                 </span>
               )}
             </h2>
 
             {loadingRiders ? (
-              <p className="text-xs text-zinc-600 text-center py-4">
+              <p className="text-xs text-gray-300 dark:text-zinc-600 text-center py-4">
                 Loading riders…
               </p>
             ) : riders.length === 0 ? (
-              <p className="text-xs text-zinc-600 text-center py-4">
+              <p className="text-xs text-gray-300 dark:text-zinc-600 text-center py-4">
                 No riders online
               </p>
             ) : (
@@ -271,20 +274,20 @@ export default function AssignRoutes() {
                     className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-all text-left ${
                       riderId === r.id
                         ? "border-emerald-500 bg-emerald-500/5"
-                        : "border-zinc-800 hover:bg-gray-100 dark:bg-blue-950"
+                        : "border-gray-200 dark:border-zinc-800 hover:bg-gray-100 dark:bg-blue-950"
                     }`}
                   >
-                    <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-blue-900 text-zinc-300 text-xs font-semibold flex items-center justify-center shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-blue-900 text-gray-700 dark:text-zinc-300 text-xs font-semibold flex items-center justify-center shrink-0">
                       {r.user?.fullName
                         ?.split(" ")
                         .map((w) => w[0])
                         .join("") ?? "?"}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-zinc-200 font-medium">
+                      <p className="text-sm text-gray-800 dark:text-zinc-200 font-medium">
                         {r.user?.fullName ?? "—"}
                       </p>
-                      <p className="text-xs text-zinc-500">
+                      <p className="text-xs text-gray-400 dark:text-zinc-500">
                         {r.user?.phoneNumber} · {r.vehicleType?.name}
                       </p>
                     </div>
@@ -295,7 +298,7 @@ export default function AssignRoutes() {
             )}
           </div>
 
-          <button className="w-full flex items-center gap-2 justify-center py-2.5 border border-dashed border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500 rounded-xl text-sm transition-all">
+          <button className="w-full flex items-center gap-2 justify-center py-2.5 border border-dashed border-gray-300 dark:border-zinc-700 text-gray-400  hover:text-gray-700 dark:text-zinc-300 hover:border-gray-500 dark:hover:border-zinc-500 rounded-xl text-sm transition-all">
             <Zap size={14} /> Auto-assign by zone
           </button>
         </div>

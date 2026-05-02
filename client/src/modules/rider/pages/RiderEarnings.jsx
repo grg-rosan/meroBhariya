@@ -24,7 +24,7 @@ export default function RiderEarnings() {
     <div className="p-6 max-w-4xl mx-auto">
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-white">Earnings</h1>
-        <p className="text-sm text-zinc-500 mt-0.5">
+        <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
           Your income and payout history
         </p>
       </div>
@@ -58,17 +58,17 @@ export default function RiderEarnings() {
 
       <div className="grid lg:grid-cols-2 gap-4">
         {/* Payout history */}
-        <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl overflow-hidden">
-          <div className="px-5 py-3 border-b border-zinc-800">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden">
+          <div className="px-5 py-3 border-b border-gray-200 dark:border-zinc-800">
             <h2 className="text-sm font-medium text-white">Payout history</h2>
           </div>
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-zinc-800">
+              <tr className="border-b border-gray-200 dark:border-zinc-800">
                 {["Date", "Drops", "Amount", "Status"].map((h) => (
                   <th
                     key={h}
-                    className="text-left px-4 py-2.5 text-xs text-zinc-500 font-medium"
+                    className="text-left px-4 py-2.5 text-xs text-gray-400 dark:text-zinc-500 font-medium"
                   >
                     {h}
                   </th>
@@ -79,11 +79,15 @@ export default function RiderEarnings() {
               {PAYOUTS.map((p) => (
                 <tr
                   key={p.date}
-                  className="border-b border-zinc-800/50 hover:bg-gray-100 dark:bg-blue-950/30"
+                  className="border-b border-gray-200/50 dark:border-zinc-800/50 hover:bg-gray-100 dark:bg-blue-950/30"
                 >
-                  <td className="px-4 py-3 text-xs text-zinc-400">{p.date}</td>
-                  <td className="px-4 py-3 text-xs text-zinc-400">{p.drops}</td>
-                  <td className="px-4 py-3 text-sm font-medium text-zinc-200">
+                  <td className="px-4 py-3 text-xs text-gray-500 dark:text-zinc-400">
+                    {p.date}
+                  </td>
+                  <td className="px-4 py-3 text-xs text-gray-500 dark:text-zinc-400">
+                    {p.drops}
+                  </td>
+                  <td className="px-4 py-3 text-sm font-medium text-gray-800 dark:text-zinc-200">
                     रु {p.amount.toLocaleString()}
                   </td>
                   <td className="px-4 py-3">
@@ -98,25 +102,27 @@ export default function RiderEarnings() {
         </div>
 
         {/* Today's breakdown */}
-        <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-5">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5">
           <h2 className="text-sm font-medium text-white mb-4">
             Today's breakdown
           </h2>
           {BREAKDOWN.map((b) => (
             <div
               key={b.label}
-              className="flex justify-between items-center py-2.5 border-b border-zinc-800/50 last:border-none"
+              className="flex justify-between items-center py-2.5 border-b border-gray-200/50 dark:border-zinc-800/50 last:border-none"
             >
-              <span className="text-sm text-zinc-400">{b.label}</span>
+              <span className="text-sm text-gray-500 dark:text-zinc-400">
+                {b.label}
+              </span>
               <span
-                className={`text-sm font-medium ${b.amount < 0 ? "text-red-400" : "text-zinc-200"}`}
+                className={`text-sm font-medium ${b.amount < 0 ? "text-red-400" : "text-gray-800 dark:text-zinc-200"}`}
               >
                 {b.amount < 0 ? "-" : "+"}रु {Math.abs(b.amount)}
               </span>
             </div>
           ))}
-          <div className="mt-3 pt-3 border-t border-zinc-700 flex justify-between">
-            <span className="text-sm font-medium text-zinc-300">
+          <div className="mt-3 pt-3 border-t border-gray-300 dark:border-zinc-700 flex justify-between">
+            <span className="text-sm font-medium text-gray-700 dark:text-zinc-300">
               Total today
             </span>
             <span className="text-lg font-semibold text-green-400">

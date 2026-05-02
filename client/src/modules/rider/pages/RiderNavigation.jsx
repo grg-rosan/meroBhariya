@@ -17,7 +17,9 @@ export default function RiderNavigation() {
   if (!activeStop) {
     return (
       <div className="p-6 max-w-3xl mx-auto flex flex-col items-center justify-center gap-3 mt-20">
-        <p className="text-zinc-400 text-sm">No stop selected.</p>
+        <p className="text-gray-500 dark:text-zinc-400 text-sm">
+          No stop selected.
+        </p>
         <button
           onClick={() => navigate("/rider/manifest")}
           className="text-sky-400 text-sm hover:underline"
@@ -33,13 +35,13 @@ export default function RiderNavigation() {
       <div className="flex items-center gap-3">
         <button
           onClick={() => navigate(-1)}
-          className="w-8 h-8 flex items-center justify-center rounded-lg border border-zinc-700 hover:bg-gray-100 dark:bg-blue-950 text-zinc-400 transition-all"
+          className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 dark:border-zinc-700 hover:bg-gray-100 dark:bg-blue-950 text-gray-500 dark:text-zinc-400 transition-all"
         >
           <ArrowLeft size={15} />
         </button>
         <div>
           <h1 className="text-xl font-semibold text-white">Route navigation</h1>
-          <p className="text-sm text-zinc-500 mt-0.5">
+          <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
             Stop {activeStop.stopNum} of {totalStops + 2}
           </p>
         </div>

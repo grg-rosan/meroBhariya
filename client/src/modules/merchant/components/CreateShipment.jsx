@@ -160,7 +160,7 @@ export default function CreateShipment() {
     <div className="p-6 max-w-4xl mx-auto">
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-white">New shipment</h1>
-        <p className="text-sm text-zinc-500 mt-0.5">
+        <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
           Addresses are autocompleted and geocoded automatically
         </p>
       </div>
@@ -169,19 +169,19 @@ export default function CreateShipment() {
         {/* Left: Form */}
         <div className="space-y-5">
           {/* Receiver */}
-          <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-5">
-            <h2 className="text-sm font-medium text-zinc-300 mb-4">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5">
+            <h2 className="text-sm font-medium text-gray-700 dark:text-zinc-300 mb-4">
               Receiver details
             </h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs text-zinc-400 mb-1.5 font-medium">
+                <label className="block text-xs text-gray-500 dark:text-zinc-400 mb-1.5 font-medium">
                   Full name <span className="text-rose-400">*</span>
                 </label>
                 <input
                   value={form.receiverName}
                   onChange={(e) => set("receiverName", e.target.value)}
-                  className={`w-full px-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border rounded-lg text-zinc-200 placeholder-zinc-600 focus:outline-none transition-colors ${errors.receiverName ? "border-red-500" : "border-zinc-700 focus:border-zinc-500"}`}
+                  className={`w-full px-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border rounded-lg text-gray-800 dark:text-zinc-200 placeholder-gray-400 dark:placeholder-zinc-600 focus:outline-none transition-colors ${errors.receiverName ? "border-red-500" : "border-gray-300 dark:border-zinc-700 focus:border-zinc-500"}`}
                   placeholder="Aarav Shah"
                 />
                 {errors.receiverName && (
@@ -191,13 +191,13 @@ export default function CreateShipment() {
                 )}
               </div>
               <div>
-                <label className="block text-xs text-zinc-400 mb-1.5 font-medium">
+                <label className="block text-xs text-gray-500 dark:text-zinc-400 mb-1.5 font-medium">
                   Phone <span className="text-rose-400">*</span>
                 </label>
                 <input
                   value={form.receiverPhone}
                   onChange={(e) => set("receiverPhone", e.target.value)}
-                  className={`w-full px-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border rounded-lg text-zinc-200 placeholder-zinc-600 focus:outline-none transition-colors ${errors.receiverPhone ? "border-red-500" : "border-zinc-700 focus:border-zinc-500"}`}
+                  className={`w-full px-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border rounded-lg text-gray-800 dark:text-zinc-200 placeholder-gray-400 dark:placeholder-zinc-600 focus:outline-none transition-colors ${errors.receiverPhone ? "border-red-500" : "border-gray-300 dark:border-zinc-700 focus:border-zinc-500"}`}
                   placeholder="98XXXXXXXX"
                 />
                 {errors.receiverPhone && (
@@ -220,13 +220,13 @@ export default function CreateShipment() {
           </div>
 
           {/* Package */}
-          <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-5">
-            <h2 className="text-sm font-medium text-zinc-300 mb-4">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5">
+            <h2 className="text-sm font-medium text-gray-700 dark:text-zinc-300 mb-4">
               Package details
             </h2>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-zinc-400 mb-1.5 font-medium">
+                <label className="block text-xs text-gray-500 dark:text-zinc-400 mb-1.5 font-medium">
                   Weight (kg) <span className="text-rose-400">*</span>
                 </label>
                 <input
@@ -235,7 +235,7 @@ export default function CreateShipment() {
                   step="0.1"
                   value={form.weightKg}
                   onChange={(e) => set("weightKg", e.target.value)}
-                  className={`w-full px-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border rounded-lg text-zinc-200 focus:outline-none transition-colors ${errors.weightKg ? "border-red-500" : "border-zinc-700 focus:border-zinc-500"}`}
+                  className={`w-full px-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border rounded-lg text-gray-800 dark:text-zinc-200 focus:outline-none transition-colors ${errors.weightKg ? "border-red-500" : "border-gray-300 dark:border-zinc-700 focus:border-zinc-500"}`}
                   placeholder="1.5"
                 />
                 {errors.weightKg && (
@@ -243,7 +243,7 @@ export default function CreateShipment() {
                 )}
               </div>
               <div>
-                <label className="block text-xs text-zinc-400 mb-1.5 font-medium">
+                <label className="block text-xs text-gray-500 dark:text-zinc-400 mb-1.5 font-medium">
                   Order value (रु) <span className="text-rose-400">*</span>
                 </label>
                 <input
@@ -251,12 +251,12 @@ export default function CreateShipment() {
                   min="0"
                   value={form.orderValue}
                   onChange={(e) => set("orderValue", e.target.value)}
-                  className={`w-full px-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border rounded-lg text-zinc-200 focus:outline-none transition-colors ${errors.orderValue ? "border-red-500" : "border-zinc-700 focus:border-zinc-500"}`}
+                  className={`w-full px-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border rounded-lg text-gray-800 dark:text-zinc-200 focus:outline-none transition-colors ${errors.orderValue ? "border-red-500" : "border-gray-300 dark:border-zinc-700 focus:border-zinc-500"}`}
                   placeholder="2400"
                 />
               </div>
               <div>
-                <label className="block text-xs text-zinc-400 mb-1.5 font-medium">
+                <label className="block text-xs text-gray-500 dark:text-zinc-400 mb-1.5 font-medium">
                   COD amount (रु)
                 </label>
                 <input
@@ -264,7 +264,7 @@ export default function CreateShipment() {
                   min="0"
                   value={form.codAmount}
                   onChange={(e) => set("codAmount", e.target.value)}
-                  className="w-full px-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border border-zinc-700 focus:border-zinc-500 rounded-lg text-zinc-200 focus:outline-none transition-colors"
+                  className="w-full px-3 py-2.5 text-sm bg-gray-100 dark:bg-blue-950 border border-gray-300 dark:border-zinc-700 focus:border-zinc-500 rounded-lg text-gray-800 dark:text-zinc-200 focus:outline-none transition-colors"
                   placeholder="0"
                 />
               </div>
@@ -278,7 +278,7 @@ export default function CreateShipment() {
                 />
                 <label
                   htmlFor="fragile"
-                  className="text-sm text-zinc-400 cursor-pointer"
+                  className="text-sm text-gray-500 dark:text-zinc-400 cursor-pointer"
                 >
                   Fragile package
                 </label>
@@ -287,8 +287,8 @@ export default function CreateShipment() {
           </div>
 
           {/* Vehicle type */}
-          <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-5">
-            <h2 className="text-sm font-medium text-zinc-300 mb-3">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5">
+            <h2 className="text-sm font-medium text-gray-700 dark:text-zinc-300 mb-3">
               Vehicle type
             </h2>
             <div className="space-y-2">
@@ -296,10 +296,12 @@ export default function CreateShipment() {
                 <button
                   key={v.id}
                   onClick={() => set("vehicleTypeId", v.id)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${form.vehicleTypeId === v.id ? "border-rose-500 bg-rose-500/5" : "border-zinc-800 hover:bg-gray-100 dark:bg-blue-950"}`}
+                  className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${form.vehicleTypeId === v.id ? "border-rose-500 bg-rose-500/5" : "border-gray-200 dark:border-zinc-800 hover:bg-gray-100 dark:bg-blue-950"}`}
                 >
                   <span className="text-lg">{v.icon}</span>
-                  <span className="text-sm text-zinc-300">{v.label}</span>
+                  <span className="text-sm text-gray-700 dark:text-zinc-300">
+                    {v.label}
+                  </span>
                   {form.vehicleTypeId === v.id && (
                     <ChevronRight size={14} className="ml-auto text-rose-400" />
                   )}
@@ -337,17 +339,17 @@ export default function CreateShipment() {
         {/* Right: Map + Fare preview */}
         <div className="space-y-4">
           {/* Map */}
-          <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl overflow-hidden">
-            <div className="px-4 py-3 border-b border-zinc-800 flex items-center gap-2">
-              <MapPin size={13} className="text-zinc-500" />
-              <span className="text-xs font-medium text-zinc-400">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-200 dark:border-zinc-800 flex items-center gap-2">
+              <MapPin size={13} className="text-gray-400 dark:text-zinc-500" />
+              <span className="text-xs font-medium text-gray-500 dark:text-zinc-400">
                 Route preview
               </span>
             </div>
             <div ref={mapContainerRef} className="h-56 w-full" />
             {!form.deliveryLatLng && (
               <div className="absolute inset-0 flex items-center justify-center bg-white dark:bg-gray-900/60 pointer-events-none">
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-gray-400 dark:text-zinc-500">
                   Enter delivery address to see route
                 </p>
               </div>
@@ -355,13 +357,16 @@ export default function CreateShipment() {
           </div>
 
           {/* Fare card */}
-          <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-5">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-medium text-zinc-300">
+              <h2 className="text-sm font-medium text-gray-700 dark:text-zinc-300">
                 Fare estimate
               </h2>
               {fareLoading && (
-                <Loader2 size={13} className="text-zinc-500 animate-spin" />
+                <Loader2
+                  size={13}
+                  className="text-gray-400 dark:text-zinc-500 animate-spin"
+                />
               )}
             </div>
 
@@ -415,13 +420,19 @@ export default function CreateShipment() {
                       : []),
                   ].map((r) => (
                     <div key={r.label} className="flex justify-between text-xs">
-                      <span className="text-zinc-500">{r.label}</span>
-                      <span className="text-zinc-300">{r.value}</span>
+                      <span className="text-gray-400 dark:text-zinc-500">
+                        {r.label}
+                      </span>
+                      <span className="text-gray-700 dark:text-zinc-300">
+                        {r.value}
+                      </span>
                     </div>
                   ))}
                 </div>
-                <div className="border-t border-zinc-800 pt-3 flex justify-between items-baseline">
-                  <span className="text-sm text-zinc-400">Total fare</span>
+                <div className="border-t border-gray-200 dark:border-zinc-800 pt-3 flex justify-between items-baseline">
+                  <span className="text-sm text-gray-500 dark:text-zinc-400">
+                    Total fare
+                  </span>
                   <span className="text-xl font-semibold text-white">
                     रु {fareData.totalFare.toLocaleString()}
                   </span>
@@ -434,7 +445,7 @@ export default function CreateShipment() {
               </>
             ) : (
               <div className="text-center py-6">
-                <p className="text-xs text-zinc-600">
+                <p className="text-xs text-gray-300 dark:text-zinc-600">
                   Enter address and weight to see fare estimate
                 </p>
               </div>

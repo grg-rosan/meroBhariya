@@ -58,7 +58,10 @@ export default function RiderDashboard() {
     }
   };
 
-  if (loading) return <div className="p-6 text-zinc-400">Loading...</div>;
+  if (loading)
+    return (
+      <div className="p-6 text-gray-500 dark:text-zinc-400">Loading...</div>
+    );
   if (error)
     return <div className="p-6 text-red-400">Failed to load dashboard.</div>;
 
@@ -90,7 +93,7 @@ export default function RiderDashboard() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-semibold text-white">My shift</h1>
-          <p className="text-sm text-zinc-500 mt-0.5">
+          <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
             {rider.fullName} · {rider.vehicleType} · {rider.vehicleNumber}
           </p>
         </div>
@@ -98,7 +101,7 @@ export default function RiderDashboard() {
         <button
           onClick={handleToggle}
           disabled={tl || !isVerified}
-          className={`flex items-center gap-3 px-4 py-2 rounded-xl border transition-all ${online ? "border-green-600 bg-green-500/10" : "border-zinc-700 bg-white dark:bg-gray-900"} ${!isVerified ? "opacity-40 cursor-not-allowed" : ""}`}
+          className={`flex items-center gap-3 px-4 py-2 rounded-xl border transition-all ${online ? "border-green-600 bg-green-500/10" : "border-gray-300 dark:border-zinc-700 bg-white dark:bg-gray-900"} ${!isVerified ? "opacity-40 cursor-not-allowed" : ""}`}
         >
           <div
             className={`relative w-9 h-5 rounded-full transition-colors ${online ? "bg-green-500" : "bg-gray-200 dark:bg-blue-900"}`}
@@ -108,7 +111,7 @@ export default function RiderDashboard() {
             />
           </div>
           <span
-            className={`text-sm font-medium ${online ? "text-green-400" : "text-zinc-500"}`}
+            className={`text-sm font-medium ${online ? "text-green-400" : "text-gray-400 dark:text-zinc-500"}`}
           >
             {online ? "On duty" : "Off duty"}
           </span>
@@ -142,24 +145,26 @@ export default function RiderDashboard() {
         />
       </div>
 
-      <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-5">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5">
         <h2 className="text-sm font-medium text-white mb-4">
           Today's activity
         </h2>
         {activity.length === 0 ? (
-          <p className="text-sm text-zinc-600">No activity yet today.</p>
+          <p className="text-sm text-gray-300 dark:text-zinc-600">
+            No activity yet today.
+          </p>
         ) : (
           <div className="relative pl-5">
             {activity.map((item, i) => (
               <div key={item.id} className="relative pb-4 last:pb-0">
-                <div className="absolute -left-5 top-1 w-2.5 h-2.5 rounded-full bg-sky-500 border-2 border-zinc-900 z-10" />
+                <div className="absolute -left-5 top-1 w-2.5 h-2.5 rounded-full bg-sky-500 border-2 border-gray-200 dark:border-zinc-900 z-10" />
                 {i < activity.length - 1 && (
                   <div className="absolute -left-15px top-3 w-px h-full bg-gray-100 dark:bg-blue-950" />
                 )}
-                <p className="text-sm text-zinc-300">
+                <p className="text-sm text-gray-700 dark:text-zinc-300">
                   {item.status} — {item.receiverName} · {item.deliveryAddress}
                 </p>
-                <p className="text-xs text-zinc-600 mt-0.5">
+                <p className="text-xs text-gray-300 dark:text-zinc-600 mt-0.5">
                   {new Date(item.time).toLocaleTimeString()}
                 </p>
               </div>

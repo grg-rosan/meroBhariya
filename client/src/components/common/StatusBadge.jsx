@@ -15,7 +15,7 @@ const MAP = {
 export default function StatusBadge({ status }) {
   const { label, cls } = MAP[status] ?? {
     label: status,
-    cls: "bg-gray-200 dark:bg-blue-900 text-zinc-300",
+    cls: "bg-gray-200 dark:bg-blue-900 text-gray-700 dark:text-zinc-300",
   };
   return (
     <span

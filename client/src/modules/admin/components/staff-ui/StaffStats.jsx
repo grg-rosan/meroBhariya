@@ -13,10 +13,12 @@ export default function StaffStats({ counts }) {
       {pills.map((p) => (
         <div
           key={p.label}
-          className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-lg px-4 py-3 flex items-center gap-3"
+          className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-lg px-4 py-3 flex items-center gap-3"
         >
           <span className={`text-2xl font-semibold ${p.color}`}>{p.value}</span>
-          <span className="text-xs text-zinc-500">{p.label}</span>
+          <span className="text-xs text-gray-400 dark:text-zinc-500">
+            {p.label}
+          </span>
         </div>
       ))}
     </div>

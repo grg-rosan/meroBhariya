@@ -32,7 +32,7 @@ export default function Staff() {
       <div className="flex items-start justify-between mb-6">
         <div>
           <h1 className="text-xl font-semibold text-white">Staff</h1>
-          <p className="text-sm text-zinc-500 mt-0.5">
+          <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
             Manage admin and dispatcher accounts
           </p>
         </div>
@@ -60,7 +60,7 @@ export default function Staff() {
           {[...Array(4)].map((_, i) => (
             <div
               key={i}
-              className="h-16 bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl animate-pulse"
+              className="h-16 bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl animate-pulse"
             />
           ))}
         </div>

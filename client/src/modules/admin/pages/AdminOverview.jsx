@@ -21,8 +21,10 @@ function Bar({ label, pct, color = "bg-violet-500" }) {
   return (
     <div className="mb-3 last:mb-0">
       <div className="flex justify-between text-xs mb-1.5">
-        <span className="text-zinc-400">{label}</span>
-        <span className="text-zinc-300 font-medium">{safePct}%</span>
+        <span className="text-gray-500 dark:text-zinc-400">{label}</span>
+        <span className="text-gray-700 dark:text-zinc-300 font-medium">
+          {safePct}%
+        </span>
       </div>
       <div className="h-1.5 bg-gray-100 dark:bg-blue-950 rounded-full overflow-hidden">
         <div
@@ -63,7 +65,7 @@ const QUICK_ACTIONS = [
     label: "Manage staff",
     key: null,
     to: "/admin/staff",
-    color: "text-zinc-400",
+    color: "text-gray-500 dark:text-zinc-400",
   },
 ];
 
@@ -80,7 +82,7 @@ export default function AdminOverview() {
     <div className="p-6 max-w-6xl mx-auto">
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-white">Platform overview</h1>
-        <p className="text-sm text-zinc-500 mt-0.5">
+        <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
           meroBhariya logistics — live health dashboard
         </p>
       </div>
@@ -115,7 +117,7 @@ export default function AdminOverview() {
 
       <div className="grid lg:grid-cols-3 gap-4">
         {/* Platform health */}
-        <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-5">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5">
           <h2 className="text-sm font-medium text-white mb-4">
             Platform health
           </h2>
@@ -142,9 +144,9 @@ export default function AdminOverview() {
               />
             </>
           )}
-          <div className="mt-5 pt-4 border-t border-zinc-800 space-y-2">
+          <div className="mt-5 pt-4 border-t border-gray-200 dark:border-zinc-800 space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs text-gray-400 dark:text-zinc-500">
                 Pending verifications
               </span>
               <div className="flex gap-2">
@@ -157,7 +159,9 @@ export default function AdminOverview() {
               </div>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-xs text-zinc-500">Expired documents</span>
+              <span className="text-xs text-gray-400 dark:text-zinc-500">
+                Expired documents
+              </span>
               <span className="text-xs bg-red-500/10 text-red-400 px-2 py-0.5 rounded">
                 {qaLoading ? "…" : (qa?.expiredDocs ?? 0)} expired
               </span>
@@ -166,16 +170,16 @@ export default function AdminOverview() {
         </div>
 
         {/* Quick actions */}
-        <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-5">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5">
           <h2 className="text-sm font-medium text-white mb-4">Quick actions</h2>
           <div className="space-y-2">
             {QUICK_ACTIONS.map((a) => (
               <Link
                 key={a.label}
                 to={a.to}
-                className="flex items-center justify-between p-3 border border-zinc-800 rounded-lg hover:bg-gray-100 dark:bg-blue-950 transition-all group"
+                className="flex items-center justify-between p-3 border border-gray-200 dark:border-zinc-800 rounded-lg hover:bg-gray-100 dark:bg-blue-950 transition-all group"
               >
-                <span className="text-sm text-zinc-300 group-hover:text-white transition-colors">
+                <span className="text-sm text-gray-700 dark:text-zinc-300 group-hover:text-white transition-colors">
                   {a.label}
                 </span>
                 {a.key != null && (
@@ -189,7 +193,7 @@ export default function AdminOverview() {
         </div>
 
         {/* Activity feed */}
-        <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-5">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5">
           <h2 className="text-sm font-medium text-white mb-4">
             Recent activity
           </h2>
@@ -211,15 +215,19 @@ export default function AdminOverview() {
                     className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${DOT[a.type] ?? "bg-gray-300 dark:bg-zinc-600"}`}
                   />
                   <div>
-                    <p className="text-xs text-zinc-300 leading-relaxed">
+                    <p className="text-xs text-gray-700 dark:text-zinc-300 leading-relaxed">
                       {a.text}
                     </p>
-                    <p className="text-xs text-zinc-600 mt-0.5">{a.time}</p>
+                    <p className="text-xs text-gray-300 dark:text-zinc-600 mt-0.5">
+                      {a.time}
+                    </p>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-xs text-zinc-600">No recent activity</p>
+              <p className="text-xs text-gray-300 dark:text-zinc-600">
+                No recent activity
+              </p>
             )}
           </div>
         </div>

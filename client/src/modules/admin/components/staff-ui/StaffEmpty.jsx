@@ -4,10 +4,10 @@ import { Users } from "lucide-react";
 export default function StaffEmpty({ hasFilters, onAdd }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="w-12 h-12 rounded-2xl bg-white dark:bg-gray-900 border border-zinc-800 flex items-center justify-center mb-3">
-        <Users size={20} className="text-zinc-600" />
+      <div className="w-12 h-12 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 flex items-center justify-center mb-3">
+        <Users size={20} className="text-gray-300 dark:text-zinc-600" />
       </div>
-      <p className="text-sm text-zinc-500">
+      <p className="text-sm text-gray-400 dark:text-zinc-500">
         {hasFilters ? "No staff match your filters" : "No staff accounts yet"}
       </p>
       {!hasFilters && (

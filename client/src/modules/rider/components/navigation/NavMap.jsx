@@ -30,11 +30,11 @@ export function NavMap({ stops }) {
   }, [stops, flyTo, mapRef, upsertMarker]);
 
   return (
-    <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl overflow-hidden">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden">
       <div ref={containerRef} className="h-52 w-full" />
       <div className="px-5 py-3 flex items-center gap-3">
         <div className="w-2 h-2 rounded-full bg-sky-500 animate-pulse" />
-        <span className="text-xs text-zinc-400">
+        <span className="text-xs text-gray-500 dark:text-zinc-400">
           Live GPS · Last updated just now
         </span>
       </div>

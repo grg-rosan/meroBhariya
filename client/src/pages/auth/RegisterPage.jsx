@@ -41,19 +41,21 @@ function RolePicker({ onSelect }) {
           <button
             key={r.value}
             onClick={() => onSelect(r.value)}
-            className="bg-zinc-950 border border-zinc-800 hover:border-orange-500 rounded-xl p-4 text-left transition-colors group"
+            className="bg-zinc-950 border border-gray-200 dark:border-zinc-800 hover:border-orange-500 rounded-xl p-4 text-left transition-colors group"
           >
             <p className="text-sm font-semibold text-white group-hover:text-orange-400 transition-colors">
               {r.emoji} {r.label}
             </p>
-            <p className="text-xs text-zinc-500 mt-0.5">{r.desc}</p>
+            <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
+              {r.desc}
+            </p>
           </button>
         ))}
       </div>
 
       <Divider label="already have an account?" />
       <Link to="/login" className="no-underline">
-        <button className="w-full bg-transparent border border-zinc-800 hover:border-zinc-600 text-zinc-500 hover:text-zinc-300 text-sm rounded-xl py-2.5 transition-colors">
+        <button className="w-full bg-transparent border border-gray-200 dark:border-zinc-800 hover:border-gray-400 dark:border-zinc-600 text-gray-400  hover:text-gray-700 dark:text-zinc-300 text-sm rounded-xl py-2.5 transition-colors">
           Sign in instead
         </button>
       </Link>
@@ -285,18 +287,16 @@ function MerchantDetailsForm({ onNext, loading }) {
 
 // ─── Submit helper ──────────────────────────────────────────────────────────
 
-
-
 // ─── Main ───────────────────────────────────────────────────────────────────
 
-const STEPS = ["Role", "Account", "Details","verify", "Done"];
+const STEPS = ["Role", "Account", "Details", "verify", "Done"];
 
 export default function RegisterPage() {
   const { role: urlRole } = useParams();
   const navigate = useNavigate();
   const [registeredEmail, setRegisteredEmail] = useState(null);
 
-  const toast = useToast()
+  const toast = useToast();
   const [step, setStep] = useState(urlRole ? 1 : 0);
   const [role, setRole] = useState(urlRole || null);
   const [basicInfo, setBasicInfo] = useState(null);
@@ -311,23 +311,23 @@ export default function RegisterPage() {
     setStep(2);
   }
 
-async function handleDetailsNext(details) {
-  setSubmitting(true);
-  try {
-    const payload = { ...basicInfo, ...details };
-     await authAPI.initiateRegistration(role, payload);
-    setRegisteredEmail(basicInfo.email);
-    setStep(3);
-  } catch  {
-    toast({message:"Registration Failed",type:"error"})
-  } finally {
-    setSubmitting(false);
+  async function handleDetailsNext(details) {
+    setSubmitting(true);
+    try {
+      const payload = { ...basicInfo, ...details };
+      await authAPI.initiateRegistration(role, payload);
+      setRegisteredEmail(basicInfo.email);
+      setStep(3);
+    } catch {
+      toast({ message: "Registration Failed", type: "error" });
+    } finally {
+      setSubmitting(false);
+    }
   }
-}
-async function handleVerify(otp) {
-  await authAPI.completeRegistration(registeredEmail, otp); // ← creates user
-  setStep(4);
-}
+  async function handleVerify(otp) {
+    await authAPI.completeRegistration(registeredEmail, otp); // ← creates user
+    setStep(4);
+  }
   return (
     <PageShell>
       <Card>
@@ -346,13 +346,13 @@ async function handleVerify(otp) {
           />
         )}
 
-  {step === 3 && (
-  <VerifyOtpForm
-    email={registeredEmail}
-    onVerify={handleVerify}
-    onResend={() => authAPI.resendRegistrationOtp(registeredEmail)}
-  />
-)}
+        {step === 3 && (
+          <VerifyOtpForm
+            email={registeredEmail}
+            onVerify={handleVerify}
+            onResend={() => authAPI.resendRegistrationOtp(registeredEmail)}
+          />
+        )}
         {step === 4 && (
           <>
             <div className="text-4xl mb-4">🎉</div>

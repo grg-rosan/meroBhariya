@@ -47,7 +47,7 @@ export default function BulkUpload() {
     <div className="p-6 max-w-3xl mx-auto">
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-white">Bulk upload</h1>
-        <p className="text-sm text-zinc-500 mt-0.5">
+        <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
           Upload a CSV or Excel file with up to 500 shipments
         </p>
       </div>
@@ -64,7 +64,7 @@ export default function BulkUpload() {
           handleFile(e.dataTransfer.files[0]);
         }}
         onClick={() => inputRef.current?.click()}
-        className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all mb-4 ${dragging ? "border-rose-500 bg-rose-500/5" : file ? "border-green-600 bg-green-500/5" : "border-zinc-700 hover:border-zinc-600 bg-white dark:bg-gray-900"}`}
+        className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all mb-4 ${dragging ? "border-rose-500 bg-rose-500/5" : file ? "border-green-600 bg-green-500/5" : "border-gray-300 dark:border-zinc-700 hover:border-gray-400 dark:border-zinc-600 bg-white dark:bg-gray-900"}`}
       >
         <input
           ref={inputRef}
@@ -76,18 +76,20 @@ export default function BulkUpload() {
         {file ? (
           <div className="flex flex-col items-center gap-2">
             <FileSpreadsheet size={36} className="text-green-400" />
-            <p className="text-sm font-medium text-zinc-200">{file.name}</p>
-            <p className="text-xs text-zinc-500">
+            <p className="text-sm font-medium text-gray-800 dark:text-zinc-200">
+              {file.name}
+            </p>
+            <p className="text-xs text-gray-400 dark:text-zinc-500">
               {(file.size / 1024).toFixed(1)} KB
             </p>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2">
-            <Upload size={36} className="text-zinc-600" />
-            <p className="text-sm font-medium text-zinc-300">
+            <Upload size={36} className="text-gray-300 dark:text-zinc-600" />
+            <p className="text-sm font-medium text-gray-700 dark:text-zinc-300">
               Drop your file here or click to browse
             </p>
-            <p className="text-xs text-zinc-600">
+            <p className="text-xs text-gray-300 dark:text-zinc-600">
               CSV, XLSX, XLS · max 500 rows
             </p>
           </div>
@@ -97,7 +99,7 @@ export default function BulkUpload() {
       <div className="flex items-center gap-3 mb-4">
         <a
           href="#"
-          className="text-xs text-rose-400 hover:text-rose-300 border border-zinc-800 px-3 py-1.5 rounded-lg"
+          className="text-xs text-rose-400 hover:text-rose-300 border border-gray-200 dark:border-zinc-800 px-3 py-1.5 rounded-lg"
         >
           Download template
         </a>
@@ -111,8 +113,8 @@ export default function BulkUpload() {
       </div>
 
       {loading && progress != null && (
-        <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-4 mb-4">
-          <div className="flex justify-between text-xs text-zinc-400 mb-2">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-4 mb-4">
+          <div className="flex justify-between text-xs text-gray-500 dark:text-zinc-400 mb-2">
             <span>Uploading…</span>
             <span>{progress}%</span>
           </div>
@@ -129,7 +131,7 @@ export default function BulkUpload() {
         <div className="bg-white dark:bg-gray-900 border border-green-700/50 rounded-xl p-4 mb-4">
           <div className="flex items-center gap-2 mb-3">
             <CheckCircle size={15} className="text-green-400" />
-            <span className="text-sm font-medium text-zinc-200">
+            <span className="text-sm font-medium text-gray-800 dark:text-zinc-200">
               Upload complete
             </span>
           </div>
@@ -138,19 +140,25 @@ export default function BulkUpload() {
               <div className="text-xl font-semibold text-white">
                 {result.total}
               </div>
-              <div className="text-xs text-zinc-500 mt-0.5">Total rows</div>
+              <div className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
+                Total rows
+              </div>
             </div>
             <div>
               <div className="text-xl font-semibold text-green-400">
                 {result.processed}
               </div>
-              <div className="text-xs text-zinc-500 mt-0.5">Processed</div>
+              <div className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
+                Processed
+              </div>
             </div>
             <div>
               <div className="text-xl font-semibold text-rose-400">
                 {result.errors}
               </div>
-              <div className="text-xs text-zinc-500 mt-0.5">Errors</div>
+              <div className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
+                Errors
+              </div>
             </div>
           </div>
         </div>
@@ -163,8 +171,8 @@ export default function BulkUpload() {
         </div>
       )}
 
-      <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-4 mb-6">
-        <p className="text-xs font-medium text-zinc-400 mb-2">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-4 mb-6">
+        <p className="text-xs font-medium text-gray-500 dark:text-zinc-400 mb-2">
           Required columns
         </p>
         <div className="flex flex-wrap gap-2">
@@ -178,7 +186,7 @@ export default function BulkUpload() {
           ].map((c) => (
             <code
               key={c}
-              className="text-xs bg-gray-100 dark:bg-blue-950 text-zinc-300 px-2 py-0.5 rounded"
+              className="text-xs bg-gray-100 dark:bg-blue-950 text-gray-700 dark:text-zinc-300 px-2 py-0.5 rounded"
             >
               {c}
             </code>
@@ -186,17 +194,17 @@ export default function BulkUpload() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl overflow-hidden">
-        <div className="px-5 py-3 border-b border-zinc-800">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden">
+        <div className="px-5 py-3 border-b border-gray-200 dark:border-zinc-800">
           <h2 className="text-sm font-medium text-white">Upload history</h2>
         </div>
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-zinc-800">
+            <tr className="border-b border-gray-200 dark:border-zinc-800">
               {["Date", "File", "Total", "Processed", "Errors"].map((h) => (
                 <th
                   key={h}
-                  className="text-left px-4 py-2.5 text-xs text-zinc-500 font-medium"
+                  className="text-left px-4 py-2.5 text-xs text-gray-400 dark:text-zinc-500 font-medium"
                 >
                   {h}
                 </th>
@@ -207,13 +215,17 @@ export default function BulkUpload() {
             {HISTORY.map((h) => (
               <tr
                 key={h.date}
-                className="border-b border-zinc-800/50 hover:bg-gray-100 dark:bg-blue-950/30"
+                className="border-b border-gray-200/50 dark:border-zinc-800/50 hover:bg-gray-100 dark:bg-blue-950/30"
               >
-                <td className="px-4 py-3 text-xs text-zinc-400">{h.date}</td>
-                <td className="px-4 py-3 text-xs font-mono text-zinc-300">
+                <td className="px-4 py-3 text-xs text-gray-500 dark:text-zinc-400">
+                  {h.date}
+                </td>
+                <td className="px-4 py-3 text-xs font-mono text-gray-700 dark:text-zinc-300">
                   {h.filename}
                 </td>
-                <td className="px-4 py-3 text-xs text-zinc-400">{h.total}</td>
+                <td className="px-4 py-3 text-xs text-gray-500 dark:text-zinc-400">
+                  {h.total}
+                </td>
                 <td className="px-4 py-3 text-xs text-green-400">
                   {h.processed}
                 </td>

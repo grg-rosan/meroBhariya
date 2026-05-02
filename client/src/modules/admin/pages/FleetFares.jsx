@@ -25,7 +25,7 @@ function FareCard({ config, onSave, saving }) {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl overflow-hidden mb-4 last:mb-0">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden mb-4 last:mb-0">
       <button
         onClick={() => setExpanded((e) => !e)}
         className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-100 dark:bg-blue-950/30 transition-colors text-left"
@@ -35,10 +35,10 @@ function FareCard({ config, onSave, saving }) {
             <span className="text-xs font-bold">{config.name?.[0]}</span>
           </div>
           <div>
-            <p className="text-sm font-medium text-zinc-200">
+            <p className="text-sm font-medium text-gray-800 dark:text-zinc-200">
               {config.vehicleType.name}
             </p>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-gray-400 dark:text-zinc-500">
               Max {config.vehicleType.maxWeightKg} kg · Base रु {form.baseFare}{" "}
               · {form.perKmRate} रु/km
             </p>
@@ -50,16 +50,16 @@ function FareCard({ config, onSave, saving }) {
               Unsaved
             </span>
           )}
-          <Pencil size={13} className="text-zinc-500" />
+          <Pencil size={13} className="text-gray-400 dark:text-zinc-500" />
         </div>
       </button>
 
       {expanded && (
-        <div className="px-5 pb-5 border-t border-zinc-800">
+        <div className="px-5 pb-5 border-t border-gray-200 dark:border-zinc-800">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
             {FIELDS.map((f) => (
               <div key={f.key}>
-                <label className="text-xs text-zinc-500 block mb-1.5">
+                <label className="text-xs text-gray-400 dark:text-zinc-500 block mb-1.5">
                   {f.label}
                 </label>
                 <input
@@ -67,7 +67,7 @@ function FareCard({ config, onSave, saving }) {
                   step={f.step}
                   value={form[f.key] ?? 0}
                   onChange={(e) => set(f.key, e.target.value)}
-                  className="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-blue-950 border border-zinc-700 rounded-lg text-zinc-200 focus:outline-none focus:border-violet-500"
+                  className="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-blue-950 border border-gray-300 dark:border-zinc-700 rounded-lg text-gray-800 dark:text-zinc-200 focus:outline-none focus:border-violet-500"
                 />
               </div>
             ))}
@@ -106,7 +106,7 @@ export default function FleetFares() {
           <h1 className="text-xl font-semibold text-white">
             Fleet & fare config
           </h1>
-          <p className="text-sm text-zinc-500 mt-0.5">
+          <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
             Set per-km, per-kg, and surcharge rates per vehicle type
           </p>
         </div>
@@ -115,8 +115,10 @@ export default function FleetFares() {
         </button>
       </div>
 
-      <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-4 mb-6 text-xs text-zinc-500">
-        <strong className="text-zinc-400">Fare formula: </strong>
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-4 mb-6 text-xs text-gray-400 dark:text-zinc-500">
+        <strong className="text-gray-500 dark:text-zinc-400">
+          Fare formula:{" "}
+        </strong>
         Base fare + (distance × per km rate) + (weight × per kg rate) + fragile
         charge + COD charge (% of COD amount). Night surcharge added 9 PM – 6
         AM.
@@ -127,12 +129,12 @@ export default function FleetFares() {
           {[...Array(3)].map((_, i) => (
             <div
               key={i}
-              className="h-16 bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl animate-pulse"
+              className="h-16 bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl animate-pulse"
             />
           ))}
         </div>
       ) : configs.length === 0 ? (
-        <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-10 text-center text-zinc-600 text-sm">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-10 text-center text-gray-300 dark:text-zinc-600 text-sm">
           No fare configs found. Add a vehicle type to get started.
         </div>
       ) : (

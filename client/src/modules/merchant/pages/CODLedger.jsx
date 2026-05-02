@@ -39,13 +39,17 @@ function Timeline({ logs }) {
             )}
           </div>
           <div>
-            <span className="text-xs font-medium text-zinc-300">
+            <span className="text-xs font-medium text-gray-700 dark:text-zinc-300">
               {log.status.replace(/_/g, " ")}
             </span>
-            <span className="text-xs text-zinc-600 ml-2">
+            <span className="text-xs text-gray-300 dark:text-zinc-600 ml-2">
               {new Date(log.createdAt).toLocaleString()}
             </span>
-            {log.note && <p className="text-xs text-zinc-500">{log.note}</p>}
+            {log.note && (
+              <p className="text-xs text-gray-400 dark:text-zinc-500">
+                {log.note}
+              </p>
+            )}
           </div>
         </div>
       ))}
@@ -60,31 +64,35 @@ function ShipmentCard({ s }) {
   const isCancelled = s.status === "CANCELLED";
 
   return (
-    <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl overflow-hidden mb-3">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden mb-3">
       <div
         className="px-5 py-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 dark:bg-blue-950/30 transition-all"
         onClick={() => setOpen((o) => !o)}
       >
         <div className="flex items-center gap-4">
           <div>
-            <p className="text-xs font-mono text-zinc-400">
+            <p className="text-xs font-mono text-gray-500 dark:text-zinc-400">
               {s.trackingNumber}
             </p>
-            <p className="text-sm font-medium text-zinc-200 mt-0.5">
+            <p className="text-sm font-medium text-gray-800 dark:text-zinc-200 mt-0.5">
               {s.receiverName}
             </p>
-            <p className="text-xs text-zinc-500">{s.deliveryAddress}</p>
+            <p className="text-xs text-gray-400 dark:text-zinc-500">
+              {s.deliveryAddress}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-6 text-right">
           <div>
-            <p className="text-xs text-zinc-500">COD Amount</p>
-            <p className="text-sm font-semibold text-zinc-200">
+            <p className="text-xs text-gray-400 dark:text-zinc-500">
+              COD Amount
+            </p>
+            <p className="text-sm font-semibold text-gray-800 dark:text-zinc-200">
               Rs {s.codAmount.toLocaleString()}
             </p>
           </div>
           <div>
-            <p className="text-xs text-zinc-500">Status</p>
+            <p className="text-xs text-gray-400 dark:text-zinc-500">Status</p>
             {isDelivered ? (
               <span className="text-xs font-medium text-green-400 flex items-center gap-1">
                 <CheckCircle size={11} /> Collected
@@ -100,19 +108,23 @@ function ShipmentCard({ s }) {
             )}
           </div>
           <div>
-            <p className="text-xs text-zinc-500">Remitted</p>
+            <p className="text-xs text-gray-400 dark:text-zinc-500">Remitted</p>
             {s.transaction?.isRemitted ? (
               <span className="text-xs text-green-400">Yes</span>
             ) : (
-              <span className="text-xs text-zinc-500">No</span>
+              <span className="text-xs text-gray-400 dark:text-zinc-500">
+                No
+              </span>
             )}
           </div>
-          <span className="text-zinc-600 text-xs">{open ? "?" : "?"}</span>
+          <span className="text-gray-300 dark:text-zinc-600 text-xs">
+            {open ? "?" : "?"}
+          </span>
         </div>
       </div>
 
       {open && (
-        <div className="px-5 pb-4 border-t border-zinc-800">
+        <div className="px-5 pb-4 border-t border-gray-200 dark:border-zinc-800">
           {/* Progress bar */}
           {!isCancelled && (
             <div className="mt-4 mb-4">
@@ -127,7 +139,7 @@ function ShipmentCard({ s }) {
                           : "bg-gray-200 dark:bg-blue-900")
                       }
                     />
-                    <p className="text-[9px] text-zinc-500 mt-1 text-center">
+                    <p className="text-[9px] text-gray-400 dark:text-zinc-500 mt-1 text-center">
                       {step.replace(/_/g, " ")}
                     </p>
                   </div>
@@ -147,25 +159,29 @@ function ShipmentCard({ s }) {
           {/* Transaction details */}
           {s.transaction && (
             <div className="bg-gray-100 dark:bg-blue-950/50 rounded-lg p-3 mb-3">
-              <p className="text-xs font-medium text-zinc-400 mb-2">
+              <p className="text-xs font-medium text-gray-500 dark:text-zinc-400 mb-2">
                 Transaction
               </p>
               <div className="grid grid-cols-3 gap-3 text-xs">
                 <div>
-                  <p className="text-zinc-500">Total fare</p>
-                  <p className="text-zinc-200 font-medium">
+                  <p className="text-gray-400 dark:text-zinc-500">Total fare</p>
+                  <p className="text-gray-800 dark:text-zinc-200 font-medium">
                     Rs {s.transaction.totalFare?.toLocaleString()}
                   </p>
                 </div>
                 <div>
-                  <p className="text-zinc-500">COD collected</p>
-                  <p className="text-zinc-200 font-medium">
+                  <p className="text-gray-400 dark:text-zinc-500">
+                    COD collected
+                  </p>
+                  <p className="text-gray-800 dark:text-zinc-200 font-medium">
                     Rs {s.transaction.collectedByRider?.toLocaleString() ?? "�"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-zinc-500">Remitted at</p>
-                  <p className="text-zinc-200 font-medium">
+                  <p className="text-gray-400 dark:text-zinc-500">
+                    Remitted at
+                  </p>
+                  <p className="text-gray-800 dark:text-zinc-200 font-medium">
                     {s.transaction.remittedAt
                       ? new Date(s.transaction.remittedAt).toLocaleDateString()
                       : "�"}
@@ -176,7 +192,7 @@ function ShipmentCard({ s }) {
           )}
 
           {/* Timeline */}
-          <p className="text-xs font-medium text-zinc-400 mb-2">
+          <p className="text-xs font-medium text-gray-500 dark:text-zinc-400 mb-2">
             Shipment timeline
           </p>
           <Timeline logs={s.logs ?? []} />
@@ -202,13 +218,13 @@ export default function CODLedger() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-semibold text-white">COD ledger</h1>
-          <p className="text-sm text-zinc-500 mt-0.5">
+          <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
             Track every COD shipment and its payment status
           </p>
         </div>
         <button
           onClick={refetch}
-          className="flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-400 border border-zinc-800 rounded-lg hover:bg-gray-100 dark:bg-blue-950 transition-all"
+          className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-500 dark:text-zinc-400 border border-gray-200 dark:border-zinc-800 rounded-lg hover:bg-gray-100 dark:bg-blue-950 transition-all"
         >
           <RefreshCw size={12} className={loading ? "animate-spin" : ""} />{" "}
           Refresh
@@ -243,11 +259,11 @@ export default function CODLedger() {
       </div>
 
       {loading ? (
-        <div className="py-10 text-center text-zinc-600 text-sm">
+        <div className="py-10 text-center text-gray-300 dark:text-zinc-600 text-sm">
           Loading...
         </div>
       ) : shipments.length === 0 ? (
-        <div className="py-10 text-center text-zinc-600 text-sm">
+        <div className="py-10 text-center text-gray-300 dark:text-zinc-600 text-sm">
           No COD shipments found
         </div>
       ) : (
