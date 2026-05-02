@@ -9,7 +9,10 @@ export function ToastProvider({ children }) {
   const toast = useCallback(({ message, type = "error" }) => {
     const id = crypto.randomUUID();
     setToasts((prev) => [...prev, { id, message, type }]);
-    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000);
+    setTimeout(
+      () => setToasts((prev) => prev.filter((t) => t.id !== id)),
+      4000,
+    );
   }, []);
 
   return (
@@ -23,7 +26,7 @@ export function ToastProvider({ children }) {
             className={`px-4 py-3 rounded-xl text-base font-medium shadow-lg transition-all
               ${t.type === "error" ? "bg-red-500/10 border border-red-500/20 text-red-400" : ""}
               ${t.type === "success" ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" : ""}
-              ${t.type === "info" ? "bg-zinc-800 border border-zinc-700 text-zinc-300" : ""}
+              ${t.type === "info" ? "bg-gray-100 dark:bg-blue-950 border border-zinc-700 text-zinc-300" : ""}
             `}
           >
             {t.message}

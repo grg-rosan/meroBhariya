@@ -24,7 +24,7 @@ function Bar({ label, pct, color = "bg-violet-500" }) {
         <span className="text-zinc-400">{label}</span>
         <span className="text-zinc-300 font-medium">{safePct}%</span>
       </div>
-      <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+      <div className="h-1.5 bg-gray-100 dark:bg-blue-950 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-700 ${color}`}
           style={{ width: `${safePct}%` }}
@@ -115,7 +115,7 @@ export default function AdminOverview() {
 
       <div className="grid lg:grid-cols-3 gap-4">
         {/* Platform health */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+        <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-5">
           <h2 className="text-sm font-medium text-white mb-4">
             Platform health
           </h2>
@@ -124,7 +124,7 @@ export default function AdminOverview() {
               {[...Array(2)].map((_, i) => (
                 <div
                   key={i}
-                  className="h-5 bg-zinc-800 rounded animate-pulse"
+                  className="h-5 bg-gray-100 dark:bg-blue-950 rounded animate-pulse"
                 />
               ))}
             </div>
@@ -166,14 +166,14 @@ export default function AdminOverview() {
         </div>
 
         {/* Quick actions */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+        <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-5">
           <h2 className="text-sm font-medium text-white mb-4">Quick actions</h2>
           <div className="space-y-2">
             {QUICK_ACTIONS.map((a) => (
               <Link
                 key={a.label}
                 to={a.to}
-                className="flex items-center justify-between p-3 border border-zinc-800 rounded-lg hover:bg-zinc-800 transition-all group"
+                className="flex items-center justify-between p-3 border border-zinc-800 rounded-lg hover:bg-gray-100 dark:bg-blue-950 transition-all group"
               >
                 <span className="text-sm text-zinc-300 group-hover:text-white transition-colors">
                   {a.label}
@@ -189,7 +189,7 @@ export default function AdminOverview() {
         </div>
 
         {/* Activity feed */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+        <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-5">
           <h2 className="text-sm font-medium text-white mb-4">
             Recent activity
           </h2>
@@ -197,10 +197,10 @@ export default function AdminOverview() {
             {actLoading ? (
               [...Array(5)].map((_, i) => (
                 <div key={i} className="flex gap-3">
-                  <div className="w-2 h-2 rounded-full mt-1.5 bg-zinc-700 shrink-0 animate-pulse" />
+                  <div className="w-2 h-2 rounded-full mt-1.5 bg-gray-200 dark:bg-blue-900 shrink-0 animate-pulse" />
                   <div className="flex-1 space-y-1.5">
-                    <div className="h-3 bg-zinc-800 rounded animate-pulse w-4/5" />
-                    <div className="h-2.5 bg-zinc-800 rounded animate-pulse w-1/4" />
+                    <div className="h-3 bg-gray-100 dark:bg-blue-950 rounded animate-pulse w-4/5" />
+                    <div className="h-2.5 bg-gray-100 dark:bg-blue-950 rounded animate-pulse w-1/4" />
                   </div>
                 </div>
               ))
@@ -208,7 +208,7 @@ export default function AdminOverview() {
               activity.map((a, i) => (
                 <div key={i} className="flex gap-3">
                   <div
-                    className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${DOT[a.type] ?? "bg-zinc-600"}`}
+                    className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${DOT[a.type] ?? "bg-gray-300 dark:bg-zinc-600"}`}
                   />
                   <div>
                     <p className="text-xs text-zinc-300 leading-relaxed">

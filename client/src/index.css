@@ -1,31 +1,64 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
 
 @import "tailwindcss";
+@variant dark (&:where(.dark, .dark *));
+
 * {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  background: #09090b;
-  color: #fafafa;
+  background: #f9fafb;
+  color: #111827;
   font-family: 'DM Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Thin scrollbar */
+.dark body {
+  background: #111827;
+  color: #f9fafb;
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
+
 ::-webkit-scrollbar       { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: #52525b; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
-/* Native select arrow color fix on dark backgrounds */
+.dark ::-webkit-scrollbar-thumb       { background: #1e3a8a; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #1d4ed8; }
+
+/* ── Form elements ───────────────────────────────────────────────────────── */
+
 select {
+  color-scheme: light;
+}
+
+.dark select {
   color-scheme: dark;
 }
 
-/* Checkbox accent */
 input[type="checkbox"] {
-  accent-color: #8b5cf6;
+  accent-color: #f97316;
   cursor: pointer;
-}  
+}
+
+/* ── Smooth theme transition ─────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  transition-property: background-color, border-color, color;
+  transition-duration: 150ms;
+  transition-timing-function: ease;
+}
+
+/* Disable transition on elements where it looks bad */
+img,
+svg,
+video,
+canvas {
+  transition: none;
+}

@@ -12,7 +12,7 @@ function SkeletonRow({ cols }) {
     <tr className="border-b border-zinc-800/50">
       {[...Array(cols)].map((_, i) => (
         <td key={i} className="px-4 py-3">
-          <div className="h-3 bg-zinc-800 rounded animate-pulse" />
+          <div className="h-3 bg-gray-100 dark:bg-blue-950 rounded animate-pulse" />
         </td>
       ))}
     </tr>
@@ -79,11 +79,11 @@ export default function Finance() {
 
       {/* Cash flow bar */}
       {!summaryLoading && totalCOD > 0 && (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 mb-4">
+        <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-5 mb-4">
           <h2 className="text-sm font-medium text-white mb-3">
             Cash flow breakdown
           </h2>
-          <div className="h-5 bg-zinc-800 rounded-full overflow-hidden flex">
+          <div className="h-5 bg-gray-100 dark:bg-blue-950 rounded-full overflow-hidden flex">
             <div
               className="h-full bg-red-500/70 transition-all"
               style={{ width: `${(heldByRiders / totalCOD) * 100}%` }}
@@ -116,7 +116,7 @@ export default function Finance() {
 
       <div className="grid lg:grid-cols-2 gap-4">
         {/* Cash held per rider */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl overflow-hidden">
           <div className="px-5 py-3 border-b border-zinc-800 flex items-center justify-between">
             <h2 className="text-sm font-medium text-white">
               Cash held by riders
@@ -154,7 +154,7 @@ export default function Finance() {
                 riderList.map((r) => (
                   <tr
                     key={r.id}
-                    className="border-b border-zinc-800/50 hover:bg-zinc-800/30"
+                    className="border-b border-zinc-800/50 hover:bg-gray-100 dark:bg-blue-950/30"
                   >
                     <td className="px-4 py-3 text-sm text-zinc-200 font-medium">
                       {r.fullName ?? r.name}
@@ -176,7 +176,7 @@ export default function Finance() {
         </div>
 
         {/* Pending COD transactions */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl overflow-hidden">
           <div className="px-5 py-3 border-b border-zinc-800 flex items-center justify-between">
             <h2 className="text-sm font-medium text-white">
               Pending COD transactions
@@ -214,7 +214,7 @@ export default function Finance() {
                 transactions.map((t) => (
                   <tr
                     key={t.id}
-                    className="border-b border-zinc-800/50 hover:bg-zinc-800/30"
+                    className="border-b border-zinc-800/50 hover:bg-gray-100 dark:bg-blue-950/30"
                   >
                     <td className="px-4 py-3 text-xs text-zinc-400 font-mono">
                       {t.trackingNumber ?? t.shipment?.trackingNumber ?? "—"}

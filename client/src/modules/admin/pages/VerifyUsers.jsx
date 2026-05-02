@@ -36,7 +36,7 @@ function UserCard({ user, type, onReviewDoc, loading }) {
   const allApproved = user.documents.every((d) => d.status === "APPROVED");
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden mb-3 last:mb-0">
+    <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl overflow-hidden mb-3 last:mb-0">
       <div className="p-4 flex items-start gap-4">
         <div className="w-10 h-10 rounded-full bg-violet-500/20 text-violet-400 text-sm font-semibold flex items-center justify-center shrink-0">
           {initials}
@@ -47,7 +47,7 @@ function UserCard({ user, type, onReviewDoc, loading }) {
             <p className="text-sm font-medium text-zinc-200">
               {user.user.fullName}
             </p>
-            <span className="text-xs bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded">
+            <span className="text-xs bg-gray-100 dark:bg-blue-950 text-zinc-400 px-2 py-0.5 rounded">
               {type === "MERCHANT" ? user.businessName : user.vehicleType?.name}
             </span>
           </div>
@@ -79,7 +79,7 @@ function UserCard({ user, type, onReviewDoc, loading }) {
             (() => {
               const doc = user.documents.find((d) => d.id === expandedDoc);
               return doc ? (
-                <div className="mb-3 p-3 bg-zinc-800 rounded-lg border border-zinc-700">
+                <div className="mb-3 p-3 bg-gray-100 dark:bg-blue-950 rounded-lg border border-zinc-700">
                   <a
                     href={doc.fileUrl}
                     target="_blank"
@@ -92,7 +92,7 @@ function UserCard({ user, type, onReviewDoc, loading }) {
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
                     placeholder="Note (optional)…"
-                    className="w-full px-3 py-2 text-xs bg-zinc-900 border border-zinc-700 rounded-lg text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-violet-500 mb-2"
+                    className="w-full px-3 py-2 text-xs bg-white dark:bg-gray-900 border border-zinc-700 rounded-lg text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-violet-500 mb-2"
                   />
                   <div className="flex gap-2">
                     <button
@@ -126,7 +126,7 @@ function UserCard({ user, type, onReviewDoc, loading }) {
           href={user.documents[0]?.fileUrl}
           target="_blank"
           rel="noreferrer"
-          className="flex items-center gap-1.5 px-3 py-1.5 border border-zinc-700 text-zinc-400 hover:bg-zinc-800 text-xs rounded-lg transition-all"
+          className="flex items-center gap-1.5 px-3 py-1.5 border border-zinc-700 text-zinc-400 hover:bg-gray-100 dark:bg-blue-950 text-xs rounded-lg transition-all"
         >
           <FileText size={12} /> Docs
         </a>
@@ -189,7 +189,7 @@ export default function VerifyUsers() {
         </p>
       </div>
 
-      <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 rounded-lg p-1 mb-5 w-fit">
+      <div className="flex items-center gap-1 bg-white dark:bg-gray-900 border border-zinc-800 rounded-lg p-1 mb-5 w-fit">
         {[
           { key: "merchants", label: `Merchants (${merchants.length})` },
           { key: "riders", label: `Riders (${riders.length})` },
@@ -207,7 +207,7 @@ export default function VerifyUsers() {
       {loading ? (
         <p className="text-zinc-500 text-sm">Loading...</p>
       ) : list.length === 0 ? (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-10 text-center text-zinc-600 text-sm">
+        <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-10 text-center text-zinc-600 text-sm">
           No pending {tab} — all caught up!
         </div>
       ) : (

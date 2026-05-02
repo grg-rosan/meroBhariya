@@ -58,7 +58,7 @@ export default function RiderEarnings() {
 
       <div className="grid lg:grid-cols-2 gap-4">
         {/* Payout history */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl overflow-hidden">
           <div className="px-5 py-3 border-b border-zinc-800">
             <h2 className="text-sm font-medium text-white">Payout history</h2>
           </div>
@@ -79,7 +79,7 @@ export default function RiderEarnings() {
               {PAYOUTS.map((p) => (
                 <tr
                   key={p.date}
-                  className="border-b border-zinc-800/50 hover:bg-zinc-800/30"
+                  className="border-b border-zinc-800/50 hover:bg-gray-100 dark:bg-blue-950/30"
                 >
                   <td className="px-4 py-3 text-xs text-zinc-400">{p.date}</td>
                   <td className="px-4 py-3 text-xs text-zinc-400">{p.drops}</td>
@@ -98,7 +98,7 @@ export default function RiderEarnings() {
         </div>
 
         {/* Today's breakdown */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+        <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-5">
           <h2 className="text-sm font-medium text-white mb-4">
             Today's breakdown
           </h2>

@@ -1,11 +1,12 @@
-
 /** Full-page shell */
 export function PageShell({ children, wide = false }) {
   return (
     <div className="min-h-screen bg-zinc-950 flex items-start justify-center px-4 py-12 relative overflow-x-hidden">
       {/* Ambient glow */}
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-orange-500/5 rounded-full blur-3xl pointer-events-none" />
-      <div className={`relative z-10 w-full mt-6 ${wide ? "max-w-2xl" : "max-w-md"}`}>
+      <div
+        className={`relative z-10 w-full mt-6 ${wide ? "max-w-2xl" : "max-w-md"}`}
+      >
         {children}
       </div>
     </div>
@@ -15,7 +16,9 @@ export function PageShell({ children, wide = false }) {
 /** Card */
 export function Card({ children, className = "" }) {
   return (
-    <div className={`bg-zinc-900 border border-zinc-800 rounded-2xl p-8 shadow-2xl ${className}`}>
+    <div
+      className={`bg-white dark:bg-gray-900 border border-zinc-800 rounded-2xl p-8 shadow-2xl ${className}`}
+    >
       {children}
     </div>
   );
@@ -27,10 +30,14 @@ export function Brand({ subtitle }) {
     <div className="mb-8">
       <div className="flex items-center gap-2 mb-1">
         <span className="text-orange-500 text-2xl">⬡</span>
-        <span className="font-bold text-white text-xl tracking-tight">Porter</span>
+        <span className="font-bold text-white text-xl tracking-tight">
+          Porter
+        </span>
       </div>
       {subtitle && (
-        <p className="text-xs text-zinc-500 tracking-widest uppercase">{subtitle}</p>
+        <p className="text-xs text-zinc-500 tracking-widest uppercase">
+          {subtitle}
+        </p>
       )}
     </div>
   );
@@ -40,7 +47,9 @@ export function Brand({ subtitle }) {
 export function Heading({ title, sub }) {
   return (
     <div className="mb-7">
-      <h1 className="text-2xl font-bold text-white tracking-tight leading-tight mb-1">{title}</h1>
+      <h1 className="text-2xl font-bold text-white tracking-tight leading-tight mb-1">
+        {title}
+      </h1>
       {sub && <p className="text-sm text-zinc-500">{sub}</p>}
     </div>
   );
@@ -85,7 +94,7 @@ export function Select({ children, className = "", ...props }) {
 export function Button({ loading, children, className = "", ...props }) {
   return (
     <button
-      className={`w-full bg-orange-500 hover:bg-orange-600 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-lg py-3 transition-colors ${className}`}
+      className={`w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-200 dark:bg-blue-900 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-lg py-3 transition-colors ${className}`}
       disabled={loading}
       {...props}
     >
@@ -131,16 +140,30 @@ export function StepBar({ steps, current }) {
   return (
     <div className="flex gap-2 mb-8">
       {steps.map((label, i) => {
-        const done   = i < current;
+        const done = i < current;
         const active = i === current;
         return (
           <div key={i} className="flex-1">
-            <div className={`h-0.5 rounded-full transition-all duration-300 ${
-              done ? "bg-orange-500/50" : active ? "bg-orange-500" : "bg-zinc-800"
-            }`} />
-            <span className={`block mt-1.5 text-[10px] uppercase tracking-widest font-semibold truncate transition-colors ${
-              active ? "text-orange-500" : done ? "text-zinc-500" : "text-zinc-600"
-            }`}>{label}</span>
+            <div
+              className={`h-0.5 rounded-full transition-all duration-300 ${
+                done
+                  ? "bg-orange-500/50"
+                  : active
+                    ? "bg-orange-500"
+                    : "bg-gray-100 dark:bg-blue-950"
+              }`}
+            />
+            <span
+              className={`block mt-1.5 text-[10px] uppercase tracking-widest font-semibold truncate transition-colors ${
+                active
+                  ? "text-orange-500"
+                  : done
+                    ? "text-zinc-500"
+                    : "text-zinc-600"
+              }`}
+            >
+              {label}
+            </span>
           </div>
         );
       })}
@@ -152,9 +175,9 @@ export function StepBar({ steps, current }) {
 export function Divider({ label }) {
   return (
     <div className="flex items-center gap-3 my-5">
-      <div className="flex-1 h-px bg-zinc-800" />
+      <div className="flex-1 h-px bg-gray-100 dark:bg-blue-950" />
       {label && <span className="text-xs text-zinc-600">{label}</span>}
-      <div className="flex-1 h-px bg-zinc-800" />
+      <div className="flex-1 h-px bg-gray-100 dark:bg-blue-950" />
     </div>
   );
 }
@@ -172,18 +195,18 @@ export function DropZone({ label, accept, file, onChange, hint }) {
       }`}
     >
       <span className="text-2xl">{file ? "✓" : "⬆"}</span>
-      <span className={`text-sm font-medium ${file ? "text-orange-400" : "text-zinc-400"}`}>
+      <span
+        className={`text-sm font-medium ${file ? "text-orange-400" : "text-zinc-400"}`}
+      >
         {file ? file.name : label}
       </span>
-      {hint && !file && (
-        <span className="text-xs text-zinc-600">{hint}</span>
-      )}
+      {hint && !file && <span className="text-xs text-zinc-600">{hint}</span>}
       <input
         id={id}
         type="file"
         accept={accept}
         className="hidden"
-        onChange={e => onChange(e.target.files[0] || null)}
+        onChange={(e) => onChange(e.target.files[0] || null)}
       />
     </label>
   );

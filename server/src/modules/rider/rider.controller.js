@@ -18,10 +18,12 @@ export const getDashboard = catchAsync(async (req, res) => {
 // ─────────────────────────────────────────
 
 export const toggleDuty = catchAsync(async (req, res) => {
-  const data = await riderService.toggleDutyStatus(req.userId);
+  const { isOnline } = req.body;  // fix typo
+  if (typeof isOnline !== "boolean")
+    return res.status(400).json({ message: "isOnline (boolean) is required." });
+  const data = await riderService.toggleDutyStatus(req.userId, isOnline); // pass value
   res.status(200).json({ success: true, data });
 });
-
 // ─────────────────────────────────────────
 // GET /rider/manifest
 // ─────────────────────────────────────────

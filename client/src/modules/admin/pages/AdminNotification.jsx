@@ -1,4 +1,3 @@
-
 import { Bell, CheckCheck } from "lucide-react";
 import { TYPE_ICON } from "../../../shared/constants/typeIcon";
 import { useNotifications } from "../../../context/NotificationContext";
@@ -27,7 +26,7 @@ export default function AdminNotifications() {
       </div>
 
       {notifications.length === 0 ? (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-12 text-center">
+        <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-12 text-center">
           <Bell size={32} className="text-zinc-700 mx-auto mb-3" />
           <p className="text-zinc-600 text-sm">No notifications yet</p>
         </div>
@@ -39,8 +38,8 @@ export default function AdminNotifications() {
               onClick={() => markRead(n.id)}
               className={`p-4 rounded-xl border cursor-pointer transition-all ${
                 n.read
-                  ? "bg-zinc-900 border-zinc-800 opacity-60"
-                  : "bg-zinc-900 border-zinc-700 hover:border-zinc-600"
+                  ? "bg-white dark:bg-gray-900 border-zinc-800 opacity-60"
+                  : "bg-white dark:bg-gray-900 border-zinc-700 hover:border-zinc-600"
               }`}
             >
               <div className="flex items-start gap-3">

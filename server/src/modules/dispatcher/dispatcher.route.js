@@ -1,26 +1,29 @@
-// src/modules/dispatcher/dispatcher.routes.js
-import { Router }      from "express";
+import { Router } from "express";
 import { requireAuth, requireRole } from "../auth/auth.middleware.js";
 import {
   getPendingShipments,
-  getHubInventory,          // ← add
+  getHubInventory,
+  getStuckPackages,
   getAvailableRiders,
+  getNearestRiders,
   assignRider,
-  scanHandoff,
-  scanHandoffByTracking,    // ← add
+  scanToHub,
   updateStatus,
 } from "./dispatcher.controller.js";
 
 const router = Router();
-
 router.use(requireAuth, requireRole("DISPATCHER"));
 
+// Shipment routes — specific paths BEFORE parameterized ones
+router.get ("/shipments/hub",                  getHubInventory);
+router.get ("/shipments/stuck",                getStuckPackages);
+router.get ("/shipments",                       getPendingShipments);
+router.patch("/shipments/:id/assign",           assignRider);
+router.post ("/shipments/:trackingNumber/scan", scanToHub);   
+router.patch("/shipments/:id/status",           updateStatus);
 
-router.get ("/shipments/hub",                   getHubInventory);        
-router.get ("/shipments",                        getPendingShipments);
-router.get ("/riders/available",                 getAvailableRiders);
-router.patch("/shipments/:id/assign",            assignRider);
-router.post ("/shipments/:trackingNumber/scan",  scanHandoffByTracking); 
-router.patch("/shipments/:id/status",            updateStatus);
+// Rider routes
+router.get("/riders/available", getAvailableRiders);  // optional ?vehicleTypeId=
+router.get("/riders/nearest",   getNearestRiders);     // required ?lat=&lng=, optional &vehicleTypeId=
 
 export default router;

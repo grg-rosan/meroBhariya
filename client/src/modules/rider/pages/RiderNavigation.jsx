@@ -1,17 +1,17 @@
 // src/rider/pages/RiderNavigation.jsx
-import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';                              // ← was missing
-import { useRiderNavigation } from '../hooks/useRiderNavigation';
-import { NavMap } from '../components/navigation/NavMap';
-import { CurrentStop } from '../components/navigation/CurrentStop';
-import { UpcomingStops } from '../components/navigation/UpcommingStops';
+import { useLocation, useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react"; // ← was missing
+import { useRiderNavigation } from "../hooks/useRiderNavigation";
+import { NavMap } from "../components/navigation/NavMap";
+import { CurrentStop } from "../components/navigation/CurrentStop";
+import { UpcomingStops } from "../components/navigation/UpcommingStops";
 export default function RiderNavigation() {
-  const location   = useLocation();
-  const navigate   = useNavigate();
+  const location = useLocation();
+  const navigate = useNavigate();
   const activeStop = location.state?.stop ?? null;
 
   const { current, upcoming, totalStops } = useRiderNavigation(
-    activeStop ? [activeStop] : []
+    activeStop ? [activeStop] : [],
   );
 
   if (!activeStop) {
@@ -19,7 +19,7 @@ export default function RiderNavigation() {
       <div className="p-6 max-w-3xl mx-auto flex flex-col items-center justify-center gap-3 mt-20">
         <p className="text-zinc-400 text-sm">No stop selected.</p>
         <button
-          onClick={() => navigate('/rider/manifest')}
+          onClick={() => navigate("/rider/manifest")}
           className="text-sky-400 text-sm hover:underline"
         >
           Back to manifest
@@ -33,7 +33,7 @@ export default function RiderNavigation() {
       <div className="flex items-center gap-3">
         <button
           onClick={() => navigate(-1)}
-          className="w-8 h-8 flex items-center justify-center rounded-lg border border-zinc-700 hover:bg-zinc-800 text-zinc-400 transition-all"
+          className="w-8 h-8 flex items-center justify-center rounded-lg border border-zinc-700 hover:bg-gray-100 dark:bg-blue-950 text-zinc-400 transition-all"
         >
           <ArrowLeft size={15} />
         </button>

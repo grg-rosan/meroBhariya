@@ -1,158 +1,303 @@
-// src/dispatcher/pages/AssignRoutesMap.jsx
-// Enhanced assign routes with:
-//  - Mapbox map showing all unassigned package pins
-//  - Nearest rider list from PostGIS query
-//  - One-click optimized route assignment
+// src/modules/dispatcher/pages/AssignRoutes.jsx
+import { useState } from "react";
+import { CheckSquare, Square, Zap, UserCheck, RefreshCw } from "lucide-react";
+import {
+  usePendingShipments,
+  useAvailableRiders,
+  useAssignRider,
+} from "../hooks/useDispatcher";
+import { useToast } from "../../../context/ToastContext";
 
-import { useRef, useEffect, useState } from 'react';
-import { Zap, UserCheck, MapPin } from 'lucide-react';
-import {useMapLibre} from "../../../shared/hooks/useMapLibre"
-import { useAssignRoute } from '../hooks/useDispatcher';
-import { useAPI } from '../../../shared/hooks/useApi';
-
-const HUB = { lat: 27.7224, lng: 85.3086 }; // Balaju Hub coordinates
-
-const UNASSIGNED = [
-  { trackingNumber:'PTR-2838', destination:'Patan-7',     lat:27.6699, lng:85.3149, zone:'Lalitpur',  weight:0.5 },
-  { trackingNumber:'PTR-2845', destination:'Bhaktapur-3', lat:27.6710, lng:85.4298, zone:'Bhaktapur', weight:1.2 },
-  { trackingNumber:'PTR-2849', destination:'Kirtipur',    lat:27.6792, lng:85.2799, zone:'Kirtipur',  weight:0.9 },
-  { trackingNumber:'PTR-2851', destination:'Patan-3',     lat:27.6654, lng:85.3218, zone:'Lalitpur',  weight:2.1 },
-  { trackingNumber:'PTR-2853', destination:'Bhaktapur-7', lat:27.6720, lng:85.4250, zone:'Bhaktapur', weight:1.5 },
-];
-
-export default function AssignRoutesMap() {
-  const mapContainerRef = useRef(null);
-  const { upsertMarker, flyTo } = useMapbox(mapContainerRef, {
-    center: [HUB.lng, HUB.lat],
-    zoom: 12,
-    style: 'mapbox://styles/mapbox/dark-v11',
-  });
-
-  const { data: ridersData } = useAPI(`/api/hub/riders/nearest?lat=${HUB.lat}&lng=${HUB.lng}`);
-  const { assign, loading, error } = useAssignRoute();
+export default function AssignRoutes() {
+  const {
+    data: pendingData,
+    loading: loadingShipments,
+    refetch,
+  } = usePendingShipments();
+  const { assign, loading: assigning } = useAssignRider();
+  const toast = useToast();
 
   const [selected, setSelected] = useState(new Set());
-  const [riderId, setRiderId]   = useState('');
-  const [success, setSuccess]   = useState(false);
+  const [riderId, setRiderId] = useState("");
+  const [vehicleTypeId, setVehicleTypeId] = useState("");
 
-  const riders = ridersData?.riders ?? [];
+  // Always fetches — vehicleTypeId is an optional filter, not a gate
+  const { data: riders, loading: loadingRiders } = useAvailableRiders(
+    vehicleTypeId || null,
+  );
 
-  // Pin all unassigned packages on map
-  useEffect(() => {
-    UNASSIGNED.forEach(p => {
-      upsertMarker(p.trackingNumber, [p.lng, p.lat], {
-        style: selected.has(p.trackingNumber)
-          ? 'width:14px;height:14px;border-radius:50%;background:#10b981;border:2px solid #fff'
-          : 'width:10px;height:10px;border-radius:50%;background:#f59e0b;border:2px solid #fff',
-        popup: `<div style="color:#111;font-size:12px"><strong>${p.trackingNumber}</strong><br>${p.destination}</div>`,
-      });
+  const shipments = pendingData?.shipments ?? [];
+  const selectedRider = riders.find((r) => r.id === riderId);
+
+  const toggle = (id) =>
+    setSelected((prev) => {
+      const n = new Set(prev);
+      n.has(id) ? n.delete(id) : n.add(id);
+      return n;
     });
 
-    // Hub marker
-    upsertMarker('hub', [HUB.lng, HUB.lat], {
-      style: 'width:16px;height:16px;border-radius:3px;background:#8b5cf6;border:2px solid #fff',
-      popup: '<div style="color:#111;font-size:12px;font-weight:600">Balaju Hub</div>',
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected]);
-
-  const toggle = id => setSelected(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const toggleAll = () =>
+    setSelected(
+      selected.size === shipments.length
+        ? new Set()
+        : new Set(shipments.map((s) => s.id)),
+    );
 
   const handleAssign = async () => {
     if (!riderId || selected.size === 0) return;
-    try {
-      await assign([...selected], riderId, HUB);
-      setSuccess(true);
+    let successCount = 0;
+    for (const shipmentId of selected) {
+      try {
+        await assign(shipmentId, riderId);
+        successCount++;
+      } catch {
+        // individual error toasted by hook
+      }
+    }
+    if (successCount > 0) {
+      toast({
+        message: `${successCount} shipment(s) assigned to ${selectedRider?.user?.fullName ?? "rider"}.`,
+        type: "success",
+      });
       setSelected(new Set());
-      setTimeout(() => setSuccess(false), 3000);
-    } catch (_) {}
+      setRiderId("");
+      refetch();
+    }
   };
 
+  const totalWeight = shipments
+    .filter((s) => selected.has(s.id))
+    .reduce((sum, s) => sum + (s.weight ?? 0), 0);
+
+  // Vehicle types from riders (has vehicleType included from backend)
+  const vehicleTypes = [
+    ...new Map(
+      riders.map((r) => [r.vehicleType?.name, r.vehicleType]),
+    ).values(),
+  ].filter(Boolean);
+
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-semibold text-white">Assign routes</h1>
-          <p className="text-sm text-zinc-500 mt-0.5">Route is auto-optimized via Google Directions API before assignment</p>
+          <p className="text-sm text-zinc-500 mt-0.5">
+            {shipments.length} pending shipment
+            {shipments.length !== 1 ? "s" : ""} waiting for assignment
+          </p>
         </div>
-        <button onClick={handleAssign} disabled={selected.size === 0 || !riderId || loading}
-          className="flex items-center gap-2 px-4 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-sm rounded-lg font-medium disabled:opacity-40 transition-all">
-          <UserCheck size={14} />
-          {loading ? 'Optimizing route…' : `Assign ${selected.size > 0 ? `(${selected.size})` : ''}`}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={refetch}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-zinc-400 border border-zinc-800 rounded-lg hover:bg-gray-100 dark:bg-blue-950 transition-all"
+          >
+            <RefreshCw
+              size={12}
+              className={loadingShipments ? "animate-spin" : ""}
+            />
+            Refresh
+          </button>
+          <button
+            onClick={handleAssign}
+            disabled={selected.size === 0 || !riderId || assigning}
+            className="flex items-center gap-2 px-4 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-sm rounded-lg font-medium disabled:opacity-40 transition-all"
+          >
+            <UserCheck size={14} />
+            {assigning
+              ? "Assigning…"
+              : `Assign ${selected.size > 0 ? `(${selected.size})` : ""} to rider`}
+          </button>
+        </div>
       </div>
 
-      {success && (
-        <div className="bg-green-500/10 border border-green-700/50 rounded-xl p-3 mb-4 text-sm text-green-300 flex items-center gap-2">
-          <Zap size={13} /> Route optimized and assigned. Rider manifest updated.
-        </div>
-      )}
-      {error && (
-        <div className="bg-red-500/10 border border-red-700/50 rounded-xl p-3 mb-4 text-sm text-red-300">{error}</div>
-      )}
-
       <div className="grid lg:grid-cols-3 gap-4">
-        {/* Map */}
-        <div className="lg:col-span-2 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-          <div className="px-4 py-3 border-b border-zinc-800 flex items-center gap-3 text-xs">
-            <span className="flex items-center gap-1.5 text-zinc-400"><span className="w-2.5 h-2.5 rounded-sm bg-violet-500 inline-block"/>Hub</span>
-            <span className="flex items-center gap-1.5 text-zinc-400"><span className="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"/>Unassigned</span>
-            <span className="flex items-center gap-1.5 text-zinc-400"><span className="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"/>Selected</span>
+        {/* Shipment list */}
+        <div className="lg:col-span-2 bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl overflow-hidden">
+          <div className="px-5 py-3 border-b border-zinc-800 flex items-center justify-between">
+            <h2 className="text-sm font-medium text-white">
+              Pending shipments ({shipments.length})
+            </h2>
+            {shipments.length > 0 && (
+              <button
+                onClick={toggleAll}
+                className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
+              >
+                {selected.size === shipments.length ? (
+                  <CheckSquare size={13} className="text-emerald-400" />
+                ) : (
+                  <Square size={13} />
+                )}
+                {selected.size === shipments.length
+                  ? "Deselect all"
+                  : "Select all"}
+              </button>
+            )}
           </div>
-          <div ref={mapContainerRef} className="h-80 w-full" />
+
+          {loadingShipments ? (
+            <div className="px-5 py-10 text-center text-zinc-600 text-sm">
+              Loading…
+            </div>
+          ) : shipments.length === 0 ? (
+            <div className="px-5 py-10 text-center text-zinc-600 text-sm">
+              No pending shipments
+            </div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-zinc-800">
+                  <th className="px-4 py-2.5 text-left w-8" />
+                  {[
+                    "Tracking #",
+                    "Merchant",
+                    "Receiver",
+                    "Address",
+                    "Weight",
+                    "Vehicle",
+                  ].map((h) => (
+                    <th
+                      key={h}
+                      className="text-left px-3 py-2.5 text-xs text-zinc-500 font-medium"
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {shipments.map((s) => (
+                  <tr
+                    key={s.id}
+                    onClick={() => toggle(s.id)}
+                    className={`border-b border-zinc-800/50 cursor-pointer transition-colors ${
+                      selected.has(s.id)
+                        ? "bg-emerald-500/5"
+                        : "hover:bg-gray-100 dark:bg-blue-950/30"
+                    }`}
+                  >
+                    <td className="px-4 py-3">
+                      {selected.has(s.id) ? (
+                        <CheckSquare size={14} className="text-emerald-400" />
+                      ) : (
+                        <Square size={14} className="text-zinc-600" />
+                      )}
+                    </td>
+                    <td className="px-3 py-3 font-mono text-xs text-zinc-400">
+                      {s.trackingNumber}
+                    </td>
+                    <td className="px-3 py-3 text-xs text-zinc-300">
+                      {s.merchant?.businessName ?? "—"}
+                    </td>
+                    <td className="px-3 py-3 text-xs text-zinc-400">
+                      {s.receiverName}
+                    </td>
+                    <td className="px-3 py-3 text-xs text-zinc-500 truncate max-w-[120px]">
+                      {s.deliveryAddress}
+                    </td>
+                    <td className="px-3 py-3 text-xs text-zinc-400">
+                      {s.weight} kg
+                    </td>
+                    <td className="px-3 py-3">
+                      <span className="text-xs bg-gray-100 dark:bg-blue-950 text-zinc-400 px-2 py-0.5 rounded">
+                        {s.vehicleType?.name ?? "—"}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          {selected.size > 0 && (
+            <div className="px-5 py-3 border-t border-zinc-800 bg-emerald-500/5 flex items-center justify-between">
+              <span className="text-xs text-emerald-400">
+                {selected.size} selected · {totalWeight.toFixed(1)} kg total
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* Controls */}
-        <div className="space-y-4">
-          {/* Package list */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-            <div className="px-4 py-3 border-b border-zinc-800">
-              <h2 className="text-sm font-medium text-white">Packages ({UNASSIGNED.length})</h2>
+        {/* Rider selector */}
+        <div className="space-y-3">
+          {/* Vehicle type filter — built from riders, not shipments */}
+          {vehicleTypes.length > 0 && (
+            <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-4">
+              <label className="text-xs text-zinc-500 block mb-2">
+                Filter by vehicle type
+              </label>
+              <select
+                value={vehicleTypeId}
+                onChange={(e) => {
+                  setVehicleTypeId(e.target.value);
+                  setRiderId("");
+                }}
+                className="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-blue-950 border border-zinc-700 rounded-lg text-zinc-300 focus:outline-none focus:border-zinc-600"
+              >
+                <option value="">All vehicle types</option>
+                {vehicleTypes.map((v) => (
+                  <option key={v.name} value={v.vehicleTypeId ?? v.name}>
+                    {v.name}
+                  </option>
+                ))}
+              </select>
             </div>
-            <div>
-              {UNASSIGNED.map(p => (
-                <button key={p.trackingNumber} onClick={() => { toggle(p.trackingNumber); flyTo([p.lng, p.lat], 14); }}
-                  className={`w-full flex items-center gap-3 px-4 py-2.5 border-b border-zinc-800/50 last:border-none text-left transition-colors ${selected.has(p.trackingNumber) ? 'bg-emerald-500/10' : 'hover:bg-zinc-800/40'}`}>
-                  <div className={`w-2 h-2 rounded-full shrink-0 ${selected.has(p.trackingNumber) ? 'bg-emerald-400' : 'bg-amber-400'}`} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-mono text-zinc-400">{p.trackingNumber}</p>
-                    <p className="text-xs text-zinc-500 truncate">{p.destination} · {p.weight} kg</p>
-                  </div>
-                  <span className="text-xs bg-zinc-800 text-zinc-500 px-1.5 py-0.5 rounded shrink-0">{p.zone}</span>
-                </button>
-              ))}
-            </div>
+          )}
+
+          {/* Rider list */}
+          <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-4">
+            <h2 className="text-sm font-medium text-white mb-3">
+              Available riders
+              {riders.length > 0 && (
+                <span className="ml-2 text-xs text-zinc-500 font-normal">
+                  ({riders.length})
+                </span>
+              )}
+            </h2>
+
+            {loadingRiders ? (
+              <p className="text-xs text-zinc-600 text-center py-4">
+                Loading riders…
+              </p>
+            ) : riders.length === 0 ? (
+              <p className="text-xs text-zinc-600 text-center py-4">
+                No riders online
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {riders.map((r) => (
+                  <button
+                    key={r.id}
+                    onClick={() => setRiderId(r.id)}
+                    className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-all text-left ${
+                      riderId === r.id
+                        ? "border-emerald-500 bg-emerald-500/5"
+                        : "border-zinc-800 hover:bg-gray-100 dark:bg-blue-950"
+                    }`}
+                  >
+                    <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-blue-900 text-zinc-300 text-xs font-semibold flex items-center justify-center shrink-0">
+                      {r.user?.fullName
+                        ?.split(" ")
+                        .map((w) => w[0])
+                        .join("") ?? "?"}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-zinc-200 font-medium">
+                        {r.user?.fullName ?? "—"}
+                      </p>
+                      <p className="text-xs text-zinc-500">
+                        {r.user?.phoneNumber} · {r.vehicleType?.name}
+                      </p>
+                    </div>
+                    <div className="w-2 h-2 rounded-full bg-green-500 shrink-0" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Nearest riders from PostGIS */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-            <div className="px-4 py-3 border-b border-zinc-800">
-              <h2 className="text-sm font-medium text-white">Nearest riders</h2>
-              <p className="text-xs text-zinc-500 mt-0.5">Sorted by distance from hub (PostGIS)</p>
-            </div>
-            <div>
-              {(riders.length ? riders : [
-                { id:'r1', name:'Rajan Shrestha', vehicle:'Bike',       distance_meters: 420 },
-                { id:'r2', name:'Bikash Tamang',  vehicle:'Mini Truck', distance_meters: 1200 },
-                { id:'r3', name:'Sunil Magar',    vehicle:'Bike',       distance_meters: 2100 },
-              ]).map(r => (
-                <button key={r.id} onClick={() => setRiderId(r.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 border-b border-zinc-800/50 last:border-none text-left transition-all ${riderId === r.id ? 'bg-emerald-500/10 border-l-2 border-l-emerald-500' : 'hover:bg-zinc-800/40'}`}>
-                  <div className="w-7 h-7 rounded-full bg-zinc-700 text-zinc-300 text-xs font-semibold flex items-center justify-center shrink-0">
-                    {r.name.split(' ').map(w=>w[0]).join('')}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-zinc-200">{r.name}</p>
-                    <p className="text-xs text-zinc-500">{r.vehicle}</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-xs text-zinc-400">{Math.round(r.distance_meters)}m</p>
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 ml-auto mt-0.5" />
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
+          <button className="w-full flex items-center gap-2 justify-center py-2.5 border border-dashed border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500 rounded-xl text-sm transition-all">
+            <Zap size={14} /> Auto-assign by zone
+          </button>
         </div>
       </div>
     </div>

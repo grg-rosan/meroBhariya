@@ -1,62 +1,151 @@
-import { prisma } from "../../config/db.config.js";
+import { prisma }  from "../../config/db.config.js";
 import { publish } from "../../infrastructure/rabbitmq/publisher.js";
-import AppError from "../../utils/error/appError.js";
+import AppError    from "../../utils/error/appError.js";
 import { buildPaginationMeta } from "../../utils/others/pagination.js";
 import {
   publishRiderNotification,
   publishMerchantNotification,
 } from "../../infrastructure/rabbitmq/publisher.js";
 
-// ─── Get pending shipments (dispatcher board) ─────────────────────────────────
+// ─── Pending shipments ────────────────────────────────────────────────────────
 
 export async function getPendingShipments({ page, limit, skip }) {
   const where = { status: "PENDING" };
-
   const [shipments, total] = await Promise.all([
     prisma.shipment.findMany({
-      skip,
-      take:  limit,
-      where,
+      skip, take: limit, where,
       include: {
         merchant:    { select: { businessName: true, pickupAddress: true } },
-        vehicleType: { select: { name: true } },
+        vehicleType: { select: { id: true, name: true } },
       },
-      orderBy: { createdAt: "asc" }, // FIFO
+      orderBy: { createdAt: "asc" },
+    }),
+    prisma.shipment.count({ where }),
+  ]);
+  return { shipments, ...buildPaginationMeta(total, page, limit) };
+}
+
+// ─── Hub inventory ────────────────────────────────────────────────────────────
+
+export async function getHubInventory({ page, limit, skip }) {
+  const where = { status: { in: ["IN_HUB", "ASSIGNED", "OUT_FOR_DELIVERY"] } };
+  const [shipments, total] = await Promise.all([
+    prisma.shipment.findMany({
+      skip, take: limit, where,
+      include: {
+        merchant:    { select: { businessName: true } },
+        vehicleType: { select: { name: true } },
+        rider:       { select: { user: { select: { fullName: true } } } },
+      },
+      orderBy: { updatedAt: "desc" },
     }),
     prisma.shipment.count({ where }),
   ]);
 
-  return { shipments, ...buildPaginationMeta(total, page, limit) };
+  const stats = {
+    inHub:          await prisma.shipment.count({ where: { status: "IN_HUB" } }),
+    unassigned:     await prisma.shipment.count({ where: { status: "IN_HUB", riderId: null } }),
+    assigned:       await prisma.shipment.count({ where: { status: "ASSIGNED" } }),
+    outForDelivery: await prisma.shipment.count({ where: { status: "OUT_FOR_DELIVERY" } }),
+  };
+
+  return { shipments, stats, ...buildPaginationMeta(total, page, limit) };
 }
 
-// ─── Get available riders for a vehicle type ──────────────────────────────────
+// ─── Stuck packages ───────────────────────────────────────────────────────────
 
-export async function getAvailableRiders(vehicleTypeId) {
+export async function getStuckPackages() {
+  const now          = new Date();
+  const twoHoursAgo  = new Date(now - 2 * 60 * 60 * 1000);
+  const fourHoursAgo = new Date(now - 4 * 60 * 60 * 1000);
+
+  const stuck = await prisma.shipment.findMany({
+    where: {
+      OR: [
+        { status: "PENDING",  createdAt: { lt: twoHoursAgo } },
+        { status: "ASSIGNED", updatedAt: { lt: fourHoursAgo } },
+      ],
+    },
+    include: {
+      merchant:    { select: { businessName: true } },
+      vehicleType: { select: { name: true } },
+      rider:       { select: { user: { select: { fullName: true } } } },
+    },
+    orderBy: { createdAt: "asc" },
+  });
+
+  return stuck.map((s) => ({
+    ...s,
+    stuckReason:
+      s.status === "PENDING"
+        ? "No rider assigned for over 2 hours"
+        : "Rider assigned but not picked up for over 4 hours",
+    stuckDurationMinutes: Math.round((now - new Date(s.updatedAt)) / 60000),
+  }));
+}
+
+// ─── Available riders ─────────────────────────────────────────────────────────
+
+export async function getAvailableRiders(vehicleTypeId = null) {
   return prisma.riderProfile.findMany({
     where: {
-      vehicleTypeId: Number(vehicleTypeId),
-      isOnline:      true,
-      isVerified:    true,
+      ...(vehicleTypeId ? { vehicleTypeId: Number(vehicleTypeId) } : {}),
+      isOnline:   true,
+      isVerified: true,
       shipments: {
-        none: {
-          status: { in: ["ASSIGNED", "PICKED_UP", "IN_HUB", "OUT_FOR_DELIVERY"] },
-        },
+        none: { status: { in: ["ASSIGNED", "PICKED_UP", "IN_HUB", "OUT_FOR_DELIVERY"] } },
       },
     },
     include: {
-      user: { select: { fullName: true, phoneNumber: true } },
+      user:        { select: { fullName: true, phoneNumber: true } },
+      vehicleType: { select: { id: true, name: true } },
     },
   });
 }
 
-// ─── Assign rider to shipment ─────────────────────────────────────────────────
+// ─── Nearest riders (PostGIS) ─────────────────────────────────────────────────
+
+export async function getNearestRiders({ lat, lng, vehicleTypeId = null, limit = 10 }) {
+  const riders = await prisma.$queryRaw`
+    SELECT
+      rp.id,
+      rp."vehicleNumber",
+      rp."vehicleTypeId",
+      u."fullName"                                        AS name,
+      u."phoneNumber"                                     AS phone,
+      vt.name                                             AS vehicle,
+      ST_Distance(
+        rp."currentLocation"::geography,
+        ST_SetSRID(ST_MakePoint(${parseFloat(lng)}, ${parseFloat(lat)}), 4326)::geography
+      )                                                   AS distance_meters,
+      ST_X(rp."currentLocation"::geometry)               AS lng,
+      ST_Y(rp."currentLocation"::geometry)               AS lat
+    FROM "RiderProfile" rp
+    JOIN "User"        u  ON u.id  = rp."userId"
+    JOIN "VehicleType" vt ON vt.id = rp."vehicleTypeId"
+    WHERE rp."isOnline"        = true
+      AND rp."isVerified"      = true
+      AND rp."currentLocation" IS NOT NULL
+      AND NOT EXISTS (
+        SELECT 1 FROM "Shipment" s
+        WHERE s."riderId" = rp.id
+          AND s.status IN ('ASSIGNED','PICKED_UP','IN_HUB','OUT_FOR_DELIVERY')
+      )
+      ${vehicleTypeId ? prisma.$raw`AND rp."vehicleTypeId" = ${parseInt(vehicleTypeId)}` : prisma.$raw``}
+    ORDER BY distance_meters ASC
+    LIMIT ${limit}
+  `;
+  return riders;
+}
+
+// ─── Assign rider ─────────────────────────────────────────────────────────────
 
 export async function assignRider(shipmentId, riderId, dispatcherId) {
   const shipment = await prisma.shipment.findUnique({
     where:   { id: shipmentId },
     include: { merchant: { select: { userId: true } } },
   });
-  if (!shipment) throw new AppError("Shipment not found.", 404);
+  if (!shipment)                throw new AppError("Shipment not found.", 404);
   if (shipment.status !== "PENDING")
     throw new AppError("Only PENDING shipments can be assigned.", 400);
 
@@ -103,43 +192,32 @@ export async function assignRider(shipmentId, riderId, dispatcherId) {
   return updated;
 }
 
-// ─── Two-man hub handoff ──────────────────────────────────────────────────────
 
-export async function scanHandoff(shipmentId, dispatcherUserId) {
+export async function scanToHub(trackingNumber, dispatcherUserId) {
   const shipment = await prisma.shipment.findUnique({
-    where:   { id: shipmentId },
+    where:   { trackingNumber },
     include: { merchant: { select: { userId: true } } },
   });
-  if (!shipment) throw new AppError("Shipment not found.", 404);
-  if (shipment.status !== "PICKED_UP")
-    throw new AppError("Shipment must be PICKED_UP before hub handoff.", 400);
 
-  // First scan
-  if (!shipment.isHandoffPending) {
-    await prisma.shipment.update({
-      where: { id: shipmentId },
-      data:  { isHandoffPending: true, handoffInitiatorId: dispatcherUserId },
-    });
-    return {
-      message: "First scan recorded. Waiting for second dispatcher to confirm.",
-      step:    1,
-    };
-  }
+  if (!shipment)
+    throw new AppError(`No shipment found for tracking number ${trackingNumber}.`, 404);
 
-  // Second scan — must be a different dispatcher
-  if (shipment.handoffInitiatorId === dispatcherUserId)
-    throw new AppError("Two-man rule: a different dispatcher must perform the second scan.", 400);
+  if (!["PICKED_UP", "PENDING"].includes(shipment.status))
+    throw new AppError(
+      `Cannot scan shipment with status ${shipment.status} into hub.`,
+      400
+    );
 
   const updated = await prisma.$transaction(async (tx) => {
     const s = await tx.shipment.update({
-      where: { id: shipmentId },
-      data:  { status: "IN_HUB", isHandoffPending: false, handoffInitiatorId: null },
+      where: { id: shipment.id },
+      data:  { status: "IN_HUB" },
     });
     await tx.shipmentLog.create({
       data: {
-        shipmentId,
+        shipmentId:  shipment.id,
         status:      "IN_HUB",
-        note:        "Two-man handoff confirmed at hub",
+        note:        "Scanned into hub by dispatcher.",
         updatedById: dispatcherUserId,
       },
     });
@@ -147,7 +225,7 @@ export async function scanHandoff(shipmentId, dispatcherUserId) {
   });
 
   publish("shipment.status.updated", {
-    shipmentId,
+    shipmentId:     shipment.id,
     trackingNumber: shipment.trackingNumber,
     status:         "IN_HUB",
     riderId:        shipment.riderId,
@@ -157,16 +235,21 @@ export async function scanHandoff(shipmentId, dispatcherUserId) {
 
   publishMerchantNotification({
     merchantUserId: shipment.merchant.userId,
-    shipmentId,
+    shipmentId:     shipment.id,
     trackingNumber: shipment.trackingNumber,
     status:         "IN_HUB",
     message:        `Your shipment ${shipment.trackingNumber} has arrived at the hub.`,
   });
 
-  return { message: "Handoff confirmed. Shipment is now IN_HUB.", step: 2, shipment: updated };
+  return {
+    trackingNumber:  updated.trackingNumber,
+    status:          updated.status,
+    receiverName:    updated.receiverName,
+    deliveryAddress: updated.deliveryAddress,
+  };
 }
 
-// ─── Update shipment status (dispatcher-driven transitions) ───────────────────
+// ─── Status transitions ───────────────────────────────────────────────────────
 
 const VALID_TRANSITIONS = {
   IN_HUB:   ["OUT_FOR_DELIVERY"],
@@ -181,7 +264,7 @@ export async function updateShipmentStatus(shipmentId, newStatus, dispatcherUser
   if (!shipment) throw new AppError("Shipment not found.", 404);
 
   const allowed = VALID_TRANSITIONS[shipment.status];
-  if (!allowed || !allowed.includes(newStatus))
+  if (!allowed?.includes(newStatus))
     throw new AppError(`Cannot transition from ${shipment.status} to ${newStatus}.`, 400);
 
   const updated = await prisma.$transaction(async (tx) => {
@@ -213,50 +296,4 @@ export async function updateShipmentStatus(shipmentId, newStatus, dispatcherUser
   });
 
   return updated;
-}
-
-// ─── Get hub inventory (IN_HUB + ASSIGNED + OUT_FOR_DELIVERY) ────────────────
-
-export async function getHubInventory({ page, limit, skip }) {
-  const where = {
-    status: { in: ["IN_HUB", "ASSIGNED", "OUT_FOR_DELIVERY"] },
-  };
-
-  const [shipments, total] = await Promise.all([
-    prisma.shipment.findMany({
-      skip,
-      take:  limit,
-      where,
-      include: {
-        merchant:    { select: { businessName: true } },
-        vehicleType: { select: { name: true } },
-        rider: {
-          select: { user: { select: { fullName: true } } },
-        },
-      },
-      orderBy: { updatedAt: "desc" },
-    }),
-    prisma.shipment.count({ where }),
-  ]);
-
-  const stats = {
-    total:          await prisma.shipment.count({ where: { status: "IN_HUB" } }),
-    unassigned:     await prisma.shipment.count({ where: { status: "IN_HUB", riderId: null } }),
-    assigned:       await prisma.shipment.count({ where: { status: "ASSIGNED" } }),
-    outForDelivery: await prisma.shipment.count({ where: { status: "OUT_FOR_DELIVERY" } }),
-  };
-
-  return { shipments, stats, ...buildPaginationMeta(total, page, limit) };
-}
-
-// ─── Scan handoff by tracking number (wraps existing scanHandoff) ─────────────
-// Frontend sends trackingNumber, backend resolves to shipment ID
-
-export async function scanHandoffByTracking(trackingNumber, dispatcherUserId) {
-  const shipment = await prisma.shipment.findUnique({
-    where: { trackingNumber },
-  });
-  if (!shipment) throw new AppError(`Shipment ${trackingNumber} not found.`, 404);
-
-  return scanHandoff(shipment.id, dispatcherUserId);
 }

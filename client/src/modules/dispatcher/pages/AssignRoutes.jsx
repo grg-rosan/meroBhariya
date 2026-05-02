@@ -1,19 +1,28 @@
 // src/modules/dispatcher/pages/AssignRoutes.jsx
-import { useState }                                    from "react";
+import { useState } from "react";
 import { CheckSquare, Square, Zap, UserCheck, RefreshCw } from "lucide-react";
-import { usePendingShipments, useAvailableRiders, useAssignRider } from "../hooks/useDispatcher";
-import { useToast }                                    from "../../../context/ToastContext";
+import {
+  usePendingShipments,
+  useAvailableRiders,
+  useAssignRider,
+} from "../hooks/useDispatcher";
+import { useToast } from "../../../context/ToastContext";
 
 export default function AssignRoutes() {
-  const { data: pendingData, loading: loadingShipments, refetch } = usePendingShipments();
+  const {
+    data: pendingData,
+    loading: loadingShipments,
+    refetch,
+  } = usePendingShipments();
   const { assign, loading: assigning } = useAssignRider();
   const toast = useToast();
 
-  const [selected, setSelected]         = useState(new Set()); // Set of shipment IDs
-  const [riderId, setRiderId]           = useState("");
+  const [selected, setSelected] = useState(new Set()); // Set of shipment IDs
+  const [riderId, setRiderId] = useState("");
   const [vehicleTypeId, setVehicleTypeId] = useState("");
 
-  const { data: riders, loading: loadingRiders } = useAvailableRiders(vehicleTypeId);
+  const { data: riders, loading: loadingRiders } =
+    useAvailableRiders(vehicleTypeId);
 
   // Backend returns { shipments, total, page, limit }
   const shipments = pendingData?.shipments ?? [];
@@ -30,7 +39,7 @@ export default function AssignRoutes() {
     setSelected(
       selected.size === shipments.length
         ? new Set()
-        : new Set(shipments.map((s) => s.id))
+        : new Set(shipments.map((s) => s.id)),
     );
 
   // Backend assigns one shipment at a time — fire in sequence
@@ -63,7 +72,7 @@ export default function AssignRoutes() {
   // Get unique vehicle types from shipments for filter
   const vehicleTypes = [
     ...new Map(
-      shipments.map((s) => [s.vehicleType?.id, s.vehicleType])
+      shipments.map((s) => [s.vehicleType?.id, s.vehicleType]),
     ).values(),
   ].filter(Boolean);
 
@@ -73,15 +82,19 @@ export default function AssignRoutes() {
         <div>
           <h1 className="text-xl font-semibold text-white">Assign routes</h1>
           <p className="text-sm text-zinc-500 mt-0.5">
-            {shipments.length} pending shipment{shipments.length !== 1 ? "s" : ""} waiting for assignment
+            {shipments.length} pending shipment
+            {shipments.length !== 1 ? "s" : ""} waiting for assignment
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={refetch}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-zinc-400 border border-zinc-800 rounded-lg hover:bg-zinc-800 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-zinc-400 border border-zinc-800 rounded-lg hover:bg-gray-100 dark:bg-blue-950 transition-all"
           >
-            <RefreshCw size={12} className={loadingShipments ? "animate-spin" : ""} />
+            <RefreshCw
+              size={12}
+              className={loadingShipments ? "animate-spin" : ""}
+            />
             Refresh
           </button>
           <button
@@ -90,14 +103,16 @@ export default function AssignRoutes() {
             className="flex items-center gap-2 px-4 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-sm rounded-lg font-medium disabled:opacity-40 transition-all"
           >
             <UserCheck size={14} />
-            {assigning ? "Assigning…" : `Assign ${selected.size > 0 ? `(${selected.size})` : ""} to rider`}
+            {assigning
+              ? "Assigning…"
+              : `Assign ${selected.size > 0 ? `(${selected.size})` : ""} to rider`}
           </button>
         </div>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4">
         {/* Shipment list */}
-        <div className="lg:col-span-2 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+        <div className="lg:col-span-2 bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl overflow-hidden">
           <div className="px-5 py-3 border-b border-zinc-800 flex items-center justify-between">
             <h2 className="text-sm font-medium text-white">
               Pending shipments ({shipments.length})
@@ -112,13 +127,17 @@ export default function AssignRoutes() {
                 ) : (
                   <Square size={13} />
                 )}
-                {selected.size === shipments.length ? "Deselect all" : "Select all"}
+                {selected.size === shipments.length
+                  ? "Deselect all"
+                  : "Select all"}
               </button>
             )}
           </div>
 
           {loadingShipments ? (
-            <div className="px-5 py-10 text-center text-zinc-600 text-sm">Loading…</div>
+            <div className="px-5 py-10 text-center text-zinc-600 text-sm">
+              Loading…
+            </div>
           ) : shipments.length === 0 ? (
             <div className="px-5 py-10 text-center text-zinc-600 text-sm">
               No pending shipments
@@ -128,8 +147,18 @@ export default function AssignRoutes() {
               <thead>
                 <tr className="border-b border-zinc-800">
                   <th className="px-4 py-2.5 text-left w-8" />
-                  {["Tracking #", "Merchant", "Receiver", "Address", "Weight", "Vehicle"].map((h) => (
-                    <th key={h} className="text-left px-3 py-2.5 text-xs text-zinc-500 font-medium">
+                  {[
+                    "Tracking #",
+                    "Merchant",
+                    "Receiver",
+                    "Address",
+                    "Weight",
+                    "Vehicle",
+                  ].map((h) => (
+                    <th
+                      key={h}
+                      className="text-left px-3 py-2.5 text-xs text-zinc-500 font-medium"
+                    >
                       {h}
                     </th>
                   ))}
@@ -141,7 +170,9 @@ export default function AssignRoutes() {
                     key={s.id}
                     onClick={() => toggle(s.id)}
                     className={`border-b border-zinc-800/50 cursor-pointer transition-colors ${
-                      selected.has(s.id) ? "bg-emerald-500/5" : "hover:bg-zinc-800/30"
+                      selected.has(s.id)
+                        ? "bg-emerald-500/5"
+                        : "hover:bg-gray-100 dark:bg-blue-950/30"
                     }`}
                   >
                     <td className="px-4 py-3">
@@ -157,13 +188,17 @@ export default function AssignRoutes() {
                     <td className="px-3 py-3 text-xs text-zinc-300">
                       {s.merchant?.businessName ?? "—"}
                     </td>
-                    <td className="px-3 py-3 text-xs text-zinc-400">{s.receiverName}</td>
+                    <td className="px-3 py-3 text-xs text-zinc-400">
+                      {s.receiverName}
+                    </td>
                     <td className="px-3 py-3 text-xs text-zinc-500 truncate max-w-[120px]">
                       {s.deliveryAddress}
                     </td>
-                    <td className="px-3 py-3 text-xs text-zinc-400">{s.weight} kg</td>
+                    <td className="px-3 py-3 text-xs text-zinc-400">
+                      {s.weight} kg
+                    </td>
                     <td className="px-3 py-3">
-                      <span className="text-xs bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded">
+                      <span className="text-xs bg-gray-100 dark:bg-blue-950 text-zinc-400 px-2 py-0.5 rounded">
                         {s.vehicleType?.name ?? "—"}
                       </span>
                     </td>
@@ -186,34 +221,47 @@ export default function AssignRoutes() {
         <div className="space-y-3">
           {/* Vehicle type filter */}
           {vehicleTypes.length > 0 && (
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-              <label className="text-xs text-zinc-500 block mb-2">Filter riders by vehicle type</label>
+            <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-4">
+              <label className="text-xs text-zinc-500 block mb-2">
+                Filter riders by vehicle type
+              </label>
               <select
                 value={vehicleTypeId}
-                onChange={(e) => { setVehicleTypeId(e.target.value); setRiderId(""); }}
-                className="w-full px-3 py-2 text-sm bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-300 focus:outline-none focus:border-zinc-600"
+                onChange={(e) => {
+                  setVehicleTypeId(e.target.value);
+                  setRiderId("");
+                }}
+                className="w-full px-3 py-2 text-sm bg-gray-100 dark:bg-blue-950 border border-zinc-700 rounded-lg text-zinc-300 focus:outline-none focus:border-zinc-600"
               >
                 <option value="">All vehicle types</option>
                 {vehicleTypes.map((v) => (
-                  <option key={v.id} value={v.id}>{v.name}</option>
+                  <option key={v.id} value={v.id}>
+                    {v.name}
+                  </option>
                 ))}
               </select>
             </div>
           )}
 
           {/* Rider list */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+          <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-4">
             <h2 className="text-sm font-medium text-white mb-3">
-              Available riders {vehicleTypeId && `· ${vehicleTypes.find(v => v.id === Number(vehicleTypeId))?.name}`}
+              Available riders{" "}
+              {vehicleTypeId &&
+                `· ${vehicleTypes.find((v) => v.id === Number(vehicleTypeId))?.name}`}
             </h2>
             {loadingRiders ? (
-              <p className="text-xs text-zinc-600 text-center py-4">Loading riders…</p>
+              <p className="text-xs text-zinc-600 text-center py-4">
+                Loading riders…
+              </p>
             ) : !vehicleTypeId ? (
               <p className="text-xs text-zinc-600 text-center py-4">
                 Select a vehicle type to see available riders
               </p>
             ) : riders.length === 0 ? (
-              <p className="text-xs text-zinc-600 text-center py-4">No riders available</p>
+              <p className="text-xs text-zinc-600 text-center py-4">
+                No riders available
+              </p>
             ) : (
               <div className="space-y-2">
                 {riders.map((r) => (
@@ -223,15 +271,22 @@ export default function AssignRoutes() {
                     className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-all text-left ${
                       riderId === r.id
                         ? "border-emerald-500 bg-emerald-500/5"
-                        : "border-zinc-800 hover:bg-zinc-800"
+                        : "border-zinc-800 hover:bg-gray-100 dark:bg-blue-950"
                     }`}
                   >
-                    <div className="w-8 h-8 rounded-full bg-zinc-700 text-zinc-300 text-xs font-semibold flex items-center justify-center shrink-0">
-                      {r.user?.fullName?.split(" ").map((w) => w[0]).join("") ?? "?"}
+                    <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-blue-900 text-zinc-300 text-xs font-semibold flex items-center justify-center shrink-0">
+                      {r.user?.fullName
+                        ?.split(" ")
+                        .map((w) => w[0])
+                        .join("") ?? "?"}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-zinc-200 font-medium">{r.user?.fullName ?? "—"}</p>
-                      <p className="text-xs text-zinc-500">{r.user?.phoneNumber}</p>
+                      <p className="text-sm text-zinc-200 font-medium">
+                        {r.user?.fullName ?? "—"}
+                      </p>
+                      <p className="text-xs text-zinc-500">
+                        {r.user?.phoneNumber}
+                      </p>
                     </div>
                     <div className="w-2 h-2 rounded-full bg-green-500 shrink-0" />
                   </button>

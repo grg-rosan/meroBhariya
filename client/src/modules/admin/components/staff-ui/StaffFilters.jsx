@@ -14,7 +14,7 @@ export default function StaffFilters({ search, onSearch, roleFilter, onRole }) {
           value={search}
           onChange={(e) => onSearch(e.target.value)}
           placeholder="Search by name or email…"
-          className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition-colors"
+          className="w-full bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition-colors"
         />
       </div>
 
@@ -25,8 +25,8 @@ export default function StaffFilters({ search, onSearch, roleFilter, onRole }) {
             onClick={() => onRole(f.value)}
             className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all ${
               roleFilter === f.value
-                ? "bg-zinc-700 text-white"
-                : "bg-zinc-900 border border-zinc-800 text-zinc-500 hover:text-zinc-300"
+                ? "bg-gray-200 dark:bg-blue-900 text-white"
+                : "bg-white dark:bg-gray-900 border border-zinc-800 text-zinc-500 hover:text-zinc-300"
             }`}
           >
             {f.label}

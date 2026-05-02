@@ -1,8 +1,8 @@
 // src/rider/components/navigation/UpcomingStopRow.jsx
 export function UpcomingStopRow({ stop }) {
   return (
-    <div className="flex items-center gap-4 px-5 py-3 border-b border-zinc-800/50 last:border-none hover:bg-zinc-800/20 transition-colors">
-      <div className="w-7 h-7 rounded-full bg-zinc-800 text-zinc-500 flex items-center justify-center text-xs font-medium shrink-0">
+    <div className="flex items-center gap-4 px-5 py-3 border-b border-zinc-800/50 last:border-none hover:bg-gray-100 dark:bg-blue-950/20 transition-colors">
+      <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-blue-950 text-zinc-500 flex items-center justify-center text-xs font-medium shrink-0">
         {stop.stopNum}
       </div>
       <div className="flex-1 min-w-0">

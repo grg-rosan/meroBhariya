@@ -27,22 +27,18 @@ const findProfile = async (userId) => {
 // DUTY TOGGLE
 // ─────────────────────────────────────────
 
-export const toggleDutyStatus = async (userId) => {
+export const toggleDutyStatus = async (userId, isOnline) => {
   const profile = await findProfile(userId);
-
-  if (!profile.isVerified) {
+  if (!profile.isVerified)
     throw new AppError("Your account must be verified before going on duty", 403);
-  }
 
   const updated = await prisma.riderProfile.update({
     where: { id: profile.id },
-    data: { isOnline: !profile.isOnline },
+    data:  { isOnline },  // set explicitly, don't blind-toggle
     select: { id: true, isOnline: true },
   });
-
   return updated;
 };
-
 // ─────────────────────────────────────────
 // DASHBOARD — My Shift
 // ─────────────────────────────────────────
@@ -191,19 +187,19 @@ export const deliverPackage = async (userId, trackingNumber, { codCollected, not
 // ─────────────────────────────────────────
 // LOCATION UPDATE  (PostGIS)
 // ─────────────────────────────────────────
-
 export const updateRiderLocation = async (userId, { latitude, longitude }) => {
   const profile = await findProfile(userId);
 
   await prisma.$executeRaw`
     UPDATE "RiderProfile"
-    SET "currentLocation" = ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geography
+    SET
+      "currentLocation" = ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geography,
+      "isOnline"        = true
     WHERE id = ${profile.id}
   `;
 
   return { latitude, longitude, updatedAt: new Date() };
 };
-
 // ─────────────────────────────────────────
 // EARNINGS HISTORY
 // ─────────────────────────────────────────

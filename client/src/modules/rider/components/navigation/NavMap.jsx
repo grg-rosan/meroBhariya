@@ -1,6 +1,6 @@
 // src/rider/components/navigation/NavMap.jsx
-import { useEffect, useRef } from 'react';
-import { useMapLibre } from '../../../../shared/hooks/useMapLibre';
+import { useEffect, useRef } from "react";
+import { useMapLibre } from "../../../../shared/hooks/useMapLibre";
 
 export function NavMap({ stops }) {
   const containerRef = useRef(null);
@@ -25,16 +25,18 @@ export function NavMap({ stops }) {
     if (map.loaded()) {
       pinStops();
     } else {
-      map.once('load', pinStops);
+      map.once("load", pinStops);
     }
-  }, [stops, flyTo,mapRef,upsertMarker]);
+  }, [stops, flyTo, mapRef, upsertMarker]);
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+    <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl overflow-hidden">
       <div ref={containerRef} className="h-52 w-full" />
       <div className="px-5 py-3 flex items-center gap-3">
         <div className="w-2 h-2 rounded-full bg-sky-500 animate-pulse" />
-        <span className="text-xs text-zinc-400">Live GPS · Last updated just now</span>
+        <span className="text-xs text-zinc-400">
+          Live GPS · Last updated just now
+        </span>
       </div>
     </div>
   );

@@ -34,7 +34,7 @@ app.use(cookieParser());
 app.use("/api/auth",authRoutes)
 app.use("/api/admin", adminRoutes);
 app.use("/api/dispatcher",dispatcherRoutes)
-app.use("/api/rider",riderRoutes)
+app.use("/api/rider",riderRoutes) 
 app.use("/api/merchant",merchantRoutes)
 
 app.all("/{*path}", (req, res, next) => {

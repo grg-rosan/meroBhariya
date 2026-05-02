@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 const OTP_LENGTH = 6;
 
-export default function VerifyOtpForm({  email, onVerify, onResend }) {
+export default function VerifyOtpForm({ email, onVerify, onResend }) {
   const [digits, setDigits] = useState(Array(OTP_LENGTH).fill(""));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -59,12 +59,12 @@ export default function VerifyOtpForm({  email, onVerify, onResend }) {
 
   const otp = digits.join("");
   const isComplete = otp.length === OTP_LENGTH;
-const handleVerify = useCallback(async () => {
+  const handleVerify = useCallback(async () => {
     if (!isComplete || loading) return;
     setLoading(true);
     setError(null);
     try {
-      await onVerify(otp);         // ← parent handles what endpoint to call
+      await onVerify(otp); // ← parent handles what endpoint to call
       setVerified(true);
     } catch (err) {
       setError(err.message);
@@ -88,13 +88,13 @@ const handleVerify = useCallback(async () => {
   useEffect(() => {
     if (!isComplete) hasAutoSubmitted.current = false;
   }, [isComplete]);
- const handleResend = async () => {
+  const handleResend = async () => {
     if (resendCooldown > 0) return;
     setError(null);
     setDigits(Array(OTP_LENGTH).fill(""));
     focusIndex(0);
     try {
-      await onResend();            // ← parent handles resend
+      await onResend(); // ← parent handles resend
       setResendCooldown(30);
     } catch (err) {
       setError(err.message);
@@ -107,7 +107,7 @@ const handleVerify = useCallback(async () => {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="mb-10">
-          <div className="w-12 h-12 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center mb-6">
+          <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-blue-950 border border-zinc-700 flex items-center justify-center mb-6">
             <svg
               width="22"
               height="22"
@@ -132,7 +132,7 @@ const handleVerify = useCallback(async () => {
         </div>
 
         {/* Card */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 sm:p-8">
+        <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-2xl p-6 sm:p-8">
           {verified ? (
             <div className="text-center py-4">
               <div className="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4">
@@ -178,7 +178,7 @@ const handleVerify = useCallback(async () => {
                       onFocus={(e) => e.target.select()}
                       className={`
                         w-full aspect-square max-w-52px sm:max-w-56px text-center text-lg font-semibold
-                        bg-zinc-800 border rounded-xl text-white outline-none
+                        bg-gray-100 dark:bg-blue-950 border rounded-xl text-white outline-none
                         transition-all duration-150 caret-transparent
                         focus:ring-2 focus:ring-offset-0 focus:scale-105
                         ${
@@ -224,7 +224,7 @@ const handleVerify = useCallback(async () => {
                   ${
                     isComplete && !loading
                       ? "bg-white text-zinc-900 hover:bg-zinc-100 active:scale-[0.98]"
-                      : "bg-zinc-800 text-zinc-600 cursor-not-allowed"
+                      : "bg-gray-100 dark:bg-blue-950 text-zinc-600 cursor-not-allowed"
                   }
                 `}
               >

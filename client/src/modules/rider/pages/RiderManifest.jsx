@@ -73,20 +73,20 @@ export default function RiderManifest() {
             {stops.length} drops assigned · {done} completed
           </p>
         </div>
-        <button className="text-xs text-zinc-400 border border-zinc-800 px-3 py-1.5 rounded-lg hover:bg-zinc-800 transition-all">
+        <button className="text-xs text-zinc-400 border border-zinc-800 px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:bg-blue-950 transition-all">
           Export PDF
         </button>
       </div>
 
       {/* Progress bar */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-4">
+      <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl p-4 mb-4">
         <div className="flex justify-between text-xs mb-2">
           <span className="text-zinc-400">Progress</span>
           <span className="text-zinc-300 font-medium">
             {done} / {stops.length}
           </span>
         </div>
-        <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+        <div className="h-2 bg-gray-100 dark:bg-blue-950 rounded-full overflow-hidden">
           <div
             className="h-full bg-sky-500 rounded-full transition-all"
             style={{ width: `${(done / stops.length) * 100}%` }}
@@ -94,7 +94,7 @@ export default function RiderManifest() {
         </div>
       </div>
 
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 border border-zinc-800 rounded-xl overflow-hidden">
         {stops.map((stop, i) => {
           const isDone = stop.status === "DELIVERED";
           const isCurrent =
@@ -106,7 +106,7 @@ export default function RiderManifest() {
             >
               {/* Stop number */}
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 ${isDone ? "bg-green-500/20 text-green-400" : isCurrent ? "bg-sky-500 text-white" : "bg-zinc-800 text-zinc-400"}`}
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 ${isDone ? "bg-green-500/20 text-green-400" : isCurrent ? "bg-sky-500 text-white" : "bg-gray-100 dark:bg-blue-950 text-zinc-400"}`}
               >
                 {stop.stopNum}
               </div>
@@ -137,7 +137,7 @@ export default function RiderManifest() {
                       <Navigation size={12} />
                       Navigate
                     </button>
-                    <button className="p-1.5 border border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded-lg transition-all">
+                    <button className="p-1.5 border border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:bg-gray-100 dark:bg-blue-950 rounded-lg transition-all">
                       <Phone size={13} />
                     </button>
                   </div>

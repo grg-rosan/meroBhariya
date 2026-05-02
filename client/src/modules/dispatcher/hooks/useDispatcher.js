@@ -1,37 +1,56 @@
 // src/modules/dispatcher/hooks/useDispatcher.js
-import { useState }                        from "react";
-import { useAPI, apiPost, apiPatch }        from "../../../shared/hooks/useApi";
-import { useToast }                         from "../../../context/ToastContext";
+import { useState }                  from "react";
+import { useAPI, apiPost, apiPatch } from "../../../shared/hooks/useApi";
+import { useToast }                  from "../../../context/ToastContext";
 
-// ── Data hooks ────────────────────────────────────────────────────────────────
+// ── Shipment hooks ────────────────────────────────────────────────────────────
 
-// PENDING shipments — dispatcher assignment board
 export const usePendingShipments = () => {
   const result = useAPI("/api/dispatcher/shipments");
-  return { ...result, data: result.data ?? null };
+  return {
+    ...result,
+    shipments: result.data?.shipments ?? [],
+    total:     result.data?.total     ?? 0,
+  };
 };
 
-// IN_HUB / ASSIGNED / OUT_FOR_DELIVERY — hub inventory
 export const useHubInventory = () => {
   const result = useAPI("/api/dispatcher/shipments/hub");
-  return { ...result, data: result.data?.data ?? null };
+  return {
+    ...result,
+    shipments: result.data?.data?.shipments ?? [],
+    stats:     result.data?.data?.stats     ?? {},
+  };
 };
 
 export const useStuckPackages = () => {
   const result = useAPI("/api/dispatcher/shipments/stuck");
-  return { ...result, data: result.data?.data ?? null };
+  return {
+    ...result,
+    packages: result.data?.data ?? [],
+  };
 };
 
-// Available riders — requires vehicleTypeId query param
-export function useAvailableRiders(vehicleTypeId) {
-  const result = useAPI(
-    vehicleTypeId ? `/api/dispatcher/riders/available?vehicleTypeId=${vehicleTypeId}` : null
-  );
-  // Backend returns array directly
-  return { ...result, data: result.data ?? [] };
+// ── Rider hooks ───────────────────────────────────────────────────────────────
+
+export function useAvailableRiders(vehicleTypeId = null) {
+  const path = vehicleTypeId
+    ? `/api/dispatcher/riders/available?vehicleTypeId=${vehicleTypeId}`
+    : `/api/dispatcher/riders/available`;
+  const result = useAPI(path);
+  return { ...result, riders: result.data ?? [] };
 }
 
-// ── Assign rider to a single shipment ────────────────────────────────────────
+export function useNearestRiders({ lat, lng, vehicleTypeId = null } = {}) {
+  const params = new URLSearchParams({
+    lat, lng,
+    ...(vehicleTypeId ? { vehicleTypeId } : {}),
+  });
+  const result = useAPI(lat && lng ? `/api/dispatcher/riders/nearest?${params}` : null);
+  return { ...result, riders: result.data ?? [] };
+}
+
+// ── Assign hooks ──────────────────────────────────────────────────────────────
 
 export function useAssignRider() {
   const [loading, setLoading] = useState(false);
@@ -52,22 +71,56 @@ export function useAssignRider() {
   return { assign, loading };
 }
 
-// ── Scan handoff (two-man rule) ───────────────────────────────────────────────
-
-export function useScanIn() {
-  const [loading, setLoading] = useState(false);
-  const [result, setResult]   = useState(null);
+export function useBulkAssignRider() {
+  const [loading, setLoading]   = useState(false);
+  const [progress, setProgress] = useState(0);
   const toast = useToast();
 
-  const scanIn = async (trackingNumber) => {
+  const assignAll = async (shipmentIds, riderId) => {
+    setLoading(true);
+    setProgress(0);
+    let successCount = 0;
+
+    for (let i = 0; i < shipmentIds.length; i++) {
+      try {
+        await apiPatch(`/api/dispatcher/shipments/${shipmentIds[i]}/assign`, { riderId });
+        successCount++;
+      } catch {
+        // individual errors — continue
+      }
+      setProgress(Math.round(((i + 1) / shipmentIds.length) * 100));
+    }
+
+    setLoading(false);
+    setProgress(0);
+    return successCount;
+  };
+
+  return { assignAll, loading, progress };
+}
+
+// ── Scan to hub ───────────────────────────────────────────────────────────────
+// Single scan — no two-man rule. Accepts trackingNumber (from QR or manual input).
+
+export function useScanToHub() {
+  const [loading, setLoading] = useState(false);
+  const [result, setResult]   = useState(null);
+  const [error, setError]     = useState(null);
+  const toast = useToast();
+
+  const scan = async (trackingNumber) => {
+    if (!trackingNumber?.trim()) return;
     setLoading(true);
     setResult(null);
+    setError(null);
     try {
-      // Backend expects shipmentId — first resolve by tracking number
-      const data = await apiPost(`/api/dispatcher/shipments/${trackingNumber}/scan`);
-      setResult(data);
+      const data = await apiPost(
+        `/api/dispatcher/shipments/${trackingNumber.trim().toUpperCase()}/scan`
+      );
+      setResult(data?.data ?? data);
       return data;
     } catch (e) {
+      setError(e.message);
       toast({ message: e.message, type: "error" });
       throw e;
     } finally {
@@ -75,10 +128,12 @@ export function useScanIn() {
     }
   };
 
-  return { scanIn, loading, result };
+  const reset = () => { setResult(null); setError(null); };
+
+  return { scan, loading, result, error, reset };
 }
 
-// ── Update shipment status ────────────────────────────────────────────────────
+// ── Status update ─────────────────────────────────────────────────────────────
 
 export function useUpdateStatus() {
   const [loading, setLoading] = useState(false);

@@ -7,7 +7,7 @@ import CODLedger from './pages/CODLedger';
 import Manifests from './pages/Manifest';
 import CreateShipment from './components/CreateShipment';
 import MerchantDocumentUpload from "./pages/MerchantDocumentUpload"
-import MerchantNotifications from "./Pages/MerchantNotification"
+import MerchantNotifications from './pages/MerchantNotification';
 
 
 export const merchantRoutes = {
@@ -22,6 +22,6 @@ export const merchantRoutes = {
     { path: 'cod-ledger',  element: <CODLedger /> },
     { path: 'manifests',   element: <Manifests /> },
     {path:'documents', element : < MerchantDocumentUpload /> },
-    {path: 'notifications', element: <MerchantNotifications /> }
+    {path: 'notifications', element: <MerchantNotifications/> }
   ],
 };
