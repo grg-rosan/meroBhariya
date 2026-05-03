@@ -15,7 +15,7 @@ export default function MerchantLayout() {
   { to: '/merchant/bulk-upload', label: 'Bulk upload', icon: Upload },
   { to: '/merchant/cod-ledger',  label: 'COD ledger',  icon: Wallet },
   { to: '/merchant/manifests',   label: 'Manifests',   icon: ClipboardList },
-  {to:'/merchant/documents', label:'documents', icon: FileText},
+  {to:'/merchant/documents', label:'Documents', icon: FileText},
   {to: "/merchant/notifications", label:`Notifications${unreadCount > 0 ? `(${unreadCount})`: ""}`,
   icon: Bell },
 ];
