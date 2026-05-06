@@ -2,11 +2,13 @@ import { LayoutDashboard, ClipboardList, Package, Upload, Wallet, FileText, Bell
 import RoleLayout from '../../../layouts/RoleLayout';
 import {useNotifications} from "../../../context/NotificationContext"
 import { useAuth } from '../../auth/AuthContext';
+import { useMerchantNotifications } from '../hooks/useMerchantNotification';
 
 
 export default function MerchantLayout() {
   const { user } = useAuth();
   const {unreadCount} = useNotifications();
+  useMerchantNotifications();
 
 
   const NAV = [

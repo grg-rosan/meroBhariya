@@ -21,9 +21,7 @@ export default function AssignRoutes() {
   const [riderId, setRiderId] = useState("");
   const [vehicleTypeId, setVehicleTypeId] = useState("");
 
-  const { data: riders, loading: loadingRiders } =
-    useAvailableRiders(vehicleTypeId);
-
+const { riders, loading: loadingRiders } = useAvailableRiders(vehicleTypeId);
   // Backend returns { shipments, total, page, limit }
   const shipments = pendingData?.shipments ?? [];
   const selectedRider = riders.find((r) => r.id === riderId);

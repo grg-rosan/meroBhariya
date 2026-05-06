@@ -65,7 +65,7 @@ export default function MerchantShipments() {
           </button>
 
           <button
-            onClick={() => navigate("/shipments/new")} // Navigates to your new CreateShipment.jsx
+            onClick={() => navigate("/merchant/shipments/new")} // Navigates to your new CreateShipment.jsx
             className="flex items-center gap-2 px-4 py-2.5 bg-rose-500 hover:bg-rose-600 text-white text-sm font-semibold rounded-xl shadow-lg shadow-rose-500/20 transition-all"
           >
             <Plus size={18} />

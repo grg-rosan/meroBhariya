@@ -1,6 +1,12 @@
 export const TYPE_ICON = {
-  verified:     '🎉',
-  doc_approved: '✅',
-  doc_rejected: '❌',
-  default:      '🔔',
+  ASSIGNED:         "🛵",
+  PICKED_UP:        "🚀",
+  IN_HUB:           "🏠",
+  OUT_FOR_DELIVERY: "🚚",
+  DELIVERED:        "✅",
+  CANCELLED:        "❌",
+  DOC_APPROVED:     "✅",
+  DOC_REJECTED:     "❌",
+  VERIFIED:         "🎉",
+  default:          "🔔",
 };

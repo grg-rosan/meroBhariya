@@ -1,111 +1,26 @@
 import { useState } from "react";
-import { Search, RefreshCw, Boxes } from "lucide-react";
+import { Search, RefreshCw, Boxes, Package, Truck, MapPin } from "lucide-react";
 import { useHubInventory } from "../hooks/useDispatcher";
 import StatusBadge from "../../../components/common/StatusBadge";
 import StatCard from "../../../components/common/StatCard";
 
-const MOCK_STATS = {
-  total: 134,
-  unassigned: 47,
-  assigned: 68,
-  outForDelivery: 19,
-};
-const MOCK_ITEMS = [
-  {
-    trackingNumber: "PTR-2838",
-    merchant: "Himalayan Traders",
-    destination: "Patan-7",
-    arrivedAt: "08:14 AM",
-    status: "IN_HUB",
-    zone: "Lalitpur",
-  },
-  {
-    trackingNumber: "PTR-2845",
-    merchant: "Kathmandu Gifts",
-    destination: "Bhaktapur-3",
-    arrivedAt: "09:30 AM",
-    status: "IN_HUB",
-    zone: "Bhaktapur",
-  },
-  {
-    trackingNumber: "PTR-2847",
-    merchant: "Nepal Mart",
-    destination: "Lalitpur-10",
-    arrivedAt: "10:02 AM",
-    status: "ASSIGNED",
-    zone: "Lalitpur",
-  },
-  {
-    trackingNumber: "PTR-2849",
-    merchant: "Craft Nepal",
-    destination: "Kirtipur",
-    arrivedAt: "10:45 AM",
-    status: "IN_HUB",
-    zone: "Kirtipur",
-  },
-  {
-    trackingNumber: "PTR-2851",
-    merchant: "Himalayan Traders",
-    destination: "Patan-3",
-    arrivedAt: "11:00 AM",
-    status: "IN_HUB",
-    zone: "Lalitpur",
-  },
-  {
-    trackingNumber: "PTR-2852",
-    merchant: "Patan Crafts",
-    destination: "Banepa",
-    arrivedAt: "11:22 AM",
-    status: "OUT_FOR_DELIVERY",
-    zone: "Kavrepalanchok",
-  },
-  {
-    trackingNumber: "PTR-2853",
-    merchant: "Nepal Mart",
-    destination: "Bhaktapur-7",
-    arrivedAt: "11:40 AM",
-    status: "IN_HUB",
-    zone: "Bhaktapur",
-  },
-  {
-    trackingNumber: "PTR-2854",
-    merchant: "Kathmandu Gifts",
-    destination: "Koteshwor",
-    arrivedAt: "12:10 PM",
-    status: "ASSIGNED",
-    zone: "KTM East",
-  },
-];
-
-const ZONES = [
-  "All zones",
-  "Lalitpur",
-  "Bhaktapur",
-  "Kirtipur",
-  "KTM East",
-  "Kavrepalanchok",
-];
-
 export default function HubInventory() {
-  const { data, loading, refetch } = useHubInventory();
-  const stats = data?.stats ?? [];
-  const items = data?.items ?? [];
+  const { shipments, stats, loading, refetch } = useHubInventory();
 
-  const [search, setSearch] = useState("");
-  const [zone, setZone] = useState("All zones");
+  const [search, setSearch]   = useState("");
   const [statusF, setStatusF] = useState("");
 
-  const filtered = items.filter(
+  const filtered = shipments.filter(
     (i) =>
       (!search ||
         i.trackingNumber.toLowerCase().includes(search.toLowerCase()) ||
-        i.merchant.toLowerCase().includes(search.toLowerCase())) &&
-      (zone === "All zones" || i.zone === zone) &&
-      (!statusF || i.status === statusF),
+        i.merchant?.businessName?.toLowerCase().includes(search.toLowerCase())) &&
+      (!statusF || i.status === statusF)
   );
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-semibold text-white">
@@ -117,36 +32,37 @@ export default function HubInventory() {
         </div>
         <button
           onClick={refetch}
-          className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-500 dark:text-zinc-400 border border-gray-200 dark:border-zinc-800 rounded-lg hover:bg-gray-100 dark:bg-blue-950 transition-all"
+          className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-500 dark:text-zinc-400 border border-gray-200 dark:border-zinc-800 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all"
         >
-          <RefreshCw size={12} className={loading ? "animate-spin" : ""} />{" "}
+          <RefreshCw size={12} className={loading ? "animate-spin" : ""} />
           Refresh
         </button>
       </div>
 
+      {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         <StatCard
           icon={Boxes}
-          label="Total at hub"
-          value={stats.total}
+          label="In hub"
+          value={stats.inHub ?? 0}
           color="emerald"
         />
         <StatCard
-          icon={Boxes}
+          icon={Package}
           label="Unassigned"
-          value={stats.unassigned}
+          value={stats.unassigned ?? 0}
           color="red"
         />
         <StatCard
-          icon={Boxes}
+          icon={MapPin}
           label="Assigned"
-          value={stats.assigned}
+          value={stats.assigned ?? 0}
           color="amber"
         />
         <StatCard
-          icon={Boxes}
+          icon={Truck}
           label="Out for delivery"
-          value={stats.outForDelivery}
+          value={stats.outForDelivery ?? 0}
           color="green"
         />
       </div>
@@ -162,29 +78,25 @@ export default function HubInventory() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search tracking or merchant…"
-            className="pl-8 pr-3 py-1.5 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-lg text-gray-800 dark:text-zinc-200 placeholder-gray-400 dark:placeholder-zinc-600 focus:outline-none focus:border-gray-400 dark:border-zinc-600 w-56"
+            className="pl-8 pr-3 py-1.5 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-lg text-gray-800 dark:text-zinc-200 placeholder-gray-400 dark:placeholder-zinc-600 focus:outline-none focus:border-gray-400 dark:focus:border-zinc-600 w-56"
           />
         </div>
-        <select
-          value={zone}
-          onChange={(e) => setZone(e.target.value)}
-          className="px-3 py-1.5 text-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-lg text-gray-700 dark:text-zinc-300 focus:outline-none focus:border-gray-400 dark:border-zinc-600"
-        >
-          {ZONES.map((z) => (
-            <option key={z}>{z}</option>
-          ))}
-        </select>
+
         <div className="flex items-center gap-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-lg p-1">
           {[
-            { v: "", l: "All" },
-            { v: "IN_HUB", l: "At hub" },
-            { v: "ASSIGNED", l: "Assigned" },
-            { v: "OUT_FOR_DELIVERY", l: "Out" },
+            { v: "",                 l: "All"      },
+            { v: "IN_HUB",          l: "At hub"   },
+            { v: "ASSIGNED",        l: "Assigned" },
+            { v: "OUT_FOR_DELIVERY", l: "Out"      },
           ].map((f) => (
             <button
               key={f.v}
               onClick={() => setStatusF(f.v)}
-              className={`px-3 py-1 text-xs rounded-md font-medium transition-all ${statusF === f.v ? "bg-emerald-500 text-white" : "text-gray-500  hover:text-gray-800 dark:text-zinc-200"}`}
+              className={`px-3 py-1 text-xs rounded-md font-medium transition-all ${
+                statusF === f.v
+                  ? "bg-emerald-500 text-white"
+                  : "text-gray-500 hover:text-gray-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+              }`}
             >
               {f.l}
             </button>
@@ -192,18 +104,12 @@ export default function HubInventory() {
         </div>
       </div>
 
+      {/* Table */}
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-200 dark:border-zinc-800">
-              {[
-                "Tracking #",
-                "Merchant",
-                "Destination",
-                "Zone",
-                "Arrived",
-                "Status",
-              ].map((h) => (
+              {["Tracking #", "Merchant", "Destination", "Vehicle", "Last updated", "Rider", "Status"].map((h) => (
                 <th
                   key={h}
                   className="text-left px-4 py-3 text-xs text-gray-400 dark:text-zinc-500 font-medium"
@@ -214,37 +120,48 @@ export default function HubInventory() {
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 ? (
+            {loading ? (
               <tr>
-                <td
-                  colSpan={6}
-                  className="px-4 py-10 text-center text-gray-300 dark:text-zinc-600 text-sm"
-                >
+                <td colSpan={7} className="px-4 py-10 text-center text-gray-300 dark:text-zinc-600 text-sm">
+                  Loading…
+                </td>
+              </tr>
+            ) : filtered.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="px-4 py-10 text-center text-gray-300 dark:text-zinc-600 text-sm">
                   No packages match filters
                 </td>
               </tr>
             ) : (
               filtered.map((i) => (
                 <tr
-                  key={i.trackingNumber}
-                  className="border-b border-gray-200/50 dark:border-zinc-800/50 hover:bg-gray-100 dark:bg-blue-950/30 transition-colors"
+                  key={i.id}
+                  className="border-b border-gray-200/50 dark:border-zinc-800/50 hover:bg-gray-50 dark:hover:bg-zinc-800/30 transition-colors"
                 >
                   <td className="px-4 py-3 font-mono text-xs text-gray-500 dark:text-zinc-400">
                     {i.trackingNumber}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-800 dark:text-zinc-200">
-                    {i.merchant}
+                    {i.merchant?.businessName ?? "—"}
                   </td>
-                  <td className="px-4 py-3 text-xs text-gray-500 dark:text-zinc-400">
-                    {i.destination}
+                  <td className="px-4 py-3 text-xs text-gray-500 dark:text-zinc-400 max-w-[140px] truncate">
+                    {i.deliveryAddress ?? "—"}
                   </td>
                   <td className="px-4 py-3">
-                    <span className="text-xs bg-gray-100 dark:bg-blue-950 text-gray-500 dark:text-zinc-400 px-2 py-0.5 rounded">
-                      {i.zone}
+                    <span className="text-xs bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 px-2 py-0.5 rounded">
+                      {i.vehicleType?.name ?? "—"}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-xs text-gray-400 dark:text-zinc-500">
-                    {i.arrivedAt}
+                    {new Date(i.updatedAt).toLocaleTimeString("en-US", {
+                      hour:   "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </td>
+                  <td className="px-4 py-3 text-xs text-gray-500 dark:text-zinc-400">
+                    {i.rider?.user?.fullName ?? (
+                      <span className="text-gray-300 dark:text-zinc-600 italic">Unassigned</span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <StatusBadge status={i.status} />
@@ -254,9 +171,10 @@ export default function HubInventory() {
             )}
           </tbody>
         </table>
+
         <div className="px-4 py-3 border-t border-gray-200 dark:border-zinc-800">
           <span className="text-xs text-gray-300 dark:text-zinc-600">
-            Showing {filtered.length} of {items.length} packages
+            Showing {filtered.length} of {shipments.length} packages
           </span>
         </div>
       </div>

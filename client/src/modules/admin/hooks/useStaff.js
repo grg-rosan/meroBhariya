@@ -66,9 +66,11 @@ export function useStaffManager() {
   const list = local ?? staff;
 
   const handleToggle = async (userId) => {
-    // optimistic flip
-    setLocal((prev) =>
-      prev.map((m) => (m.id === userId ? { ...m, isActive: !m.isActive } : m)),
+    const current = local ?? staff    // optimistic flip
+   setLocal(
+      current.map((m) =>
+        m.id === userId ? { ...m, isActive: !m.isActive } : m
+      )
     );
     try {
       const updated = await toggle(userId);
@@ -82,7 +84,7 @@ export function useStaffManager() {
           m.id === userId ? { ...m, isActive: !m.isActive } : m,
         ),
       );
-    }
+    } 
   };
 
   const handleCreate = async (payload) => {

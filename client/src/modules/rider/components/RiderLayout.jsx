@@ -11,9 +11,11 @@ import RoleLayout from "../../../layouts/RoleLayout";
 import { useAuth } from "../../auth/AuthContext";
 import { useNotifications } from "../../../context/NotificationContext";
 import { initials } from "../../../shared/constants/staffConstants";
+import { useRiderNotifications } from "../hooks/useRiderNotification";
 export default function RiderLayout() {
   const { user } = useAuth();
   const { unreadCount } = useNotifications();
+  useRiderNotifications();
 
   const NAV = [
     { to: "/rider/dashboard", label: "Dashboard", icon: LayoutDashboard },

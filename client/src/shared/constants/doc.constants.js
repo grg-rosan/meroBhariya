@@ -93,3 +93,10 @@ export const ALLOWED_TYPES = [
   "application/pdf",
 ];
 export const STEPS = ["Upload", "Review", "Done"];
+
+export function formatDocType(type = "") {
+  return type
+    .replace(/_/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase()); // "CITIZENSHIP_FRONT" → "Citizenship Front"
+}

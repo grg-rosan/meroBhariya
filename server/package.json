@@ -28,6 +28,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@logtail/pino": "^0.5.8",
     "@prisma/adapter-pg": "^7.7.0",
     "@prisma/client": "^7.7.0",
     "amqplib": "^1.0.3",
@@ -42,7 +43,9 @@
     "multer": "^2.1.1",
     "nodemailer": "^8.0.5",
     "pg": "^8.20.0",
+    "pino": "^10.3.1",
     "prisma": "^7.7.0",
+    "qrcode": "^1.5.4",
     "redis": "^5.12.1",
     "socket.io": "^4.8.3",
     "xlsx": "^0.18.5"
@@ -50,6 +53,7 @@
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^25.5.2",
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "pino-pretty": "^13.1.3"
   }
 }

@@ -4,6 +4,7 @@ import AppError from "../../../utils/error/appError.js";
 import { calculateFare, generateTrackingNumber } from "./shipment.helpers.js";
 import { parseExcelBuffer, validateRow } from "./shipment.excel.js";
 import { publishShipmentNew, publishShipmentCancelled } from "./shipment.events.js";
+import QRCode from "qrcode";
 
 export async function createShipment(merchantId, data, userId) {
   const {
@@ -46,8 +47,11 @@ export async function createShipment(merchantId, data, userId) {
     return newShipment;
   });
 
+  // Generate QR code as a base64 data URL from the tracking number
+  const qrCode = await QRCode.toDataURL(shipment.trackingNumber);
+
   publishShipmentNew(shipment, vehicleType, paymentType);
-  return shipment;
+  return { ...shipment, qrCode };
 }
 
 export async function getMerchantShipments(merchantId, { page, limit, skip, status }) {

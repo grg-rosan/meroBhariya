@@ -1,5 +1,5 @@
 
-
+import { X, Printer } from "lucide-react";
 export function QRModal({ trackingNumber, qrCode, onClose, onDone }) {
   const handlePrint = () => {
     const win = window.open("", "_blank");

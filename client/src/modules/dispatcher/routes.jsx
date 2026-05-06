@@ -4,6 +4,7 @@ import HubInventory from './pages/HubInventory';
 import AssignRoutes from './pages/AssignRoutes';
 import ScanIn from './pages/ScanIn';
 import StuckPackages from './pages/StuckPackages';
+import DispatcherNotifications from './pages/DispatcherNotification';
 
 export const dispatcherRoutes = {
   path: '/dispatcher',
@@ -14,5 +15,6 @@ export const dispatcherRoutes = {
     { path: 'assign',        element: <AssignRoutes /> },
     { path: 'scan-in',       element: <ScanIn /> },
     { path: 'stuck',         element: <StuckPackages /> },
+    {path: 'notifications', element:<DispatcherNotifications />}
   ],
 };

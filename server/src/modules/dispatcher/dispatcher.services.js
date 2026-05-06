@@ -10,7 +10,7 @@ import {
 // ─── Pending shipments ────────────────────────────────────────────────────────
 
 export async function getPendingShipments({ page, limit, skip }) {
-  const where = { status: "PENDING" };
+const where = { status: "IN_HUB", riderId: null };
   const [shipments, total] = await Promise.all([
     prisma.shipment.findMany({
       skip, take: limit, where,
@@ -56,13 +56,13 @@ export async function getHubInventory({ page, limit, skip }) {
 
 export async function getStuckPackages() {
   const now          = new Date();
-  const twoHoursAgo  = new Date(now - 2 * 60 * 60 * 1000);
-  const fourHoursAgo = new Date(now - 4 * 60 * 60 * 1000);
+  const oneDayAgo    = new Date(now - 24 * 60 * 60 * 1000);
+    const fourHoursAgo = new Date(now - 4 * 60 * 60 * 1000);
 
   const stuck = await prisma.shipment.findMany({
     where: {
       OR: [
-        { status: "PENDING",  createdAt: { lt: twoHoursAgo } },
+        { status: "IN_HUB",  createdAt: { lt: oneDayAgo } },
         { status: "ASSIGNED", updatedAt: { lt: fourHoursAgo } },
       ],
     },
@@ -74,11 +74,11 @@ export async function getStuckPackages() {
     orderBy: { createdAt: "asc" },
   });
 
-  return stuck.map((s) => ({
+ return stuck.map((s) => ({
     ...s,
     stuckReason:
-      s.status === "PENDING"
-        ? "No rider assigned for over 2 hours"
+      s.status === "IN_HUB"
+        ? "At hub for over 24 hours, no rider assigned"
         : "Rider assigned but not picked up for over 4 hours",
     stuckDurationMinutes: Math.round((now - new Date(s.updatedAt)) / 60000),
   }));
@@ -146,9 +146,8 @@ export async function assignRider(shipmentId, riderId, dispatcherId) {
     include: { merchant: { select: { userId: true } } },
   });
   if (!shipment)                throw new AppError("Shipment not found.", 404);
-  if (shipment.status !== "PENDING")
-    throw new AppError("Only PENDING shipments can be assigned.", 400);
-
+if (shipment.status !== "IN_HUB")
+  throw new AppError("Shipment must be scanned into hub before assignment.", 400);
   const rider = await prisma.riderProfile.findFirst({
     where:   { id: riderId, isVerified: true, isOnline: true },
     include: { user: { select: { id: true, fullName: true } } },
@@ -224,15 +223,6 @@ export async function scanToHub(trackingNumber, dispatcherUserId) {
     return s;
   });
 
-  publish("shipment.status.updated", {
-    shipmentId:     shipment.id,
-    trackingNumber: shipment.trackingNumber,
-    status:         "IN_HUB",
-    riderId:        shipment.riderId,
-    merchantId:     shipment.merchantId,
-    event:          "shipment:status_updated",
-  });
-
   publishMerchantNotification({
     merchantUserId: shipment.merchant.userId,
     shipmentId:     shipment.id,
@@ -252,7 +242,7 @@ export async function scanToHub(trackingNumber, dispatcherUserId) {
 // ─── Status transitions ───────────────────────────────────────────────────────
 
 const VALID_TRANSITIONS = {
-  IN_HUB:   ["OUT_FOR_DELIVERY"],
+  IN_HUB:   ["OUT_FOR_DELIVERY","ASSIGNED"],
   ASSIGNED: ["PICKED_UP"],
 };
 

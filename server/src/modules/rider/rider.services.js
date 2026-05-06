@@ -2,6 +2,10 @@ import { prisma } from "../../config/db.config.js";
 import AppError from "../../utils/error/appError.js";
 import { buildDateFilter } from "../../utils/others/dateFilter.js";
 import { parsePagination } from "../../utils/others/pagination.js";
+import {
+  publish,
+  publishMerchantNotification,
+} from "../../infrastructure/rabbitmq/publisher.js";
 
 // ─────────────────────────────────────────
 // INTERNAL HELPER
@@ -151,8 +155,13 @@ export const deliverPackage = async (userId, trackingNumber, { codCollected, not
   const profile = await findProfile(userId);
 
   const shipment = await prisma.shipment.findUnique({
-    where: { trackingNumber },
-    select: { id: true, riderId: true, status: true },
+    where:  { trackingNumber },
+    select: {
+      id:       true,
+      riderId:  true,
+      status:   true,
+      merchant: { select: { userId: true } },
+    },
   });
 
   if (!shipment) throw new AppError(`Shipment ${trackingNumber} not found`, 404);
@@ -163,27 +172,42 @@ export const deliverPackage = async (userId, trackingNumber, { codCollected, not
 
   const [updated] = await prisma.$transaction([
     prisma.shipment.update({
-      where: { id: shipment.id },
-      data: { status: "DELIVERED" },
+      where:  { id: shipment.id },
+      data:   { status: "DELIVERED" },
       select: { id: true, trackingNumber: true, status: true },
     }),
     prisma.shipmentLog.create({
       data: {
-        shipmentId: shipment.id,
-        status: "DELIVERED",
-        note: note ?? null,
+        shipmentId:  shipment.id,
+        status:      "DELIVERED",
+        note:        note ?? null,
         updatedById: userId,
       },
     }),
     prisma.transaction.update({
       where: { shipmentId: shipment.id },
-      data: { collectedByRider: codCollected ?? 0 },
+      data:  { collectedByRider: codCollected ?? 0 },
     }),
   ]);
 
+  // Notify merchant — delivery confirmation
+  publishMerchantNotification({
+    merchantUserId: shipment.merchant.userId,
+    shipmentId:     updated.id,
+    trackingNumber: updated.trackingNumber,
+    status:         "DELIVERED",
+    message:        `Your shipment ${updated.trackingNumber} has been delivered.`,
+  });
+
+  // Finance settlement — triggers delivery.consumer.js → settleDelivery()
+  publish("shipment.delivered", {
+    shipmentId:     updated.id,
+    trackingNumber: updated.trackingNumber,
+    codCollected:   codCollected ?? 0,
+  });
+
   return updated;
 };
-
 // ─────────────────────────────────────────
 // LOCATION UPDATE  (PostGIS)
 // ─────────────────────────────────────────

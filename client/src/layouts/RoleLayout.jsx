@@ -22,8 +22,7 @@ export default function RoleLayout({ role, nav, accentClass, user }) {
 
   return (
     <div className="flex h-screen font-['DM_Sans',sans-serif] overflow-hidden bg-gray-50 dark:bg-zinc-950">
-      <aside className="w-56 flex flex-col bg-white dark:bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-zinc-800 shrink-0">
-        {/* Logo */}
+      <aside className="w-56 flex flex-col bg-white dark:bg-zinc-900 border-r border-gray-200 dark:border-zinc-800 shrink-0">        {/* Logo */}
         <div className="px-5 py-5 border-b border-gray-200 dark:border-zinc-800">
           <div className="flex items-center gap-2">
             <div
@@ -45,10 +44,9 @@ export default function RoleLayout({ role, nav, accentClass, user }) {
               to={to}
               end
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all ${
-                  isActive
-                    ? "bg-gray-100 dark:bg-gray-100 dark:bg-blue-950 text-gray-900 dark:text-white font-medium"
-                    : "text-gray-500 dark:text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-gray-800 dark:text-zinc-200 hover:bg-gray-100 dark:hover:bg-gray-100 dark:bg-blue-950"
+                `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all ${isActive
+                  ? "bg-gray-100 dark:bg-zinc-800 text-gray-900 dark:text-white font-medium"
+                  : "text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-zinc-800"
                 }`
               }
             >
