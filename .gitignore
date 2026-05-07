@@ -1,1 +1,16 @@
+# Env
 .env
+.env.local
+.env.production
+.env.staging
+.env.*.local
+*.env
+
+# Uploads
+server/uploads/*
+!server/uploads/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini

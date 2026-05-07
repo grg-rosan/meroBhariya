@@ -6,54 +6,110 @@ import { parseExcelBuffer, validateRow } from "./shipment.excel.js";
 import { publishShipmentNew, publishShipmentCancelled } from "./shipment.events.js";
 import QRCode from "qrcode";
 
-export async function createShipment(merchantId, data, userId) {
+export async function createShipment(merchantId, data, userId, ctx) {
   const {
     receiverName, receiverPhone, deliveryAddress,
-    vehicleTypeId, weight, isFragile, orderValue, codAmount, paymentType,
+    vehicleTypeId, weight, isFragile,
+    orderValue, codAmount, paymentType,
   } = data;
+
+  const {
+    fareSnapshot, vehicleType,
+    walletId, totalCharge, overageCharge,
+    distanceKm, deliveryLat, deliveryLng,
+  } = ctx;
 
   if (!receiverName || !receiverPhone || !deliveryAddress || !vehicleTypeId || !weight || !orderValue || !paymentType) {
     throw new AppError("Missing required shipment fields.", 400);
   }
 
-  const vehicleType = await prisma.vehicleType.findFirst({
-    where: { id: Number(vehicleTypeId), isActive: true },
-    include: { fareConfig: true },
-  });
-  if (!vehicleType) throw new AppError("Vehicle type not found or inactive.", 404);
-  if (!vehicleType.fareConfig) throw new AppError(`No fare config set for vehicle type: ${vehicleType.name}`, 400);
-  if (weight > vehicleType.maxWeightKg) {
-    throw new AppError(`Package weight ${weight}kg exceeds max ${vehicleType.maxWeightKg}kg for ${vehicleType.name}.`, 400);
-  }
-
-  const fareSnapshot = calculateFare(vehicleType.fareConfig, {
-    weight, isFragile: isFragile ?? false, codAmount: codAmount ?? 0, paymentType,
-  });
   const trackingNumber = generateTrackingNumber();
 
   const shipment = await prisma.$transaction(async (tx) => {
+    // 1. Create shipment (store coords + distance for record)
     const newShipment = await tx.shipment.create({
       data: {
-        trackingNumber, merchantId, vehicleTypeId: Number(vehicleTypeId),
-        receiverName, receiverPhone, deliveryAddress,
-        weight: Number(weight), isFragile: isFragile ?? false,
-        orderValue: Number(orderValue), codAmount: Number(codAmount ?? 0),
-        fareSnapshot, status: "PENDING",
+        trackingNumber,
+        merchantId,
+        vehicleTypeId: Number(vehicleTypeId),
+        receiverName,
+        receiverPhone,
+        deliveryAddress,
+        deliveryLat,
+        deliveryLng,
+        // Store PostGIS point for future proximity queries
+        deliveryLocation: `SRID=4326;POINT(${deliveryLng} ${deliveryLat})`,
+        weight:      Number(weight),
+        isFragile:   isFragile ?? false,
+        orderValue:  Number(orderValue),
+        codAmount:   Number(codAmount ?? 0),
+        fareSnapshot,
+        status: "PENDING",
       },
     });
+
+    // 2. Shipment log
     await tx.shipmentLog.create({
-      data: { shipmentId: newShipment.id, status: "PENDING", note: "Shipment created by merchant", updatedById: userId },
+      data: {
+        shipmentId:  newShipment.id,
+        status:      "PENDING",
+        note:        `Shipment created. Distance: ${distanceKm.toFixed(2)}km. Fare: NPR ${fareSnapshot}`,
+        updatedById: userId,
+      },
     });
+
+    // 3. Deduct fare from merchant wallet
+    await tx.merchantWallet.update({
+      where: { id: walletId },
+      data:  { balance: { decrement: totalCharge } },
+    });
+
+    // 4. Record wallet transaction
+    await tx.merchantTransaction.create({
+      data: {
+        walletId,
+        shipmentId: newShipment.id,
+        type:       "DEDUCTION",
+        amount:     totalCharge,
+        note:       `Fare for ${trackingNumber} — ${distanceKm.toFixed(2)}km${overageCharge > 0 ? ` + NPR ${overageCharge} overage` : ""}`,
+      },
+    });
+
+    // 5. Increment subscription quota usage
+    await tx.merchantSubscription.update({
+      where: { merchantId },
+      data:  { shipmentsUsed: { increment: 1 } },
+    });
+
+    // 6. Create COD record if applicable
+    if (paymentType === "COD" && Number(codAmount ?? 0) > 0) {
+      await tx.cODRecord.create({
+        data: {
+          shipmentId: newShipment.id,
+          amount:     Number(codAmount),
+          status:     "PENDING",
+        },
+      });
+    }
+
     return newShipment;
   });
 
-  // Generate QR code as a base64 data URL from the tracking number
   const qrCode = await QRCode.toDataURL(shipment.trackingNumber);
-
   publishShipmentNew(shipment, vehicleType, paymentType);
-  return { ...shipment, qrCode };
-}
 
+  return {
+    ...shipment,
+    qrCode,
+    distanceKm:    parseFloat(distanceKm.toFixed(2)),
+    fareBreakdown: {
+      distanceKm:    parseFloat(distanceKm.toFixed(2)),
+      fareSnapshot,
+      overageCharge,
+      totalCharged:  totalCharge,
+    },
+  };
+}
 export async function getMerchantShipments(merchantId, { page, limit, skip, status }) {
   const where = { merchantId, ...(status && { status }) };
   const [shipments, total] = await Promise.all([

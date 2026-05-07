@@ -1,6 +1,8 @@
 import { getChannel } from "../connection.js";
 import { QUEUE } from "../queue.js";
 import { settleDelivery } from "../../../modules/admin/finance/finance.services.js";
+
+
 export async function startDeliveryConsumer() {
   const ch = getChannel();
   if (!ch) return console.warn("[Consumer] No channel - skipping delivery consumer");

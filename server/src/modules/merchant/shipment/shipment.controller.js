@@ -5,10 +5,35 @@ import AppError from "../../../utils/error/appError.js";
 
 export const createShipment = catchAsync(async (req, res) => {
   const merchantId = req.merchantProfileId;
-  const shipment   = await shipmentService.createShipment(merchantId, req.body, req.userId);
-  return res.status(201).json(shipment);
-});
 
+  const ctx = {
+    fareSnapshot:  req.fareSnapshot,
+    vehicleType:   req.vehicleType,
+    walletId:      req.walletId,
+    totalCharge:   req.totalCharge,
+    overageCharge: req.overageCharge,
+    distanceKm:    req.distanceKm,
+    deliveryLat:   req.deliveryLat,
+    deliveryLng:   req.deliveryLng,
+    subscription:  req.subscription,
+  };
+
+  const shipment = await shipmentService.createShipment(merchantId, req.body, req.userId, ctx);
+  return res.status(201).json({ success: true, data: shipment });
+});
+export const getFarePreview = catchAsync(async (req, res) => {
+  // computeFare middleware already ran — just return the values
+  return res.json({
+    success: true,
+    data: {
+      distanceKm:    parseFloat(req.distanceKm.toFixed(2)),
+      fareSnapshot:  req.fareSnapshot,
+      overageCharge: req.overageCharge ?? 0,
+      totalCharge:   req.fareSnapshot + (req.overageCharge ?? 0),
+      vehicleType:   req.vehicleType.name,
+    },
+  });
+});
 export const getMyShipments = catchAsync(async (req, res) => {
   const merchantId            = req.merchantProfileId;
   const { page, limit, skip } = parsePagination(req.query);
