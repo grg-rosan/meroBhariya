@@ -7,6 +7,8 @@ function handleError(res, err) {
   return res.status(500).json({ message: "Internal server error." });
 }
 
+// ─── Revenue ──────────────────────────────────────────────────────────────────
+
 // GET /api/admin/finance/revenue?from=&to=
 export async function getRevenueSummaryHandler(req, res) {
   try {
@@ -14,6 +16,8 @@ export async function getRevenueSummaryHandler(req, res) {
     return res.json(await financeService.getRevenueSummary({ from, to }));
   } catch (err) { return handleError(res, err); }
 }
+
+// ─── COD ──────────────────────────────────────────────────────────────────────
 
 // GET /api/admin/finance/cod/pending?page=&limit=
 export async function getPendingCODHandler(req, res) {
@@ -29,10 +33,11 @@ export async function getPendingCODHandler(req, res) {
 // PATCH /api/admin/finance/cod/:transactionId/settle
 export async function settleCODHandler(req, res) {
   try {
-    const { transactionId }  = req.params;
+    const { transactionId }    = req.params;
     const { collectedByRider } = req.body;
     return res.json(await financeService.settleCOD(transactionId, {
-      collectedByRider, adminId: req.userId,
+      collectedByRider,
+      adminId: req.userId,   // ← was missing before
     }));
   } catch (err) { return handleError(res, err); }
 }
@@ -41,7 +46,10 @@ export async function settleCODHandler(req, res) {
 export async function settleAllCODForRiderHandler(req, res) {
   try {
     const { riderId } = req.params;
-    return res.json(await financeService.settleAllCODForRider(riderId));
+    return res.json(await financeService.settleAllCODForRider(
+      riderId,
+      req.userId,            // ← was missing before
+    ));
   } catch (err) { return handleError(res, err); }
 }
 
@@ -57,5 +65,63 @@ export async function getTransactionsHandler(req, res) {
       from,
       to,
     }));
+  } catch (err) { return handleError(res, err); }
+}
+
+// ─── Rider Payouts ────────────────────────────────────────────────────────────
+
+// GET /api/admin/finance/payouts?page=&limit=
+export async function getPendingPayoutsHandler(req, res) {
+  try {
+    const { page, limit } = req.query;
+    return res.json(await financeService.getPendingPayouts({
+      page:  parseInt(page)  || 1,
+      limit: parseInt(limit) || 20,
+    }));
+  } catch (err) { return handleError(res, err); }
+}
+
+// PATCH /api/admin/finance/payouts/:payoutId/approve
+export async function approvePayoutHandler(req, res) {
+  try {
+    const { payoutId } = req.params;
+    return res.json(await financeService.approvePayout(payoutId, req.userId));
+  } catch (err) { return handleError(res, err); }
+}
+
+// PATCH /api/admin/finance/payouts/:payoutId/reject
+export async function rejectPayoutHandler(req, res) {
+  try {
+    const { payoutId } = req.params;
+    const { reason }   = req.body;
+    return res.json(await financeService.rejectPayout(payoutId, req.userId, reason));
+  } catch (err) { return handleError(res, err); }
+}
+
+// ─── Wallet Adjustments ───────────────────────────────────────────────────────
+
+// PATCH /api/admin/finance/wallets/rider/:riderId/adjust
+export async function adjustRiderWalletHandler(req, res) {
+  try {
+    const { riderId }        = req.params;
+    const { amount, note, type } = req.body;
+    return res.json(await financeService.adjustRiderWallet(
+      riderId,
+      { amount, type, note },
+      req.userId,
+    ));
+  } catch (err) { return handleError(res, err); }
+}
+
+// PATCH /api/admin/finance/wallets/merchant/:merchantId/adjust
+export async function adjustMerchantWalletHandler(req, res) {
+  try {
+    const { merchantId }         = req.params;
+    const { amount, note, type } = req.body;
+    return res.json(await financeService.adjustMerchantWallet(
+      merchantId,
+      { amount, note, type },
+      req.userId,
+    ));
   } catch (err) { return handleError(res, err); }
 }

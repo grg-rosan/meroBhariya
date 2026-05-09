@@ -10,6 +10,7 @@ export function authHeaders() {
     "Content-Type": "application/json",
   };
 }
+
 async function handleResponse(res) {
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || `HTTP ${res.status}`);
@@ -38,7 +39,18 @@ export function useAPI(path) {
   useEffect(() => {
     fetch_();
   }, [fetch_]);
+
   return { data, loading, refetch: fetch_ };
+}
+
+// ── Standalone fetch helpers ──────────────────────────────────────────────────
+
+export async function apiGet(path) {
+  const res = await fetch(`${API}${path}`, {
+    method: "GET",
+    headers: authHeaders(),
+  });
+  return handleResponse(res);
 }
 
 export async function apiPost(path, body) {
@@ -58,11 +70,20 @@ export async function apiPatch(path, body) {
   });
   return handleResponse(res);
 }
-export const apiPut = async (path, body) => {
+
+export async function apiPut(path, body) {
   const res = await fetch(`${API}${path}`, {
     method: "PUT",
     headers: authHeaders(),
     body: JSON.stringify(body),
   });
   return handleResponse(res);
-};
+}
+
+export async function apiDelete(path) {
+  const res = await fetch(`${API}${path}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  return handleResponse(res);
+}

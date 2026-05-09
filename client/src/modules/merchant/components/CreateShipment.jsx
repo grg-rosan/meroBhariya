@@ -3,9 +3,9 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Package, Loader2, ChevronRight, AlertCircle, MapPin } from "lucide-react";
 import AddressAutocomplete from "./AddressAutocomplete";
-import { useMapLibre } from "../../../shared/hooks/useMapLibre";
-import { apiPost } from "../../../shared/hooks/useApi";
-import { QRModal } from "../../../components/modals/QRModal";
+import { useMapLibre } from "../../../shared/hooks/useMapLibre.js";
+import { apiPost } from "../../../shared/hooks/useApi.js";
+import { QRModal } from "../../../components/modals/QRModal.jsx";
 import maplibregl from "maplibre-gl";
 
 // TODO Phase 4 — uncomment when wallet + fare preview is built

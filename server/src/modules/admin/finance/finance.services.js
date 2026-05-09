@@ -1,8 +1,8 @@
-import { prisma } from "../../../config/db.config.js";
-import { buildPaginationMeta } from "../../../utils/others/pagination.js";
-import AppError from "../../../utils/error/appError.js";
-import { publishMerchantNotification } from "../../../infrastructure/rabbitmq/publisher.js";
-
+import { prisma }                        from "../../../config/db.config.js";
+import { buildPaginationMeta }           from "../../../utils/others/pagination.js";
+import AppError                          from "../../../utils/error/appError.js";
+import { publishMerchantNotification }   from "../../../infrastructure/rabbitmq/publisher.js";
+import { settleDeliveryEarning } from "../../rider/finance/rider.earnings.service.js";
 // ─── Settle delivery (called by RabbitMQ delivery consumer) ──────────────────
 
 export async function settleDelivery({
@@ -38,9 +38,9 @@ export async function settleDelivery({
     await tx.shipmentLog.create({
       data: {
         shipmentId,
-        status:      "SETTLED",
+        status:      "DELIVERED",
         note:        paymentType === "COD"
-          ? `COD of Rs.${codAmount} collected. Pending remittance.`
+          ? `COD of NPR ${codAmount} collected. Pending remittance.`
           : "Payment settled.",
         updatedById: riderId,
       },
@@ -48,13 +48,31 @@ export async function settleDelivery({
     return t;
   });
 
+  // ── NEW: Credit rider earning after transaction record created ──
+  try {
+    const earningResult = await settleDeliveryEarning({
+      shipmentId,
+      codCollected: codAmount ?? 0,
+    });
+    console.log(
+      "[Settlement] Rider earning credited: NPR", earningResult.earning.total,
+      earningResult.monthlyBonus
+        ? `+ NPR ${earningResult.monthlyBonus.bonus} monthly bonus`
+        : ""
+    );
+  } catch (err) {
+    // Non-fatal — shipment is already settled, log and continue
+    // Prevents earning failure from rolling back the delivery settlement
+    console.error("[Settlement] Rider earning failed for", shipmentId, ":", err.message);
+  }
+
   publishMerchantNotification({
     merchantUserId: shipment.merchant.userId,
     shipmentId,
-    status:         "SETTLED",
+    status:         "DELIVERED",
     message:        paymentType === "COD"
-      ? `Shipment delivered. Rs.${codAmount} COD will be remitted after rider handover.`
-      : `Shipment delivered successfully.`,
+      ? `Shipment delivered. NPR ${codAmount} COD will be remitted after rider handover.`
+      : "Shipment delivered successfully.",
   });
 
   console.log(
@@ -66,30 +84,275 @@ export async function settleDelivery({
   return transaction;
 }
 
+// ─── Rider Payout — get all pending ──────────────────────────────────────────
+
+export async function getPendingPayouts({ page = 1, limit = 20 } = {}) {
+  const skip = (page - 1) * limit;
+
+  const [payouts, total, totalAmount] = await Promise.all([
+    prisma.riderPayout.findMany({
+      skip,
+      take:    limit,
+      where:   { status: { in: ["PENDING", "PROCESSING"] } },
+      include: {
+        rider: {
+          select: {
+            id:     true,
+            wallet: { select: { balance: true } },
+            user:   { select: { fullName: true, phoneNumber: true, email: true } },
+          },
+        },
+      },
+      orderBy: { requestedAt: "asc" }, // oldest first — FIFO
+    }),
+    prisma.riderPayout.count({
+      where: { status: { in: ["PENDING", "PROCESSING"] } },
+    }),
+    prisma.riderPayout.aggregate({
+      where: { status: { in: ["PENDING", "PROCESSING"] } },
+      _sum:  { amount: true },
+    }),
+  ]);
+
+  return {
+    payouts,
+    totalPending:    total,
+    totalAmount:     Number(totalAmount._sum.amount ?? 0),
+    ...buildPaginationMeta(total, page, limit),
+  };
+}
+
+// ─── Rider Payout — approve (complete) ───────────────────────────────────────
+
+export async function approvePayout(payoutId, adminId) {
+  const payout = await prisma.riderPayout.findUnique({
+    where:   { id: payoutId },
+    include: {
+      rider: {
+        select: {
+          id:     true,
+          wallet: { select: { id: true, balance: true } },
+          user:   { select: { fullName: true } },
+        },
+      },
+    },
+  });
+
+  if (!payout)                          throw new AppError("Payout request not found.", 404);
+  if (payout.status === "COMPLETED")    throw new AppError("Payout already completed.", 409);
+  if (payout.status === "FAILED")       throw new AppError("Payout already marked as failed.", 409);
+
+  const wallet = payout.rider.wallet;
+  if (!wallet) throw new AppError("Rider wallet not found.", 404);
+
+  // Re-check balance at approval time — may have changed since request
+  if (Number(wallet.balance) < Number(payout.amount)) {
+    throw new AppError(
+      `Insufficient rider wallet balance. Available: NPR ${wallet.balance}, Requested: NPR ${payout.amount}`,
+      400
+    );
+  }
+
+  // Atomic: mark payout complete + deduct wallet + record transaction
+  const result = await prisma.$transaction(async (tx) => {
+    // 1. Mark payout as completed
+    const updatedPayout = await tx.riderPayout.update({
+      where: { id: payoutId },
+      data:  {
+        status:      "COMPLETED",
+        processedAt: new Date(),
+      },
+    });
+
+    // 2. Deduct wallet balance
+    await tx.riderWallet.update({
+      where: { id: wallet.id },
+      data:  { balance: { decrement: payout.amount } },
+    });
+
+    // 3. Record wallet transaction
+    await tx.riderTransaction.create({
+      data: {
+        walletId: wallet.id,
+        type:     "DEDUCTION",
+        amount:   payout.amount,
+        note:     `Payout approved by admin — via ${payout.method}`,
+      },
+    });
+
+    return updatedPayout;
+  });
+
+  console.log(
+    "[Finance] Payout approved — riderId:", payout.rider.id,
+    "| amount: NPR", payout.amount,
+    "| method:", payout.method,
+    "| adminId:", adminId,
+  );
+
+  return {
+    payout:         result,
+    riderName:      payout.rider.user.fullName,
+    amountPaid:     Number(payout.amount),
+    method:         payout.method,
+    newBalance:     Number(wallet.balance) - Number(payout.amount),
+  };
+}
+
+// ─── Rider Payout — reject (fail) ────────────────────────────────────────────
+
+export async function rejectPayout(payoutId, adminId, reason) {
+  const payout = await prisma.riderPayout.findUnique({ where: { id: payoutId } });
+
+  if (!payout)                       throw new AppError("Payout request not found.", 404);
+  if (payout.status === "COMPLETED") throw new AppError("Cannot reject a completed payout.", 409);
+  if (payout.status === "FAILED")    throw new AppError("Payout already rejected.", 409);
+
+  const updated = await prisma.riderPayout.update({
+    where: { id: payoutId },
+    data:  {
+      status:      "FAILED",
+      processedAt: new Date(),
+    },
+  });
+
+  // No wallet deduction — balance stays intact on rejection
+  console.log(
+    "[Finance] Payout rejected — payoutId:", payoutId,
+    "| reason:", reason ?? "No reason given",
+    "| adminId:", adminId,
+  );
+
+  return {
+    payout:  updated,
+    message: `Payout NPR ${payout.amount} rejected. Rider balance unchanged.`,
+  };
+}
+
+// ─── Rider Wallet — manual adjustment ────────────────────────────────────────
+
+export async function adjustRiderWallet(riderId, { amount, type, note }, adminId) {
+  if (!["ADJUSTMENT"].includes(type)) {
+    throw new AppError("Only ADJUSTMENT type allowed for manual wallet changes.", 400);
+  }
+  if (!note) throw new AppError("Note is required for manual wallet adjustment.", 400);
+  if (!amount || amount === 0) throw new AppError("Amount cannot be zero.", 400);
+
+  const wallet = await prisma.riderWallet.findUnique({
+    where:  { riderId },
+    select: { id: true, balance: true },
+  });
+  if (!wallet) throw new AppError("Rider wallet not found.", 404);
+
+  // Prevent negative balance on deduction adjustments
+  if (amount < 0 && Number(wallet.balance) + amount < 0) {
+    throw new AppError(
+      `Adjustment would result in negative balance. Current: NPR ${wallet.balance}`,
+      400
+    );
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.riderWallet.update({
+      where: { id: wallet.id },
+      data:  { balance: { increment: amount } },
+    });
+    await tx.riderTransaction.create({
+      data: {
+        walletId: wallet.id,
+        type:     "ADJUSTMENT",
+        amount,
+        note:     `Admin adjustment — ${note} (adminId: ${adminId})`,
+      },
+    });
+  });
+
+  return {
+    riderId,
+    adjustment:  amount,
+    newBalance:  Number(wallet.balance) + amount,
+    note,
+  };
+}
+
+// ─── Merchant Wallet — manual adjustment ─────────────────────────────────────
+
+export async function adjustMerchantWallet(merchantId, { amount, type, note }, adminId) {
+  if (!["TOPUP", "ADJUSTMENT"].includes(type)) {
+    throw new AppError("Type must be TOPUP or ADJUSTMENT.", 400);
+  }
+  if (!note)   throw new AppError("Note is required for manual wallet adjustment.", 400);
+  if (!amount || amount === 0) throw new AppError("Amount cannot be zero.", 400);
+
+  const wallet = await prisma.merchantWallet.findUnique({
+    where:  { merchantId },
+    select: { id: true, balance: true },
+  });
+  if (!wallet) throw new AppError("Merchant wallet not found.", 404);
+
+  if (amount < 0 && Number(wallet.balance) + amount < 0) {
+    throw new AppError(
+      `Adjustment would result in negative balance. Current: NPR ${wallet.balance}`,
+      400
+    );
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.merchantWallet.update({
+      where: { id: wallet.id },
+      data:  { balance: { increment: amount } },
+    });
+    await tx.merchantTransaction.create({
+      data: {
+        walletId: wallet.id,
+        type,
+        amount,
+        note:     `Admin adjustment — ${note} (adminId: ${adminId})`,
+      },
+    });
+  });
+
+  return {
+    merchantId,
+    adjustment: amount,
+    newBalance: Number(wallet.balance) + amount,
+    note,
+  };
+}
+
 // ─── Revenue summary ──────────────────────────────────────────────────────────
 
 export async function getRevenueSummary({ from, to } = {}) {
   const dateFilter = buildDateFilter(from, to);
 
-  const [fareRevenue, codRevenue, shipmentCount] = await Promise.all([
+  const [fareRevenue, codRevenue, shipmentCount, riderEarnings] = await Promise.all([
     prisma.transaction.aggregate({
-      where:  { createdAt: dateFilter },
+      where:  { ...(dateFilter && { createdAt: dateFilter }) },
       _sum:   { codAmount: true },
       _count: { _all: true },
     }),
     prisma.transaction.aggregate({
-      where: { paymentType: "COD", createdAt: dateFilter },
+      where: { paymentType: "COD", ...(dateFilter && { createdAt: dateFilter }) },
       _sum:  { codAmount: true },
     }),
     prisma.shipment.count({
-      where: { createdAt: dateFilter },
+      where: { ...(dateFilter && { createdAt: dateFilter }) },
+    }),
+    // Total paid out to riders in period
+    prisma.riderTransaction.aggregate({
+      where: {
+        type:      "DELIVERY_EARNING",
+        ...(dateFilter && { createdAt: dateFilter }),
+      },
+      _sum: { amount: true },
     }),
   ]);
 
   return {
-    totalCodCollected: codRevenue._sum.codAmount   ?? 0,
-    totalTransactions: fareRevenue._count._all,
-    totalShipments:    shipmentCount,
+    totalCodCollected:  Number(codRevenue._sum.codAmount   ?? 0),
+    totalTransactions:  fareRevenue._count._all,
+    totalShipments:     shipmentCount,
+    totalRiderEarnings: Number(riderEarnings._sum.amount   ?? 0),
   };
 }
 
@@ -128,14 +391,14 @@ export async function getPendingCOD({ page = 1, limit = 20 } = {}) {
 
   return {
     transactions,
-    totalHeld: totalHeld._sum.codAmount ?? 0,
+    totalHeld: Number(totalHeld._sum.codAmount ?? 0),
     ...buildPaginationMeta(total, page, limit),
   };
 }
 
 // ─── Settle single COD transaction ───────────────────────────────────────────
 
-export async function settleCOD(transactionId, adminId) {
+export async function settleCOD(transactionId, { collectedByRider, adminId }) {
   const transaction = await prisma.transaction.findUnique({ where: { id: transactionId } });
   if (!transaction)                      throw new AppError("Transaction not found.", 404);
   if (transaction.isRemitted)            throw new AppError("Already remitted.", 409);
@@ -144,13 +407,17 @@ export async function settleCOD(transactionId, adminId) {
   const updated = await prisma.$transaction(async (tx) => {
     const t = await tx.transaction.update({
       where: { id: transactionId },
-      data:  { isRemitted: true, remittedAt: new Date() },
+      data:  {
+        isRemitted:       true,
+        remittedAt:       new Date(),
+        collectedByRider: collectedByRider ?? 0,
+      },
     });
     await tx.shipmentLog.create({
       data: {
         shipmentId:  transaction.shipmentId,
-        status:      "REMITTED",
-        note:        "COD remitted by admin.",
+        status:      "DELIVERED",
+        note:        `COD of NPR ${transaction.codAmount} remitted by admin.`,
         updatedById: adminId,
       },
     });
@@ -190,8 +457,8 @@ export async function settleAllCODForRider(riderId, adminId) {
     await tx.shipmentLog.createMany({
       data: shipmentIds.map((shipmentId) => ({
         shipmentId,
-        status:      "REMITTED",
-        note:        "COD remitted to merchant by admin.",
+        status:      "DELIVERED",
+        note:        `COD remitted to merchant by admin (bulk).`,
         updatedById: adminId,
       })),
     });
@@ -200,7 +467,7 @@ export async function settleAllCODForRider(riderId, adminId) {
   console.log(
     "[Finance] Bulk remitted", pendingTransactions.length,
     "transactions for riderId:", riderId,
-    "| total:", totalRemitted,
+    "| total: NPR", totalRemitted,
   );
 
   return { riderId, remittedCount: pendingTransactions.length, totalRemitted, remittedAt };

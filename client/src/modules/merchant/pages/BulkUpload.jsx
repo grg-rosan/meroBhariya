@@ -6,7 +6,7 @@ import {
   XCircle,
   AlertTriangle,
 } from "lucide-react";
-import { useBulkUpload } from "../hooks/useShipment";
+import { useBulkUpload } from "../hooks/useShipment.js";
 
 const HISTORY = [
   {

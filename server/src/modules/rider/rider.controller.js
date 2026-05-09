@@ -4,18 +4,11 @@ import AppError              from "../../utils/error/appError.js";
 import * as riderService     from "./rider.services.js";
 import { uploadToCloudinary, deleteFromCloudinary } from "../../utils/services/cloudinary.js";
 
-// ─────────────────────────────────────────
-// GET /rider/dashboard
-// ─────────────────────────────────────────
-
 export const getDashboard = catchAsync(async (req, res) => {
   const data = await riderService.getShiftSummary(req.userId);
   res.status(200).json({ success: true, data });
 });
 
-// ─────────────────────────────────────────
-// PATCH /rider/duty
-// ─────────────────────────────────────────
 
 export const toggleDuty = catchAsync(async (req, res) => {
   const { isOnline } = req.body;  // fix typo
@@ -24,19 +17,12 @@ export const toggleDuty = catchAsync(async (req, res) => {
   const data = await riderService.toggleDutyStatus(req.userId, isOnline); // pass value
   res.status(200).json({ success: true, data });
 });
-// ─────────────────────────────────────────
-// GET /rider/manifest
-// ─────────────────────────────────────────
 
 export const getManifest = catchAsync(async (req, res) => {
   const data = await riderService.getRiderManifest(req.userId);
   res.status(200).json({ success: true, data });
 });
 
-// ─────────────────────────────────────────
-// POST /rider/deliver
-// Body: { trackingNumber, codCollected?, note? }
-// ─────────────────────────────────────────
 
 export const deliverPackage = catchAsync(async (req, res) => {
   const { trackingNumber, codCollected, note } = req.body;
@@ -49,11 +35,7 @@ export const deliverPackage = catchAsync(async (req, res) => {
   res.status(200).json({ success: true, data });
 });
 
-// ─────────────────────────────────────────
-// PATCH /rider/location
-// Body: { latitude, longitude }
-// ─────────────────────────────────────────
-
+// rider location
 export const updateLocation = catchAsync(async (req, res) => {
   const { latitude, longitude } = req.body;
   if (latitude == null || longitude == null) {
@@ -61,65 +43,4 @@ export const updateLocation = catchAsync(async (req, res) => {
   }
   const data = await riderService.updateRiderLocation(req.userId, { latitude, longitude });
   res.status(200).json({ success: true, data });
-});
-
-// ─────────────────────────────────────────
-// GET /rider/earnings
-// Query: ?page&limit&from=ISO&to=ISO
-// ─────────────────────────────────────────
-
-export const getEarnings = catchAsync(async (req, res) => {
-  const data = await riderService.getRiderEarnings(req.userId, req.query);
-  res.status(200).json({ success: true, ...data });
-});
-
-// ─────────────────────────────────────────
-// GET /rider/documents
-// ─────────────────────────────────────────
-
-export const getDocuments = catchAsync(async (req, res) => {
-  const data = await riderService.getRiderDocuments(req.userId);
-  res.status(200).json({ success: true, data });
-});
-
-// ─────────────────────────────────────────
-// POST /rider/documents
-// Multipart — field names = RiderDocType enum values
-// ─────────────────────────────────────────
-
-export const uploadDocuments = catchAsync(async (req, res) => {
-  if (!req.files || Object.keys(req.files).length === 0) {
-    throw new AppError("No files provided.", 400);
-  }
-
-  const uploads = [];
-
-  for (const [type, fileArr] of Object.entries(req.files)) {
-    const file = Array.isArray(fileArr) ? fileArr[0] : fileArr;
-
-    // Get existing doc to delete old Cloudinary asset on replace
-    const existing = await riderService.getRiderDocumentByType(req.userId, type);
-    if (existing?.filePublicId) {
-      await deleteFromCloudinary(existing.filePublicId).catch((err) =>
-        console.warn(`[RiderDocs] Failed to delete old asset ${existing.filePublicId}: ${err.message}`)
-      );
-    }
-
-    // Upload to rider-specific folder
-    const result = await uploadToCloudinary(
-      file.path,
-      `porter/rider/${req.userId}/documents`  // ← scoped per rider, not shared folder
-    );
-
-    const doc = await riderService.upsertRiderDocument(req.userId, {
-      type,
-      fileUrl:      result.secure_url,
-      filePublicId: result.public_id,
-      expiresAt:    req.body.expiresAt ?? null,
-    });
-
-    uploads.push(doc);
-  }
-
-  res.status(201).json({ success: true, data: uploads });
 });

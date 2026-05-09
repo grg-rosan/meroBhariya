@@ -5,7 +5,7 @@ import {
   AlertCircle,
   RefreshCw,
 } from "lucide-react";
-import { useShipments } from "../hooks/useShipment";
+import { useShipments } from "../hooks/useShipment.js";
 import { useAuth } from "../../auth/AuthContext";
 import StatCard from "../../../components/common/StatCard";
 import StatusBadge from "../../../components/common/StatusBadge";

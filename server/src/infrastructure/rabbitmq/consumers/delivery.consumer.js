@@ -1,7 +1,6 @@
-import { getChannel } from "../connection.js";
-import { QUEUE } from "../queue.js";
-import { settleDelivery } from "../../../modules/admin/finance/finance.services.js";
-
+import { getChannel }            from "../connection.js";
+import { QUEUE }                 from "../queue.js";
+import { settleDelivery }        from "../../../modules/admin/finance/finance.services.js";
 
 export async function startDeliveryConsumer() {
   const ch = getChannel();
@@ -12,11 +11,11 @@ export async function startDeliveryConsumer() {
     try {
       const payload = JSON.parse(msg.content.toString());
       console.log("[Consumer] shipment.delivered:", payload.trackingNumber);
-      await settleDelivery(payload);
+      await settleDelivery(payload);   
       ch.ack(msg);
     } catch (err) {
       console.error("[Consumer] Settlement failed:", err.message);
-      ch.nack(msg, false, false); // dead-letter, don't requeue
+      ch.nack(msg, false, false);
     }
   });
 

@@ -1,5 +1,4 @@
-// server/src/services/khalti.service.js
-
+//server/src/utils/services/khalti.services.js
 import axios from "axios";
 
 const khaltiApi = axios.create({
@@ -11,7 +10,7 @@ const khaltiApi = axios.create({
 });
 
 export const initiateKhaltiPayment = async ({
-  amount,        // in NPR
+  amount,       // in NPR — converted to paisa below
   orderId,
   orderName,
   returnUrl,
@@ -20,7 +19,7 @@ export const initiateKhaltiPayment = async ({
   const { data } = await khaltiApi.post("/epayment/initiate/", {
     return_url: returnUrl,
     website_url: process.env.FRONTEND_URL,
-    amount: amount * 100,           // convert NPR → paisa
+    amount: amount * 100,           // NPR → paisa
     purchase_order_id: orderId,
     purchase_order_name: orderName,
     customer_info: customerInfo,

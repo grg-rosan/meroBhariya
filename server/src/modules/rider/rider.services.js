@@ -7,11 +7,7 @@ import {
   publishMerchantNotification,
 } from "../../infrastructure/rabbitmq/publisher.js";
 
-// ─────────────────────────────────────────
-// INTERNAL HELPER
-// ─────────────────────────────────────────
-
-const findProfile = async (userId) => {
+export const findProfile = async (userId) => {
   const profile = await prisma.riderProfile.findUnique({
     where: { userId },
     select: {
@@ -27,9 +23,6 @@ const findProfile = async (userId) => {
   return profile;
 };
 
-// ─────────────────────────────────────────
-// DUTY TOGGLE
-// ─────────────────────────────────────────
 
 export const toggleDutyStatus = async (userId, isOnline) => {
   const profile = await findProfile(userId);
@@ -43,9 +36,6 @@ export const toggleDutyStatus = async (userId, isOnline) => {
   });
   return updated;
 };
-// ─────────────────────────────────────────
-// DASHBOARD — My Shift
-// ─────────────────────────────────────────
 
 export const getShiftSummary = async (userId) => {
   const profile = await findProfile(userId);
@@ -117,10 +107,6 @@ export const getShiftSummary = async (userId) => {
   };
 };
 
-// ─────────────────────────────────────────
-// MANIFEST
-// ─────────────────────────────────────────
-
 export const getRiderManifest = async (userId) => {
   const profile = await findProfile(userId);
 
@@ -147,9 +133,6 @@ export const getRiderManifest = async (userId) => {
   });
 };
 
-// ─────────────────────────────────────────
-// DELIVER A PACKAGE
-// ─────────────────────────────────────────
 
 export const deliverPackage = async (userId, trackingNumber, { codCollected, note } = {}) => {
   const profile = await findProfile(userId);
@@ -208,9 +191,8 @@ export const deliverPackage = async (userId, trackingNumber, { codCollected, not
 
   return updated;
 };
-// ─────────────────────────────────────────
-// LOCATION UPDATE  (PostGIS)
-// ─────────────────────────────────────────
+
+
 export const updateRiderLocation = async (userId, { latitude, longitude }) => {
   const profile = await findProfile(userId);
 
@@ -223,103 +205,4 @@ export const updateRiderLocation = async (userId, { latitude, longitude }) => {
   `;
 
   return { latitude, longitude, updatedAt: new Date() };
-};
-// ─────────────────────────────────────────
-// EARNINGS HISTORY
-// ─────────────────────────────────────────
-
-export const getRiderEarnings = async (userId, query) => {
-  const profile = await findProfile(userId);
-  const { page, limit, skip } = parsePagination(query);
-  const dateFilter = buildDateFilter(query);
-
-  const where = {
-    riderId: profile.id,
-    status: "DELIVERED",
-    ...(dateFilter ? { updatedAt: dateFilter } : {}),
-  };
-
-  const [total, data] = await Promise.all([
-    prisma.shipment.count({ where }),
-    prisma.shipment.findMany({
-      where,
-      orderBy: { updatedAt: "desc" },
-      skip,
-      take: limit,
-      select: {
-        trackingNumber: true,
-        receiverName: true,
-        deliveryAddress: true,
-        fareSnapshot: true,
-        codAmount: true,
-        updatedAt: true,
-        transaction: {
-          select: {
-            collectedByRider: true,
-            isRemitted: true,
-            remittedAt: true,
-          },
-        },
-      },
-    }),
-  ]);
-
-  return { total, page, limit, data };
-};
-
-// ─────────────────────────────────────────
-// DOCUMENTS
-// ─────────────────────────────────────────
-
-export const getRiderDocuments = async (userId) => {
-  const profile = await findProfile(userId);
-
-  return prisma.riderDocument.findMany({
-    where: { riderId: profile.id },
-    orderBy: { uploadedAt: "desc" },
-  });
-};
-
-export const upsertRiderDocument = async (userId, { type, fileUrl, filePublicId, expiresAt }) => {
-  const profile = await findProfile(userId);
-
-  const existing = await prisma.riderDocument.findFirst({
-    where: { riderId: profile.id, type },
-    select: { id: true },
-  });
-
-  const payload = {
-    fileUrl,
-    filePublicId: filePublicId ?? null,
-    status: "PENDING",
-    note: null,
-    uploadedAt: new Date(),
-    reviewedAt: null,
-    expiresAt: expiresAt ? new Date(expiresAt) : null,
-  };
-
-  if (existing) {
-    return prisma.riderDocument.update({
-      where: { id: existing.id },
-      data: payload,
-    });
-  }
-
-  return prisma.riderDocument.create({
-    data: { riderId: profile.id, type, ...payload },
-  });
-};
-
-
-export const getRiderDocumentByType = async (userId, type) => {
-  const profile = await prisma.riderProfile.findUnique({
-    where:  { userId },
-    select: { id: true },
-  });
-  if (!profile) return null;
- 
-  return prisma.riderDocument.findFirst({
-    where:  { riderId: profile.id, type },
-    select: { id: true, filePublicId: true },
-  });
 };

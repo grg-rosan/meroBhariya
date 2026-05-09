@@ -19,9 +19,9 @@ router.use(requireAuth, requireMerchantProfile);
 
 router.post("/", createShipment);
 router.get("/", getMyShipments);
-router.get("/cod-ledger", getCODLedger);
 router.get("/:id", getShipmentById);
 router.delete("/:id", cancelShipment);
+router.get("/cod-ledger", getCODLedger);
 router.post("/fare-preview", checkSubscription, computeFare, getFarePreview);
 
 router.post("/bulk", uploadExcel, bulkCreateShipments);

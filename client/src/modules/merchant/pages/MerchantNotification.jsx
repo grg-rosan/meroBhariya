@@ -1,5 +1,5 @@
 import { Bell, CheckCheck } from "lucide-react";
-import { TYPE_ICON } from "../../../shared/constants/typeIcon";
+import { TYPE_ICON } from "../../../shared/constants/typeIcon.js";
 import { useNotifications } from "../../../context/NotificationContext";
 
 export default function MerchantNotifications() {

@@ -1,22 +1,28 @@
-// src/merchant/hooks/useShipmentHooks.js
-import { useState } from 'react';
-import { useAPI, apiPost, API, authHeaders } from '../../../shared/hooks/useApi';
+// src/modules/merchant/hooks/useShipment.js
 
-export const useShipments = (status = '', page = 1) =>
+import { useState, } from "react";
+import { useAPI, apiPost, apiDelete, API, authHeaders } from "../../../shared/hooks/useApi";
+
+// ── Read hooks ────────────────────────────────────────────────────────────────
+
+// useAPI doesn't accept a deps array — for filter/page changes we need
+// to rebuild the path string so useAPI re-runs via its own useEffect on path change
+export const useShipments = (status = "", page = 1) =>
   useAPI(
     `/api/merchant/shipments?${new URLSearchParams({
       ...(status && { status }),
       page,
       limit: 20,
-    })}`,
-    [status, page]
+    }).toString()}`
   );
 
 export const useShipment = (id) =>
-  useAPI(`/api/merchant/shipments/${id}`);
+  useAPI(id ? `/api/merchant/shipments/${id}` : null);
 
 export const useCODLedger = () =>
-  useAPI('/api/merchant/shipments/cod-ledger');
+  useAPI("/api/merchant/shipments/cod-ledger");
+
+// ── Create shipment ───────────────────────────────────────────────────────────
 
 export function useCreateShipment() {
   const [loading, setLoading] = useState(false);
@@ -26,7 +32,7 @@ export function useCreateShipment() {
     setLoading(true);
     setError(null);
     try {
-      return await apiPost('/api/merchant/shipments', payload);
+      return await apiPost("/api/merchant/shipments", payload);
     } catch (e) {
       setError(e.message);
       throw e;
@@ -38,6 +44,8 @@ export function useCreateShipment() {
   return { createShipment, loading, error };
 }
 
+// ── Cancel shipment ───────────────────────────────────────────────────────────
+
 export function useCancelShipment() {
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState(null);
@@ -46,12 +54,7 @@ export function useCancelShipment() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API}/api/merchant/shipments/${id}`, {
-        method: 'DELETE',
-        headers: authHeaders(),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
+      return await apiDelete(`/api/merchant/shipments/${id}`); // ✅ replaces raw fetch
     } catch (e) {
       setError(e.message);
       throw e;
@@ -63,12 +66,14 @@ export function useCancelShipment() {
   return { cancelShipment, loading, error };
 }
 
+// ── Bulk upload ───────────────────────────────────────────────────────────────
+
 export function useBulkUpload() {
-  const [progress, setProgress]           = useState(0);
-  const [loading, setLoading]             = useState(false);
-  const [result, setResult]               = useState(null);
-  const [error, setError]                 = useState(null);
-  const [validationErrors, setValErrors]  = useState([]); // per-row errors from server
+  const [progress, setProgress]          = useState(0);
+  const [loading, setLoading]            = useState(false);
+  const [result, setResult]              = useState(null);
+  const [error, setError]                = useState(null);
+  const [validationErrors, setValErrors] = useState([]);
 
   const upload = async (file) => {
     setLoading(true);
@@ -79,7 +84,7 @@ export function useBulkUpload() {
 
     try {
       const form = new FormData();
-      form.append('file', file);
+      form.append("file", file);
       const { Authorization } = authHeaders();
       const xhr = new XMLHttpRequest();
 
@@ -94,16 +99,13 @@ export function useBulkUpload() {
           if (xhr.status < 300) {
             res(json);
           } else {
-            // surface per-row validation errors if present
-            if (json?.validationErrors) {
-              setValErrors(json.validationErrors);
-            }
+            if (json?.validationErrors) setValErrors(json.validationErrors);
             rej(new Error(json.message || `HTTP ${xhr.status}`));
           }
         };
-        xhr.onerror = () => rej(new Error('Network error'));
-        xhr.open('POST', `${API}/api/merchant/shipments/bulk`);
-        xhr.setRequestHeader('Authorization', Authorization);
+        xhr.onerror = () => rej(new Error("Network error"));
+        xhr.open("POST", `${API}/api/merchant/shipments/bulk`);
+        xhr.setRequestHeader("Authorization", Authorization);
         xhr.send(form);
       });
 
@@ -117,25 +119,22 @@ export function useBulkUpload() {
     }
   };
 
-  // helper to download the template
   const downloadTemplate = () => {
     const headers = [
-      'receiverName', 'receiverPhone', 'deliveryAddress',
-      'vehicleTypeId', 'weight', 'isFragile',
-      'orderValue', 'codAmount', 'paymentType',
+      "receiverName", "receiverPhone", "deliveryAddress",
+      "vehicleTypeId", "weight", "isFragile",
+      "orderValue", "codAmount", "paymentType",
     ];
     const example = [
-      'Ram Shrestha', '9841000001', 'Thamel, Kathmandu',
-      1, 0.5, 'false', 500, 0, 'PREPAID',
+      "Ram Shrestha", "9841000001", "Thamel, Kathmandu",
+      1, 0.5, "false", 500, 0, "PREPAID",
     ];
-
-    // build CSV — no xlsx dependency needed on frontend
-    const csv = [headers.join(','), example.join(',')].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const csv  = [headers.join(","), example.join(",")].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
     const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
+    const a    = document.createElement("a");
     a.href     = url;
-    a.download = 'bulk_shipment_template.csv';
+    a.download = "bulk_shipment_template.csv";
     a.click();
     URL.revokeObjectURL(url);
   };

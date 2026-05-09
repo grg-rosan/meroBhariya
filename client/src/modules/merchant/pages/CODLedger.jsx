@@ -1,11 +1,12 @@
+// src/modules/merchant/pages/CODLedger.jsx
+
+import { useState } from "react";
 import {
   Wallet,
   ArrowDownLeft,
   Clock,
   CheckCircle,
   XCircle,
-  Truck,
-  Package,
   RefreshCw,
 } from "lucide-react";
 import { useCODLedger } from "../hooks/useShipment";
@@ -19,6 +20,8 @@ const STATUS_STEPS = [
   "OUT_FOR_DELIVERY",
   "DELIVERED",
 ];
+
+// ── Timeline ──────────────────────────────────────────────────────────────────
 
 function Timeline({ logs }) {
   return (
@@ -35,20 +38,18 @@ function Timeline({ logs }) {
               }
             />
             {i < logs.length - 1 && (
-              <div className="w-px h-4 bg-gray-200 dark:bg-blue-900" />
+              <div className="w-px h-4 bg-gray-200 dark:bg-zinc-700" />
             )}
           </div>
           <div>
             <span className="text-xs font-medium text-gray-700 dark:text-zinc-300">
               {log.status.replace(/_/g, " ")}
             </span>
-            <span className="text-xs text-gray-300 dark:text-zinc-600 ml-2">
+            <span className="text-xs text-gray-400 dark:text-zinc-500 ml-2">
               {new Date(log.createdAt).toLocaleString()}
             </span>
             {log.note && (
-              <p className="text-xs text-gray-400 dark:text-zinc-500">
-                {log.note}
-              </p>
+              <p className="text-xs text-gray-400 dark:text-zinc-500">{log.note}</p>
             )}
           </div>
         </div>
@@ -57,16 +58,19 @@ function Timeline({ logs }) {
   );
 }
 
+// ── ShipmentCard ──────────────────────────────────────────────────────────────
+
 function ShipmentCard({ s }) {
   const [open, setOpen] = useState(false);
-  const statusIdx = STATUS_STEPS.indexOf(s.status);
+  const statusIdx  = STATUS_STEPS.indexOf(s.status);
   const isDelivered = s.status === "DELIVERED";
   const isCancelled = s.status === "CANCELLED";
 
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden mb-3">
+      {/* Row header */}
       <div
-        className="px-5 py-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 dark:bg-blue-950/30 transition-all"
+        className="px-5 py-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800/60 transition-colors"
         onClick={() => setOpen((o) => !o)}
       >
         <div className="flex items-center gap-4">
@@ -82,15 +86,15 @@ function ShipmentCard({ s }) {
             </p>
           </div>
         </div>
+
         <div className="flex items-center gap-6 text-right">
           <div>
-            <p className="text-xs text-gray-400 dark:text-zinc-500">
-              COD Amount
-            </p>
+            <p className="text-xs text-gray-400 dark:text-zinc-500">COD Amount</p>
             <p className="text-sm font-semibold text-gray-800 dark:text-zinc-200">
               Rs {s.codAmount.toLocaleString()}
             </p>
           </div>
+
           <div>
             <p className="text-xs text-gray-400 dark:text-zinc-500">Status</p>
             {isDelivered ? (
@@ -107,25 +111,26 @@ function ShipmentCard({ s }) {
               </span>
             )}
           </div>
+
           <div>
             <p className="text-xs text-gray-400 dark:text-zinc-500">Remitted</p>
             {s.transaction?.isRemitted ? (
               <span className="text-xs text-green-400">Yes</span>
             ) : (
-              <span className="text-xs text-gray-400 dark:text-zinc-500">
-                No
-              </span>
+              <span className="text-xs text-gray-400 dark:text-zinc-500">No</span>
             )}
           </div>
-          <span className="text-gray-300 dark:text-zinc-600 text-xs">
-            {open ? "?" : "?"}
+
+          <span className="text-gray-400 dark:text-zinc-500 text-xs select-none">
+            {open ? "▲" : "▼"}
           </span>
         </div>
       </div>
 
+      {/* Expanded detail */}
       {open && (
         <div className="px-5 pb-4 border-t border-gray-200 dark:border-zinc-800">
-          {/* Progress bar */}
+          {/* Progress stepper */}
           {!isCancelled && (
             <div className="mt-4 mb-4">
               <div className="flex items-center justify-between mb-2">
@@ -136,7 +141,7 @@ function ShipmentCard({ s }) {
                         "w-3 h-3 rounded-full " +
                         (i <= statusIdx
                           ? "bg-rose-500"
-                          : "bg-gray-200 dark:bg-blue-900")
+                          : "bg-gray-200 dark:bg-zinc-700")
                       }
                     />
                     <p className="text-[9px] text-gray-400 dark:text-zinc-500 mt-1 text-center">
@@ -145,11 +150,11 @@ function ShipmentCard({ s }) {
                   </div>
                 ))}
               </div>
-              <div className="h-1 bg-gray-200 dark:bg-blue-900 rounded-full mt-1">
+              <div className="h-1 bg-gray-200 dark:bg-zinc-700 rounded-full mt-1">
                 <div
                   className="h-full bg-rose-500 rounded-full transition-all"
                   style={{
-                    width: ((statusIdx + 1) / STATUS_STEPS.length) * 100 + "%",
+                    width: `${((statusIdx + 1) / STATUS_STEPS.length) * 100}%`,
                   }}
                 />
               </div>
@@ -158,7 +163,7 @@ function ShipmentCard({ s }) {
 
           {/* Transaction details */}
           {s.transaction && (
-            <div className="bg-gray-100 dark:bg-blue-950/50 rounded-lg p-3 mb-3">
+            <div className="bg-gray-50 dark:bg-zinc-800/50 rounded-lg p-3 mb-3">
               <p className="text-xs font-medium text-gray-500 dark:text-zinc-400 mb-2">
                 Transaction
               </p>
@@ -166,25 +171,21 @@ function ShipmentCard({ s }) {
                 <div>
                   <p className="text-gray-400 dark:text-zinc-500">Total fare</p>
                   <p className="text-gray-800 dark:text-zinc-200 font-medium">
-                    Rs {s.transaction.totalFare?.toLocaleString()}
+                    Rs {s.transaction.totalFare?.toLocaleString() ?? "—"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-gray-400 dark:text-zinc-500">
-                    COD collected
-                  </p>
+                  <p className="text-gray-400 dark:text-zinc-500">COD collected</p>
                   <p className="text-gray-800 dark:text-zinc-200 font-medium">
-                    Rs {s.transaction.collectedByRider?.toLocaleString() ?? "�"}
+                    Rs {s.transaction.collectedByRider?.toLocaleString() ?? "—"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-gray-400 dark:text-zinc-500">
-                    Remitted at
-                  </p>
+                  <p className="text-gray-400 dark:text-zinc-500">Remitted at</p>
                   <p className="text-gray-800 dark:text-zinc-200 font-medium">
                     {s.transaction.remittedAt
                       ? new Date(s.transaction.remittedAt).toLocaleDateString()
-                      : "�"}
+                      : "—"}
                   </p>
                 </div>
               </div>
@@ -202,35 +203,39 @@ function ShipmentCard({ s }) {
   );
 }
 
-import { useState } from "react";
+// ── CODLedger page ────────────────────────────────────────────────────────────
 
 export default function CODLedger() {
   const { data, loading, refetch } = useCODLedger();
 
   const shipments = data?.shipments ?? [];
-  const totalCOD = data?.totalCOD ?? 0;
+  const totalCOD  = data?.totalCOD  ?? 0;
   const collected = data?.collected ?? 0;
-  const pending = data?.pending ?? 0;
-  const remitted = data?.remitted ?? 0;
+  const pending   = data?.pending   ?? 0;
+  const remitted  = data?.remitted  ?? 0;
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-white">COD ledger</h1>
+          <h1 className="text-xl font-semibold text-gray-800 dark:text-zinc-100">
+            COD Ledger
+          </h1>
           <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
             Track every COD shipment and its payment status
           </p>
         </div>
         <button
           onClick={refetch}
-          className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-500 dark:text-zinc-400 border border-gray-200 dark:border-zinc-800 rounded-lg hover:bg-gray-100 dark:bg-blue-950 transition-all"
+          className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-500 dark:text-zinc-400 border border-gray-200 dark:border-zinc-800 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
         >
-          <RefreshCw size={12} className={loading ? "animate-spin" : ""} />{" "}
+          <RefreshCw size={12} className={loading ? "animate-spin" : ""} />
           Refresh
         </button>
       </div>
 
+      {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         <StatCard
           icon={Wallet}
@@ -258,12 +263,13 @@ export default function CODLedger() {
         />
       </div>
 
+      {/* Shipment list */}
       {loading ? (
-        <div className="py-10 text-center text-gray-300 dark:text-zinc-600 text-sm">
+        <div className="py-10 text-center text-gray-400 dark:text-zinc-500 text-sm">
           Loading...
         </div>
       ) : shipments.length === 0 ? (
-        <div className="py-10 text-center text-gray-300 dark:text-zinc-600 text-sm">
+        <div className="py-10 text-center text-gray-400 dark:text-zinc-500 text-sm">
           No COD shipments found
         </div>
       ) : (

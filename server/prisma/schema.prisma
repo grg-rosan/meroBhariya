@@ -2,16 +2,19 @@ generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["postgresqlExtensions"]
 }
+
 datasource db {
   provider   = "postgresql"
   extensions = [postgis]
 }
+
 enum Role {
   MERCHANT
   RIDER
   DISPATCHER
   ADMIN
 }
+
 enum ShipmentStatus {
   PENDING
   ASSIGNED
@@ -22,15 +25,18 @@ enum ShipmentStatus {
   CANCELLED
   RETURNED
 }
+
 enum DocumentStatus {
   PENDING
   APPROVED
   REJECTED
 }
+
 enum PaymentType {
   COD
   PREPAID
 }
+
 enum MerchantDocType {
   PAN_CERTIFICATE
   BUSINESS_REGISTRATION
@@ -38,6 +44,7 @@ enum MerchantDocType {
   OWNER_CITIZENSHIP
   OWNER_PHOTO
 }
+
 enum RiderDocType {
   CITIZENSHIP_FRONT
   CITIZENSHIP_BACK
@@ -48,37 +55,43 @@ enum RiderDocType {
   RIDER_PHOTO
   VEHICLE_PHOTO
 }
+
 enum SubStatus {
   ACTIVE
   PAUSED
   CANCELLED
   EXPIRED
 }
+
 enum TxType {
   TOPUP
-  SHIPMENT_CHARGE   // ← replaces generic DEDUCTION for fare payments
-  OVERAGE_CHARGE    // ← separate line item for overage
+  SHIPMENT_CHARGE // ← replaces generic DEDUCTION for fare payments
+  OVERAGE_CHARGE // ← separate line item for overage
   REFUND
   ADJUSTMENT
 }
+
 enum RiderTxType {
   DELIVERY_EARNING
   BONUS
   ADJUSTMENT
   DEDUCTION
 }
+
 enum PayoutMethod {
   ESEWA
   KHALTI
   BANK
   CASH
 }
+
 enum PayoutStatus {
   PENDING
   PROCESSING
   COMPLETED
   FAILED
 }
+
 enum CODStatus {
   PENDING
   COLLECTED
@@ -86,6 +99,7 @@ enum CODStatus {
   RECONCILED
   FAILED
 }
+
 //_____________USERS_____________
 model User {
   id              String   @id @default(cuid())
@@ -99,25 +113,25 @@ model User {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  merchantProfile    MerchantProfile?
-  riderProfile       RiderProfile?
-  logs               ShipmentLog[]
+  merchantProfile   MerchantProfile?
+  riderProfile      RiderProfile?
+  logs              ShipmentLog[]
   // For handoff tracking — User who initiated a handoff
-  initiatedHandoffs  Shipment[]       @relation("HandoffInitiator")
-  codRemittances   CODRecord[] @relation("CODRemittedTo")
-  codReconciled    CODRecord[] @relation("CODReconciledBy")
+  initiatedHandoffs Shipment[]       @relation("HandoffInitiator")
+  codRemittances    CODRecord[]      @relation("CODRemittedTo")
+  codReconciled     CODRecord[]      @relation("CODReconciledBy")
 }
 
 // ─── MERCHANT MODELS ─────────────────────────────────────────
 
 model MerchantProfile {
-  id            String    @id @default(cuid())
-  userId        String    @unique @map("user_id")
-  user          User      @relation(fields: [userId], references: [id])
+  id            String                                 @id @default(cuid())
+  userId        String                                 @unique @map("user_id")
+  user          User                                   @relation(fields: [userId], references: [id])
   businessName  String
   panNumber     String?
   pickupAddress String
-  isVerified    Boolean   @default(false)
+  isVerified    Boolean                                @default(false)
   // PostGIS point — used by computeFare middleware for distance calc
   location      Unsupported("geography(Point, 4326)")?
 
@@ -143,21 +157,21 @@ model MerchantSubscription {
 }
 
 model Plan {
-  id            String                 @id @default(cuid())
+  id            String   @id @default(cuid())
   name          String
   price         Decimal
-  shipmentQuota Int?                   // null = unlimited
-  overageRate   Decimal?               // null = hard block at quota
-  isActive      Boolean                @default(true)
+  shipmentQuota Int? // null = unlimited
+  overageRate   Decimal? // null = hard block at quota
+  isActive      Boolean  @default(true)
 
   subscriptions MerchantSubscription[]
 }
 
 model MerchantWallet {
-  id           String                @id @default(cuid())
-  merchantId   String                @unique
-  merchant     MerchantProfile       @relation(fields: [merchantId], references: [id])
-  balance      Decimal               @default(0)
+  id         String          @id @default(cuid())
+  merchantId String          @unique
+  merchant   MerchantProfile @relation(fields: [merchantId], references: [id])
+  balance    Decimal         @default(0)
 
   transactions MerchantTransaction[]
 }
@@ -181,49 +195,49 @@ model MerchantTransaction {
 // ─── RIDER MODELS ────────────────────────────────────────────
 
 model RiderProfile {
-  id              String      @id @default(cuid())
-  userId          String      @unique @map("user_id")
-  user            User        @relation(fields: [userId], references: [id])
+  id              String                                 @id @default(cuid())
+  userId          String                                 @unique @map("user_id")
+  user            User                                   @relation(fields: [userId], references: [id])
   vehicleTypeId   Int
-  vehicleType     VehicleType @relation(fields: [vehicleTypeId], references: [id])
-  licenseNumber   String      @unique
-  vehicleNumber   String      @unique
-  isOnline        Boolean     @default(false)
-  isVerified      Boolean     @default(false)
+  vehicleType     VehicleType                            @relation(fields: [vehicleTypeId], references: [id])
+  licenseNumber   String                                 @unique
+  vehicleNumber   String                                 @unique
+  isOnline        Boolean                                @default(false)
+  isVerified      Boolean                                @default(false)
   // Updated by rider app on each location ping
   currentLocation Unsupported("geography(Point, 4326)")?
 
-  documents RiderDocument[]
-  shipments Shipment[]
-  wallet    RiderWallet?    // auto-created on profile creation
-  payouts   RiderPayout[]
-  codCollections   CODRecord[] @relation("CODCollectedBy")
+  documents      RiderDocument[]
+  shipments      Shipment[]
+  wallet         RiderWallet? // auto-created on profile creation
+  payouts        RiderPayout[]
+  codCollections CODRecord[]     @relation("CODCollectedBy")
 
   @@index([vehicleTypeId])
   @@index([isOnline, isVerified]) // dispatcher queries available riders
 }
 
 model RiderWallet {
-  id           String             @id @default(cuid())
-  riderId      String             @unique
-  rider        RiderProfile       @relation(fields: [riderId], references: [id])
-  balance      Decimal            @default(0)
-  totalEarned  Decimal            @default(0)  // lifetime stat, never decremented
+  id          String       @id @default(cuid())
+  riderId     String       @unique
+  rider       RiderProfile @relation(fields: [riderId], references: [id])
+  balance     Decimal      @default(0)
+  totalEarned Decimal      @default(0) // lifetime stat, never decremented
 
   transactions RiderTransaction[]
 }
 
 model RiderTransaction {
-  id         String       @id @default(cuid())
+  id         String      @id @default(cuid())
   walletId   String
-  wallet     RiderWallet  @relation(fields: [walletId], references: [id])
+  wallet     RiderWallet @relation(fields: [walletId], references: [id])
   // One earning record per shipment delivery
-  shipmentId String?@unique
-  shipment   Shipment?    @relation(fields: [shipmentId], references: [id])
+  shipmentId String?     @unique
+  shipment   Shipment?   @relation(fields: [shipmentId], references: [id])
   type       RiderTxType
   amount     Decimal
   note       String?
-  createdAt  DateTime     @default(now())
+  createdAt  DateTime    @default(now())
 
   @@index([walletId])
   @@index([shipmentId])
@@ -264,6 +278,7 @@ model FareConfig {
   perKmRate     Float
   perKgRate     Float
   minFare       Float
+  fragileCharge Decimal @default(0)
   // riderCutPct used by RiderTransaction creation after delivery
   riderCutPct   Decimal     @default(75.0)
   isActive      Boolean     @default(true)
@@ -282,24 +297,24 @@ model Shipment {
   vehicleTypeId  Int
   vehicleType    VehicleType     @relation(fields: [vehicleTypeId], references: [id])
 
-  receiverName    String
-  receiverPhone   String
-  deliveryAddress String
+  receiverName     String
+  receiverPhone    String
+  deliveryAddress  String
   // PostGIS point derived from deliveryLat/Lng at creation
   deliveryLocation Unsupported("geography(Point, 4326)")?
-  deliveryLat     Float?
-  deliveryLng     Float?          // ← typo fixed (was devliveryLng)
+  deliveryLat      Float?
+  deliveryLng      Float? // ← typo fixed (was devliveryLng)
 
-  weight        Float
-  isFragile     Boolean        @default(false)
-  orderValue    Float
-  codAmount     Float          @default(0)
+  weight       Float
+  isFragile    Boolean @default(false)
+  orderValue   Float
+  codAmount    Float   @default(0)
   // Frozen at creation by computeFare middleware
-  fareSnapshot  Float?
-  distanceKm    Float?         // ← store computed distance for audit/reporting
+  fareSnapshot Float?
+  distanceKm   Float? // ← store computed distance for audit/reporting
 
-  status            ShipmentStatus @default(PENDING)
-  paymentType       PaymentType    @default(PREPAID)
+  status      ShipmentStatus @default(PENDING)
+  paymentType PaymentType    @default(PREPAID)
 
   // Handoff — proper FK to User instead of raw String
   isHandoffPending   Boolean @default(false)
@@ -313,7 +328,7 @@ model Shipment {
   transaction      Transaction?
   codRecord        CODRecord?
   merchantCharges  MerchantTransaction[] // fare + overage deductions
-  riderTransaction RiderTransaction?     // ← one-to-one earning record
+  riderTransaction RiderTransaction? // ← one-to-one earning record
 
   @@index([merchantId])
   @@index([riderId])
@@ -331,16 +346,16 @@ model CODRecord {
   status     CODStatus @default(PENDING)
 
   // Proper FKs instead of raw strings
-  collectedById  String?
-collectedBy RiderProfile? @relation("CODCollectedBy", fields: [collectedById], references: [id])
-  collectedAt    DateTime?
+  collectedById String?
+  collectedBy   RiderProfile? @relation("CODCollectedBy", fields: [collectedById], references: [id])
+  collectedAt   DateTime?
 
-  remittedToId   String?
-  remittedTo     User?         @relation("CODRemittedTo", fields: [remittedToId], references: [id])
-  remittedAt     DateTime?
+  remittedToId String?
+  remittedTo   User?     @relation("CODRemittedTo", fields: [remittedToId], references: [id])
+  remittedAt   DateTime?
 
   reconciledById String?
-  reconciledBy   User?         @relation("CODReconciledBy", fields: [reconciledById], references: [id])
+  reconciledBy   User?     @relation("CODReconciledBy", fields: [reconciledById], references: [id])
   reconciledAt   DateTime?
 
   merchantPayout Decimal?
@@ -402,5 +417,6 @@ model Transaction {
   codAmount        Float       @default(0)
   collectedByRider Float       @default(0)
   isRemitted       Boolean     @default(false)
+  remittedAt       DateTime?
   createdAt        DateTime    @default(now())
 }

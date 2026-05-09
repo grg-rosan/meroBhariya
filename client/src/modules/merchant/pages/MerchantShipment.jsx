@@ -9,7 +9,7 @@ import {
   Calendar,
   MoreVertical,
 } from "lucide-react";
-import { useShipments } from "../hooks/useShipment";
+import { useShipments } from "../hooks/useShipment.js";
 import StatusBadge from "../../../components/common/StatusBadge";
 
 const ALL_TABS = [

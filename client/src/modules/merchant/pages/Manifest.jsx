@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Printer, QrCode, CheckSquare, Square } from "lucide-react";
-import { useShipments } from "../hooks/useShipment";
+import { useShipments } from "../hooks/useShipment.js";
 
 export default function Manifests() {
   const { data, loading } = useShipments("PENDING", 1);

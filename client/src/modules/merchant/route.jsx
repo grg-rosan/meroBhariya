@@ -6,22 +6,23 @@ import BulkUpload from './pages/BulkUpload';
 import CODLedger from './pages/CODLedger';
 import Manifests from './pages/Manifest';
 import CreateShipment from './components/CreateShipment';
-import MerchantDocumentUpload from "./pages/MerchantDocumentUpload"
+import MerchantDocumentUpload from "./pages/MerchantDocumentUpload";
 import MerchantNotifications from './pages/MerchantNotification';
-
+import MerchantPayment from './pages/MerchantPayment';
 
 export const merchantRoutes = {
   path: '/merchant',
   element: <MerchantLayout />,
   children: [
-    { index: true, element: <Navigate to="dashboard" replace /> },
-    { path: 'dashboard',   element: <MerchantDashboard /> },
-    { path: 'shipments',   element: <MerchantShipments /> },
-    {path:'shipments/new', element: <CreateShipment /> },
-    { path: 'bulk-upload', element: <BulkUpload /> },
-    { path: 'cod-ledger',  element: <CODLedger /> },
-    { path: 'manifests',   element: <Manifests /> },
-    {path:'documents', element : < MerchantDocumentUpload /> },
-    {path: 'notifications', element: <MerchantNotifications/> }
+    { index: true,              element: <Navigate to="dashboard" replace /> },
+    { path: 'dashboard',        element: <MerchantDashboard /> },
+    { path: 'shipments',        element: <MerchantShipments /> },
+    { path: 'shipments/new',    element: <CreateShipment /> },
+    { path: 'bulk-upload',      element: <BulkUpload /> },
+    { path: 'cod-ledger',       element: <CODLedger /> },
+    { path: 'manifests',        element: <Manifests /> },
+    { path: 'documents',        element: <MerchantDocumentUpload /> },
+    { path: 'notifications',    element: <MerchantNotifications /> },
+    { path: 'payment',          element: <MerchantPayment /> },
   ],
 };

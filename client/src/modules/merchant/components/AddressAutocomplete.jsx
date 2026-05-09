@@ -1,7 +1,7 @@
 // src/modules/merchant/components/AddressAutocomplete.jsx
 import { useRef, useEffect } from "react";
 import { MapPin, Loader2, X } from "lucide-react";
-import { useAddressSearch } from "../../../shared/hooks/useAddressSearch";
+import { useAddressSearch } from "../../../shared/hooks/useAddressSearch.js";
 
 export default function AddressAutocomplete({
   label,

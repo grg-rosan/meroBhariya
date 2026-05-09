@@ -14,21 +14,22 @@ import {
   changePasswordHandler
 } from "./auth.controller.js";
 import { requireAuth } from "./auth.middleware.js";
-
+import { otpLimiter,authLimiter } from "../../middlewares/rateLimit.middleware.js";
 const router = Router();
 
 // Public
-router.post("/login", loginHandler);
-router.post("/register/initiate", initiateRegistrationHandler);
-router.post("/register/complete", completeRegistrationHandler);
-router.post("/register/resend-otp", resendRegistrationOtpHandler);
-//otp
-router.post("/otp/send",sendOtpHandler)
-router.post('/otp/verify',verifyOtpHandler)
+router.post("/login", authLimiter, loginHandler);
+router.post("/register/initiate", authLimiter, initiateRegistrationHandler);
+router.post("/register/complete", authLimiter, completeRegistrationHandler);
+router.post("/register/resend-otp", otpLimiter, resendRegistrationOtpHandler);
 
-router.post("/password/forgot", forgotPasswordHandler);
-router.post("/password/reset", resetPasswordHandler);
+// OTP
+router.post("/otp/send", otpLimiter, sendOtpHandler);
+router.post("/otp/verify", otpLimiter, verifyOtpHandler);
 
+// Password
+router.post("/password/forgot", authLimiter, forgotPasswordHandler);
+router.post("/password/reset", authLimiter, resetPasswordHandler);
 
 // Protected
 router.get("/me", requireAuth, getMeHandler);
