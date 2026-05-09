@@ -1,5 +1,13 @@
+// shipment/shipment.helpers.js
+// generateTrackingNumber + getDistanceKm only
+// Fare calculation moved to utils/fare/computeFare.js
+
 import { prisma } from "../../../config/db.config.js";
 
+/**
+ * Generates a unique tracking number
+ * Format: MB-<timestamp base36>-<random>
+ */
 export function generateTrackingNumber() {
   const prefix    = "MB";
   const timestamp = Date.now().toString(36).toUpperCase();
@@ -7,9 +15,15 @@ export function generateTrackingNumber() {
   return `${prefix}-${timestamp}-${random}`;
 }
 
-// ── getDistanceKm ─────────────────────────────────────────────
-// Uses PostGIS ST_Distance to calculate distance in km between
-// merchant pickup location and delivery coordinates.
+/**
+ * Calculates distance in km between merchant pickup location
+ * and delivery coordinates using PostGIS ST_Distance
+ *
+ * @param {string} merchantProfileId
+ * @param {number} deliveryLat
+ * @param {number} deliveryLng
+ * @returns {Promise<number>} distance in km
+ */
 export async function getDistanceKm(merchantProfileId, deliveryLat, deliveryLng) {
   const result = await prisma.$queryRaw`
     SELECT
@@ -26,36 +40,4 @@ export async function getDistanceKm(merchantProfileId, deliveryLat, deliveryLng)
   }
 
   return parseFloat(result[0].distance_km);
-}
-
-// ── calculateFare ─────────────────────────────────────────────
-// fareConfig: { baseFare, perKmRate, perKgRate, minFare }
-// distanceKm: number
-// options:    { weight, isFragile, codAmount, paymentType }
-
-export function calculateFare(fareConfig, distanceKm, { weight, isFragile, codAmount, paymentType }) {
-  const base      = Number(fareConfig.baseFare);
-  const perKm     = Number(fareConfig.perKmRate);
-  const perKg     = Number(fareConfig.perKgRate);
-  const minFare   = Number(fareConfig.minFare);
-
-  let fare = base
-    + (perKm * distanceKm)
-    + (perKg * Number(weight));
-
-  // Fragile surcharge — 10% extra
-  if (isFragile) {
-    fare += fare * 0.10;
-  }
-
-  // COD fee — flat NPR 15
-  if (paymentType === "COD" && Number(codAmount ?? 0) > 0) {
-    fare += 15;
-  }
-
-  // Never go below minimum fare
-  fare = Math.max(fare, minFare);
-
-  // Round to 2 decimal places
-  return Math.round(fare * 100) / 100;
 }

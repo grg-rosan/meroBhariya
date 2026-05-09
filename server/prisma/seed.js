@@ -9,150 +9,109 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  // ── Super Admin ───────────────────────────────────────────────────────────
-  const email = process.env.SEED_ADMIN_EMAIL;
-  const password = process.env.SEED_ADMIN_PASSWORD;
+  console.log("🌱 Starting Seeding...");
 
-  if (!email || !password) {
-    throw new Error("SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD must be set in .env");
-  }
+  // 1. Super Admin
+  const email = process.env.SEED_ADMIN_EMAIL || "admin@logistics.com";
+  const password = process.env.SEED_ADMIN_PASSWORD || "Admin123!";
 
-  const existing = await prisma.user.findUnique({ where: { email } });
-
-  if (existing) {
-    console.log(`[Seed] Super Admin already exists: ${email}`);
-  } else {
-    const passwordHash = await bcrypt.hash(password, 12);
-    const admin = await prisma.user.create({
-      data: {
-        fullName: "Super Admin",
-        email,
-        passwordHash,
-        phoneNumber: "9800000000",
-        role: "ADMIN",
-        isActive: true,
-        isEmailVerified: true,
-      },
-    });
-    console.log(`[Seed] Super Admin created: ${admin.email}`);
-  }
-
-  // ── Plans ─────────────────────────────────────────────────────────────────
-  const plans = [
-    {
-      name: "Starter",
-      price: 0,
-      shipmentQuota: 50,
-      overageRate: null,
+  const passwordHash = await bcrypt.hash(password, 12);
+  await prisma.user.upsert({
+    where: { email },
+    update: {},
+    create: {
+      fullName: "Super Admin",
+      email,
+      passwordHash,
+      phoneNumber: "9800000000",
+      role: "ADMIN",
       isActive: true,
+      isEmailVerified: true,
     },
-    {
-      name: "Growth",
-      price: 999,
-      shipmentQuota: 300,
-      overageRate: 5,
-      isActive: true,
-    },
-    {
-      name: "Pro",
-      price: 2499,
-      shipmentQuota: null,
-      overageRate: null,
-      isActive: true,
-    },
+  });
+  console.log("✅ Super Admin seeded.");
+
+  // 2. Zones & Districts (Crucial for Shipment logic)
+  const zoneData = [
+    { name: "Valley", surcharge: 0, multiplier: 1.0, districts: ["Kathmandu", "Lalitpur", "Bhaktapur"] },
+    { name: "Highway", surcharge: 50, multiplier: 1.1, districts: ["Parsa", "Chitwan", "Morang"] },
+    { name: "Outstation", surcharge: 100, multiplier: 1.2, districts: ["Kaski", "Rupandehi"] },
+    { name: "Remote", surcharge: 250, multiplier: 1.5, districts: ["Humla", "Mugu"] },
   ];
 
-  for (const plan of plans) {
-    const existingPlan = await prisma.plan.findFirst({ where: { name: plan.name } });
-    if (existingPlan) {
-      console.log(`[Seed] Plan already exists: ${plan.name}`);
-    } else {
-      await prisma.plan.create({ data: plan });
-      console.log(`[Seed] Plan seeded: ${plan.name}`);
+  for (const z of zoneData) {
+    const zone = await prisma.zone.upsert({
+      where: { id: zoneData.indexOf(z) + 1 }, // Using index as ID for stable seeding
+      update: { surcharge: z.surcharge, multiplier: z.multiplier },
+      create: {
+        name: z.name,
+        surcharge: z.surcharge,
+        multiplier: z.multiplier,
+        isActive: true,
+      },
+    });
+
+    for (const dName of z.districts) {
+      await prisma.district.upsert({
+        where: { id: (zone.id * 100) + z.districts.indexOf(dName) }, // Unique ID logic
+        update: {},
+        create: {
+          name: dName,
+          province: "State 1", // Placeholder
+          zoneId: zone.id,
+        },
+      });
     }
   }
+  console.log("✅ Zones and Districts seeded.");
 
-  // ── Vehicle Types + Fare Configs ──────────────────────────────────────────
+  // 3. Vehicle Types + Fare Configs
   const vehicles = [
     {
       name: "Bike",
       maxWeightKg: 20,
-      description: "Motorcycle for small parcels",
-      fare: {
-        baseFare: 50,
-        perKmRate: 15,
-        perKgRate: 5,
-        minFare: 80,
-        fragileCharge: 20,
-        riderCutPct: 75.0,
-        isActive: true,
-      },
+      fare: { baseFare: 50, perKmRate: 15, perKgRate: 5, minFare: 80, fragileCharge: 20, insuranceRate: 1.0, riderCutPct: 75.0 },
     },
     {
       name: "Mini Truck",
       maxWeightKg: 500,
-      description: "Mini truck for medium shipments",
-      fare: {
-        baseFare: 120,
-        perKmRate: 20,
-        perKgRate: 4,
-        minFare: 150,
-        fragileCharge: 30,
-        riderCutPct: 75.0,
-        isActive: true,
-      },
+      fare: { baseFare: 120, perKmRate: 20, perKgRate: 4, minFare: 150, fragileCharge: 30, insuranceRate: 1.5, riderCutPct: 70.0 },
     },
     {
       name: "Covered Van",
       maxWeightKg: 1500,
-      description: "Covered van for large shipments",
-      fare: {
-        baseFare: 200,
-        perKmRate: 30,
-        perKgRate: 2,
-        minFare: 250,
-        fragileCharge: 50,
-        riderCutPct: 75.0,
-        isActive: true,
-      },
+      fare: { baseFare: 200, perKmRate: 30, perKgRate: 2, minFare: 250, fragileCharge: 50, insuranceRate: 2.0, riderCutPct: 65.0 },
     },
   ];
 
   for (const v of vehicles) {
     const vt = await prisma.vehicleType.upsert({
       where: { name: v.name },
-      update: {
-        maxWeightKg: v.maxWeightKg,
-        description: v.description,
-      },
+      update: { maxWeightKg: v.maxWeightKg },
       create: {
         name: v.name,
         maxWeightKg: v.maxWeightKg,
-        description: v.description,
+        isActive: true,
       },
     });
 
     await prisma.fareConfig.upsert({
       where: { vehicleTypeId: vt.id },
-      update: {
-        baseFare: v.fare.baseFare,
-        perKmRate: v.fare.perKmRate,
-        perKgRate: v.fare.perKgRate,
-        minFare: v.fare.minFare,
-        fragileCharge: v.fare.fragileCharge,
-        riderCutPct: v.fare.riderCutPct,
-        isActive: v.fare.isActive,
-      },
+      update: { ...v.fare },
       create: { vehicleTypeId: vt.id, ...v.fare },
     });
-
-    console.log(`[Seed] Vehicle + FareConfig seeded: ${v.name}`);
   }
+  console.log("✅ Vehicles and FareConfigs seeded.");
+
+  console.log("✨ Seeding Completed successfully.");
 }
 
 main()
   .catch((e) => {
-    console.error("[Seed] Error:", e);
+    console.error("❌ Seed Error:", e);
     process.exit(1);
   })
-  .finally(() => prisma.$disconnect());
+  .finally(async () => {
+    await prisma.$disconnect();
+    await pool.end();
+  });

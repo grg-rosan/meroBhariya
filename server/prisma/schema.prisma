@@ -8,6 +8,8 @@ datasource db {
   extensions = [postgis]
 }
 
+// ─── ENUMS ───────────────────────────────────────────────────
+
 enum Role {
   MERCHANT
   RIDER
@@ -16,6 +18,7 @@ enum Role {
 }
 
 enum ShipmentStatus {
+  UNPAID
   PENDING
   ASSIGNED
   PICKED_UP
@@ -56,21 +59,6 @@ enum RiderDocType {
   VEHICLE_PHOTO
 }
 
-enum SubStatus {
-  ACTIVE
-  PAUSED
-  CANCELLED
-  EXPIRED
-}
-
-enum TxType {
-  TOPUP
-  SHIPMENT_CHARGE // ← replaces generic DEDUCTION for fare payments
-  OVERAGE_CHARGE // ← separate line item for overage
-  REFUND
-  ADJUSTMENT
-}
-
 enum RiderTxType {
   DELIVERY_EARNING
   BONUS
@@ -100,7 +88,24 @@ enum CODStatus {
   FAILED
 }
 
-//_____________USERS_____________
+enum KhaltiPaymentStatus {
+  INITIATED
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum ClaimStatus {
+  RAISED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  PAID
+}
+
+// ─── USERS ───────────────────────────────────────────────────
+
 model User {
   id              String   @id @default(cuid())
   fullName        String
@@ -116,13 +121,12 @@ model User {
   merchantProfile   MerchantProfile?
   riderProfile      RiderProfile?
   logs              ShipmentLog[]
-  // For handoff tracking — User who initiated a handoff
   initiatedHandoffs Shipment[]       @relation("HandoffInitiator")
   codRemittances    CODRecord[]      @relation("CODRemittedTo")
   codReconciled     CODRecord[]      @relation("CODReconciledBy")
 }
 
-// ─── MERCHANT MODELS ─────────────────────────────────────────
+// ─── MERCHANT ────────────────────────────────────────────────
 
 model MerchantProfile {
   id            String                                 @id @default(cuid())
@@ -132,67 +136,219 @@ model MerchantProfile {
   panNumber     String?
   pickupAddress String
   isVerified    Boolean                                @default(false)
-  // PostGIS point — used by computeFare middleware for distance calc
+  // PostGIS point — origin for distance calculation
   location      Unsupported("geography(Point, 4326)")?
 
-  documents    MerchantDocument[]
-  shipments    Shipment[]
-  subscription MerchantSubscription?
-  wallet       MerchantWallet?
+  documents      MerchantDocument[]
+  shipments      Shipment[]
+  khaltiPayments KhaltiPayment[]
 }
 
-model MerchantSubscription {
-  id                 String          @id @default(cuid())
-  merchantId         String          @unique
-  merchant           MerchantProfile @relation(fields: [merchantId], references: [id])
-  planId             String
-  plan               Plan            @relation(fields: [planId], references: [id])
-  status             SubStatus       @default(ACTIVE)
-  shipmentsUsed      Int             @default(0)
-  currentPeriodStart DateTime
-  currentPeriodEnd   DateTime
-  createdAt          DateTime        @default(now())
+// ─── ZONE & DISTRICT ─────────────────────────────────────────
 
-  @@index([merchantId, status]) // checkSubscription middleware queries this
+model Zone {
+  id          Int     @id @default(autoincrement())
+  name        String  // "Valley", "Highway", "Outstation", "Remote"
+  description String?
+  // Flat surcharge added on top of distance+weight fare
+  surcharge   Decimal @default(0)
+  // Optional multiplier for very remote zones (e.g. 1.2 = 20% extra)
+  multiplier  Decimal @default(1.0)
+  sortOrder   Int     @default(0)
+  isActive    Boolean @default(true)
+
+  districts District[]
+  shipments Shipment[]
 }
 
-model Plan {
-  id            String   @id @default(cuid())
-  name          String
-  price         Decimal
-  shipmentQuota Int? // null = unlimited
-  overageRate   Decimal? // null = hard block at quota
-  isActive      Boolean  @default(true)
+model District {
+  id       Int    @id @default(autoincrement())
+  name     String // "Kathmandu", "Parsa", "Pokhara"
+  province String // "Bagmati", "Madhesh", "Gandaki"
+  zoneId   Int
+  zone     Zone   @relation(fields: [zoneId], references: [id])
 
-  subscriptions MerchantSubscription[]
+  shipmentsFrom Shipment[] @relation("FromDistrict")
+  shipmentsTo   Shipment[] @relation("ToDistrict")
+
+  @@index([zoneId])
 }
 
-model MerchantWallet {
-  id         String          @id @default(cuid())
-  merchantId String          @unique
+// ─── VEHICLE & FARE ──────────────────────────────────────────
+
+model VehicleType {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  maxWeightKg Float
+  description String?
+  isActive    Boolean @default(true)
+
+  riders     RiderProfile[]
+  shipments  Shipment[]
+  fareConfig FareConfig?
+}
+
+model FareConfig {
+  id            Int         @id @default(autoincrement())
+  vehicleTypeId Int         @unique
+  vehicleType   VehicleType @relation(fields: [vehicleTypeId], references: [id])
+
+  baseFare      Float   // flat base charge
+  perKmRate     Float   // Rs. per km
+  perKgRate     Float   // Rs. per kg
+  minFare       Float   // minimum fare floor
+  fragileCharge Decimal @default(0) // extra for fragile items
+
+  // Insurance rate — applied to orderValue, internal only, never shown to merchant
+  insuranceRate Decimal @default(1.0) // percentage e.g. 1.0 = 1%
+
+  // Fuel surcharge — % on top of total, for future use
+  fuelSurcharge Decimal @default(0)
+
+  // Rider cut — used by RiderTransaction after delivery
+  riderCutPct Decimal @default(75.0)
+
+  isActive  Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+}
+
+// ─── SHIPMENT ────────────────────────────────────────────────
+
+model Shipment {
+  id             String          @id @default(cuid())
+  trackingNumber String          @unique
+  merchantId     String
+  merchant       MerchantProfile @relation(fields: [merchantId], references: [id])
+  riderId        String?
+  rider          RiderProfile?   @relation(fields: [riderId], references: [id])
+  vehicleTypeId  Int
+  vehicleType    VehicleType     @relation(fields: [vehicleTypeId], references: [id])
+
+  // Receiver & Delivery
+  receiverName     String
+  receiverPhone    String
+  deliveryAddress  String
+  deliveryLocation Unsupported("geography(Point, 4326)")?
+  deliveryLat      Float?
+  deliveryLng      Float?
+
+  // Districts — origin and destination
+  fromDistrictId Int?
+  fromDistrict   District? @relation("FromDistrict", fields: [fromDistrictId], references: [id])
+  toDistrictId   Int?
+  toDistrict     District? @relation("ToDistrict", fields: [toDistrictId], references: [id])
+
+  // Zone — destination zone (harder zone wins if different)
+  zoneId Int?
+  zone   Zone? @relation(fields: [zoneId], references: [id])
+
+  // Shipment Details
+  weight    Float
+  isFragile Boolean @default(false)
+  orderValue Float
+  codAmount  Float  @default(0)
+
+  // Fare — all frozen at creation by computeFare middleware
+  distanceKm     Float?   // computed via PostGIS
+  baseFare       Decimal? // FareConfig.baseFare snapshot
+  distanceFare   Decimal? // distanceKm × perKmRate
+  weightFare     Decimal? // weight × perKgRate
+  fragileCharge  Decimal? // if isFragile
+  zoneSurcharge  Decimal? // Zone.surcharge snapshot
+  insuranceFee   Decimal? // internal only — never exposed to merchant
+  totalFare      Decimal? // what merchant sees = all above combined
+
+  // Legacy — keep for backward compat
+  fareSnapshot Float?
+
+  status      ShipmentStatus @default(PENDING)
+  paymentType PaymentType    @default(PREPAID)
+
+  // Khalti payment for this shipment
+  khaltiPayment KhaltiPayment?
+
+  // Handoff
+  isHandoffPending   Boolean @default(false)
+  handoffInitiatorId String?
+  handoffInitiator   User?   @relation("HandoffInitiator", fields: [handoffInitiatorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  logs             ShipmentLog[]
+  transaction      Transaction?
+  codRecord        CODRecord?
+  riderTransaction RiderTransaction?
+  insuranceClaim   InsuranceClaim?
+
+  @@index([merchantId])
+  @@index([riderId])
+  @@index([status])
+  @@index([trackingNumber])
+  @@index([fromDistrictId])
+  @@index([toDistrictId])
+  @@index([zoneId])
+}
+
+// ─── KHALTI PAYMENT ──────────────────────────────────────────
+
+model KhaltiPayment {
+  id         String @id @default(cuid())
+  merchantId String
   merchant   MerchantProfile @relation(fields: [merchantId], references: [id])
-  balance    Decimal         @default(0)
 
-  transactions MerchantTransaction[]
-}
+  // Per shipment payment
+  shipmentId String?   @unique
+  shipment   Shipment? @relation(fields: [shipmentId], references: [id])
 
-model MerchantTransaction {
-  id         String         @id @default(cuid())
-  walletId   String
-  wallet     MerchantWallet @relation(fields: [walletId], references: [id])
-  // Proper FK — checkWalletBalance deducts against a specific shipment
-  shipmentId String?
-  shipment   Shipment?      @relation(fields: [shipmentId], references: [id])
-  type       TxType
-  amount     Decimal
-  note       String?
-  createdAt  DateTime       @default(now())
+  amount Decimal
+  status KhaltiPaymentStatus @default(INITIATED)
 
-  @@index([walletId])
+  // Khalti response fields
+  pidx      String?  @unique // Khalti payment index
+  txnId     String?          // Khalti transaction id
+  khaltiRef String?          // Khalti reference number
+
+  initiatedAt DateTime  @default(now())
+  completedAt DateTime?
+  failedAt    DateTime?
+  failReason  String?
+
+  @@index([merchantId])
   @@index([shipmentId])
+  @@index([pidx])
 }
 
-// ─── RIDER MODELS ────────────────────────────────────────────
+// ─── INSURANCE CLAIM ─────────────────────────────────────────
+
+// Internal — merchant raises claim for lost/damaged shipment
+model InsuranceClaim {
+  id         String   @id @default(cuid())
+  shipmentId String   @unique
+  shipment   Shipment @relation(fields: [shipmentId], references: [id])
+  merchantId String
+
+  reason      String
+  description String?
+  // Cannot exceed shipment.orderValue
+  claimAmount Decimal
+  status      ClaimStatus @default(RAISED)
+
+  // Admin review
+  reviewNote String?
+  reviewedAt DateTime?
+
+  // Payout
+  approvedAmount Decimal?
+  paidAt         DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([merchantId])
+  @@index([status])
+}
+
+// ─── RIDER ───────────────────────────────────────────────────
 
 model RiderProfile {
   id              String                                 @id @default(cuid())
@@ -204,17 +360,16 @@ model RiderProfile {
   vehicleNumber   String                                 @unique
   isOnline        Boolean                                @default(false)
   isVerified      Boolean                                @default(false)
-  // Updated by rider app on each location ping
   currentLocation Unsupported("geography(Point, 4326)")?
 
   documents      RiderDocument[]
   shipments      Shipment[]
-  wallet         RiderWallet? // auto-created on profile creation
+  wallet         RiderWallet?
   payouts        RiderPayout[]
-  codCollections CODRecord[]     @relation("CODCollectedBy")
+  codCollections CODRecord[] @relation("CODCollectedBy")
 
   @@index([vehicleTypeId])
-  @@index([isOnline, isVerified]) // dispatcher queries available riders
+  @@index([isOnline, isVerified])
 }
 
 model RiderWallet {
@@ -222,7 +377,7 @@ model RiderWallet {
   riderId     String       @unique
   rider       RiderProfile @relation(fields: [riderId], references: [id])
   balance     Decimal      @default(0)
-  totalEarned Decimal      @default(0) // lifetime stat, never decremented
+  totalEarned Decimal      @default(0)
 
   transactions RiderTransaction[]
 }
@@ -231,7 +386,6 @@ model RiderTransaction {
   id         String      @id @default(cuid())
   walletId   String
   wallet     RiderWallet @relation(fields: [walletId], references: [id])
-  // One earning record per shipment delivery
   shipmentId String?     @unique
   shipment   Shipment?   @relation(fields: [shipmentId], references: [id])
   type       RiderTxType
@@ -256,86 +410,6 @@ model RiderPayout {
   @@index([riderId, status])
 }
 
-// ─── VEHICLE & FARE ──────────────────────────────────────────
-
-model VehicleType {
-  id          Int     @id @default(autoincrement())
-  name        String  @unique
-  maxWeightKg Float
-  description String?
-  isActive    Boolean @default(true)
-
-  riders     RiderProfile[]
-  shipments  Shipment[]
-  fareConfig FareConfig?
-}
-
-model FareConfig {
-  id            Int         @id @default(autoincrement())
-  vehicleTypeId Int         @unique
-  vehicleType   VehicleType @relation(fields: [vehicleTypeId], references: [id])
-  baseFare      Float
-  perKmRate     Float
-  perKgRate     Float
-  minFare       Float
-  fragileCharge Decimal @default(0)
-  // riderCutPct used by RiderTransaction creation after delivery
-  riderCutPct   Decimal     @default(75.0)
-  isActive      Boolean     @default(true)
-  updatedAt     DateTime    @updatedAt
-}
-
-// ─── SHIPMENT ────────────────────────────────────────────────
-
-model Shipment {
-  id             String          @id @default(cuid())
-  trackingNumber String          @unique
-  merchantId     String
-  merchant       MerchantProfile @relation(fields: [merchantId], references: [id])
-  riderId        String?
-  rider          RiderProfile?   @relation(fields: [riderId], references: [id])
-  vehicleTypeId  Int
-  vehicleType    VehicleType     @relation(fields: [vehicleTypeId], references: [id])
-
-  receiverName     String
-  receiverPhone    String
-  deliveryAddress  String
-  // PostGIS point derived from deliveryLat/Lng at creation
-  deliveryLocation Unsupported("geography(Point, 4326)")?
-  deliveryLat      Float?
-  deliveryLng      Float? // ← typo fixed (was devliveryLng)
-
-  weight       Float
-  isFragile    Boolean @default(false)
-  orderValue   Float
-  codAmount    Float   @default(0)
-  // Frozen at creation by computeFare middleware
-  fareSnapshot Float?
-  distanceKm   Float? // ← store computed distance for audit/reporting
-
-  status      ShipmentStatus @default(PENDING)
-  paymentType PaymentType    @default(PREPAID)
-
-  // Handoff — proper FK to User instead of raw String
-  isHandoffPending   Boolean @default(false)
-  handoffInitiatorId String?
-  handoffInitiator   User?   @relation("HandoffInitiator", fields: [handoffInitiatorId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  logs             ShipmentLog[]
-  transaction      Transaction?
-  codRecord        CODRecord?
-  merchantCharges  MerchantTransaction[] // fare + overage deductions
-  riderTransaction RiderTransaction? // ← one-to-one earning record
-
-  @@index([merchantId])
-  @@index([riderId])
-  @@index([status])
-  @@index([trackingNumber])
-}
-
 // ─── COD ─────────────────────────────────────────────────────
 
 model CODRecord {
@@ -345,7 +419,6 @@ model CODRecord {
   amount     Decimal
   status     CODStatus @default(PENDING)
 
-  // Proper FKs instead of raw strings
   collectedById String?
   collectedBy   RiderProfile? @relation("CODCollectedBy", fields: [collectedById], references: [id])
   collectedAt   DateTime?
@@ -372,7 +445,6 @@ model MerchantDocument {
   fileUrl    String
   status     DocumentStatus  @default(PENDING)
   uploadedAt DateTime        @default(now())
-  // Admin review trail
   reviewedAt DateTime?
   reviewNote String?
 

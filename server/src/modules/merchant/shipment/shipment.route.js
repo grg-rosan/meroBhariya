@@ -1,28 +1,61 @@
+// shipment/shipment.route.js
+
 import { Router } from "express";
 import { requireAuth } from "../../auth/auth.middleware.js";
-import { requireMerchantProfile } from "../merchant.middleware.js";
-import { bulkCreateShipments } from "./shipment.controller.js";
+import {
+  requireMerchantProfile,
+  requireVerifiedMerchant,
+  computeFareMw,
+} from "../merchant.middleware.js";
 import { uploadExcel } from "../../../config/multer.config.js";
 import {
   createShipment,
+  getFarePreview,
+  getDistricts,
   getMyShipments,
   getShipmentById,
   cancelShipment,
   getCODLedger,
-  getFarePreview,
+  bulkCreateShipments,
 } from "./shipment.controller.js";
-import { checkSubscription, computeFare } from "../merchant.middleware.js";
 
 const router = Router();
 
 router.use(requireAuth, requireMerchantProfile);
 
-router.post("/", createShipment);
-router.get("/", getMyShipments);
-router.get("/:id", getShipmentById);
-router.delete("/:id", cancelShipment);
-router.get("/cod-ledger", getCODLedger);
-router.post("/fare-preview", checkSubscription, computeFare, getFarePreview);
+// ── Public to verified merchants ──────────────────────────────
 
-router.post("/bulk", uploadExcel, bulkCreateShipments);
+// GET  /shipments/districts  ← dropdown for create form
+router.get("/districts", getDistricts);
+
+// GET  /shipments/cod-ledger
+router.get("/cod-ledger", getCODLedger);
+
+// GET  /shipments
+router.get("/", getMyShipments);
+
+// ── Require verified merchant ─────────────────────────────────
+
+// POST /shipments/fare-preview  ← live fare calc before creation
+router.post(
+  "/fare-preview",
+  requireVerifiedMerchant,
+  computeFareMw,
+  getFarePreview,
+);
+
+// POST /shipments/bulk
+router.post("/bulk", requireVerifiedMerchant, uploadExcel, bulkCreateShipments);
+
+// POST /shipments
+router.post("/", requireVerifiedMerchant, computeFareMw, createShipment);
+
+// ── Param routes last ─────────────────────────────────────────
+
+// GET    /shipments/:id
+router.get("/:id", getShipmentById);
+
+// DELETE /shipments/:id
+router.delete("/:id", cancelShipment);
+
 export default router;
