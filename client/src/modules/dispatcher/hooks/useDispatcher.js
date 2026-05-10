@@ -153,3 +153,40 @@ export function useUpdateStatus() {
 
   return { update, loading };
 }
+
+export const usePickupQueue = (filters = {}) => {
+  const params = new URLSearchParams(
+    Object.fromEntries(Object.entries(filters).filter(([, v]) => v != null))
+  ).toString();
+
+  const path   = `/api/dispatcher/shipments/pickup-queue${params ? `?${params}` : ""}`;
+  const result = useAPI(path);
+
+  return {
+    ...result,
+    shipments: result.data?.shipments ?? [],
+    total:     result.data?.total     ?? 0,
+  };
+};
+
+export function useAssignRiderForPickup() {
+  const [loading, setLoading] = useState(false);
+  const toast = useToast();
+
+  const assign = async (shipmentId, riderProfileId) => {
+    setLoading(true);
+    try {
+      return await apiPatch(
+        `/api/dispatcher/shipments/${shipmentId}/assign-pickup-rider`,
+        { riderProfileId }
+      );
+    } catch (e) {
+      toast({ message: e.message, type: "error" });
+      throw e;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { assign, loading };
+}
