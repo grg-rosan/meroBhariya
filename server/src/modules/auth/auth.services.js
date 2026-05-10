@@ -6,7 +6,8 @@ import { prisma } from "../../config/db.config.js";
 import AppError from "../../utils/error/appError.js";
 import { getRedisClient } from "../../config/redis.config.js";
 import { transporter } from "../../config/email.config.js";
-import {resetEmailTemplate, otpEmailTemplate} from "../../utils/services/emailTemplate.js"
+import { resetEmailTemplate, otpEmailTemplate } from "../../utils/services/emailTemplate.js";
+
 const SALT_ROUNDS = 12;
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES = process.env.JWT_EXPIRES_IN || "7d";

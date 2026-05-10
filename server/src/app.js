@@ -1,22 +1,19 @@
-import "dotenv/config";`nimport "dotenv/config";`
+import "dotenv/config";
 import express from "express";
-import cors from "cors"
-import {config} from "dotenv";
-import {connectDB} from  "./config/db.config.js"
-
-//Import user Routes
-import AppError from "./utils/error/appError.js";
+import cors from "cors";
 import cookieParser from "cookie-parser";
-import {globalMiddleware} from "./middlewares/error.middleware.js"
+import AppError from "./utils/error/appError.js";
+import { globalMiddleware } from "./middlewares/error.middleware.js";
+import { connectDB } from "./config/db.config.js";
 
-
-config();
-connectDB();
-import authRoutes from "./modules/auth/auth.route.js"
+// Import Routes
+import authRoutes from "./modules/auth/auth.route.js";
 import adminRoutes from "./modules/admin/admin.routes.js";
-import dispatcherRoutes from "./modules/dispatcher/dispatcher.route.js"
-import merchantRoutes from "./modules/merchant/merchant.routes.js"
-import riderRoutes from "./modules/rider/rider.route.js"
+import dispatcherRoutes from "./modules/dispatcher/dispatcher.route.js";
+import merchantRoutes from "./modules/merchant/merchant.routes.js";
+import riderRoutes from "./modules/rider/rider.route.js";
+
+connectDB();
 
 const app = express();
 
@@ -30,18 +27,18 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 
-//API routes
-app.use("/api/auth",authRoutes)
+// API routes
+app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/dispatcher",dispatcherRoutes)
-app.use("/api/rider",riderRoutes) 
-app.use("/api/merchant",merchantRoutes)
+app.use("/api/dispatcher", dispatcherRoutes);
+app.use("/api/rider", riderRoutes);
+app.use("/api/merchant", merchantRoutes);
 
 app.all("/{*path}", (req, res, next) => {
   next(new AppError(`Can't find ${req.url} on this server`, 404));
 });
 
-app.use(globalMiddleware)
+app.use(globalMiddleware);
 
 export default app;
 

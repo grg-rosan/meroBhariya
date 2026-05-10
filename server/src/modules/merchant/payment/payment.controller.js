@@ -1,37 +1,28 @@
-// payment/payment.controller.js
-
 import { catchAsync } from "../../../utils/error/errorHandler.js";
 import {
-  initiateShipmentPayment,
-  verifyShipmentPayment,
-} from "./khalti/khalti.service.js";
+  initiatePaymentSession,
+  verifyAndCreateShipment,
+} from "./payment.service.js";
 import AppError from "../../../utils/error/appError.js";
 
-/**
- * POST /merchant/payment/:shipmentId/initiate
- * Initiates Khalti payment for a shipment
- */
 export const initiatePayment = catchAsync(async (req, res) => {
   const merchantId = req.merchantProfileId;
-  const { shipmentId } = req.params;
-
-  if (!shipmentId) throw new AppError("shipmentId is required.", 400);
-
-  const result = await initiateShipmentPayment(shipmentId, merchantId);
+  const ctx = {
+    fare:        req.fare,
+    zone:        req.zone,
+    distanceKm:  req.distanceKm,
+    deliveryLat: req.deliveryLat,
+    deliveryLng: req.deliveryLng,
+  };
+  const result = await initiatePaymentSession(merchantId, req.userId, req.body, ctx);
   return res.status(200).json({ success: true, data: result });
 });
 
-/**
- * GET /merchant/payment/verify?pidx=xxx&shipmentId=xxx
- * Verifies Khalti payment after redirect
- */
 export const verifyPayment = catchAsync(async (req, res) => {
-  const merchantId        = req.merchantProfileId;
-  const { pidx, shipmentId } = req.query;
+  const merchantId = req.merchantProfileId;
+  const { pidx }   = req.query;
+  if (!pidx) throw new AppError("pidx is required.", 400);
 
-  if (!pidx)       throw new AppError("pidx is required.", 400);
-  if (!shipmentId) throw new AppError("shipmentId is required.", 400);
-
-  const result = await verifyShipmentPayment(pidx, shipmentId, merchantId);
-  return res.status(200).json({ success: true, data: result });
+  const result = await verifyAndCreateShipment(pidx, merchantId, req.userId);
+  return res.status(201).json({ success: true, data: result });
 });

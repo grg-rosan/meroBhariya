@@ -1,13 +1,9 @@
 // zone/zone.service.js
 // Resolves zone from district
-// Harder zone (higher surcharge) always wins
+// Harder zone (higher surcharge) always wins — destination zone wins on tie
 
-import { prisma } from "../../config/db.config.js";
-import AppError   from "../../utils/error/appError.js";
-
-/**
- * Get district by id
- */
+import { prisma } from "../../../config/db.config.js";
+import AppError from "../../../utils/error/appError.js";
 export async function getDistrictById(districtId) {
   const district = await prisma.district.findUnique({
     where:   { id: Number(districtId) },
@@ -17,9 +13,6 @@ export async function getDistrictById(districtId) {
   return district;
 }
 
-/**
- * Get district by name (case-insensitive)
- */
 export async function getDistrictByName(name) {
   const district = await prisma.district.findFirst({
     where:   { name: { equals: name, mode: "insensitive" } },
@@ -30,8 +23,9 @@ export async function getDistrictByName(name) {
 }
 
 /**
- * Resolve applicable zone between two districts
- * Higher surcharge zone wins (harder delivery = more expensive)
+ * Resolve applicable zone between two districts.
+ * Higher surcharge zone wins — destination zone wins on tie.
+ * Rationale: delivery difficulty is determined by where you're going, not where you're from.
  */
 export async function resolveZone(fromDistrictId, toDistrictId) {
   const [from, to] = await Promise.all([
@@ -39,17 +33,13 @@ export async function resolveZone(fromDistrictId, toDistrictId) {
     getDistrictById(toDistrictId),
   ]);
 
-  // Higher surcharge zone is the applicable one
-  const zone = Number(from.zone.surcharge) >= Number(to.zone.surcharge)
-    ? from.zone
-    : to.zone;
+  const zone = Number(to.zone.surcharge) >= Number(from.zone.surcharge)
+    ? to.zone
+    : from.zone;
 
   return { fromDistrict: from, toDistrict: to, zone };
 }
 
-/**
- * Get all zones (for admin / seed reference)
- */
 export async function getAllZones() {
   return prisma.zone.findMany({
     where:   { isActive: true },
@@ -59,10 +49,12 @@ export async function getAllZones() {
 }
 
 /**
- * Get all districts (for shipment form dropdown)
+ * For shipment creation form dropdown.
+ * Only shows districts belonging to active zones.
  */
 export async function getAllDistricts() {
   return prisma.district.findMany({
+    where:   { zone: { isActive: true } },
     include: { zone: { select: { name: true } } },
     orderBy: { name: "asc" },
   });

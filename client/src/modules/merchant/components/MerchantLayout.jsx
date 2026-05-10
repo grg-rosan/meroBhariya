@@ -10,13 +10,13 @@ export default function MerchantLayout() {
   useMerchantNotifications();
 
   const NAV = [
-    { to: '/merchant/dashboard',    label: 'Dashboard',     icon: LayoutDashboard },
-    { to: '/merchant/shipments',    label: 'Shipments',     icon: Package },
-    { to: '/merchant/bulk-upload',  label: 'Bulk upload',   icon: Upload },
-    { to: '/merchant/cod-ledger',   label: 'COD ledger',    icon: Wallet },
-    { to: '/merchant/manifests',    label: 'Manifests',     icon: ClipboardList },
-    { to: '/merchant/documents',    label: 'Documents',     icon: FileText },
-    { to: '/merchant/payment',      label: 'Subscription',  icon: CreditCard },
+    { to: '/merchant/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/merchant/shipments', label: 'Shipments', icon: Package },
+    { to: '/merchant/bulk-upload', label: 'Bulk upload', icon: Upload },
+    { to: '/merchant/cod-ledger', label: 'COD ledger', icon: Wallet },
+    { to: '/merchant/manifests', label: 'Manifests', icon: ClipboardList },
+    { to: '/merchant/documents', label: 'Documents', icon: FileText },
+    { to: '/merchant/payments', label: 'Payments', icon: CreditCard },
     {
       to: '/merchant/notifications',
       label: `Notifications${unreadCount > 0 ? ` (${unreadCount})` : ""}`,
@@ -24,7 +24,7 @@ export default function MerchantLayout() {
     },
   ];
 
-  const name     = user?.name ?? user?.fullName ?? 'Merchant';
+  const name = user?.name ?? user?.fullName ?? 'Merchant';
   const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
   return (

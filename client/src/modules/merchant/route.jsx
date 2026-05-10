@@ -8,21 +8,22 @@ import Manifests from './pages/Manifest';
 import CreateShipment from './components/CreateShipment';
 import MerchantDocumentUpload from "./pages/MerchantDocumentUpload";
 import MerchantNotifications from './pages/MerchantNotification';
+import Verify from './components/payements/Verify';
 import MerchantPayment from './pages/MerchantPayment';
 
 export const merchantRoutes = {
   path: '/merchant',
   element: <MerchantLayout />,
   children: [
-    { index: true,              element: <Navigate to="dashboard" replace /> },
-    { path: 'dashboard',        element: <MerchantDashboard /> },
-    { path: 'shipments',        element: <MerchantShipments /> },
-    { path: 'shipments/new',    element: <CreateShipment /> },
-    { path: 'bulk-upload',      element: <BulkUpload /> },
-    { path: 'cod-ledger',       element: <CODLedger /> },
-    { path: 'manifests',        element: <Manifests /> },
-    { path: 'documents',        element: <MerchantDocumentUpload /> },
-    { path: 'notifications',    element: <MerchantNotifications /> },
-    { path: 'payment',          element: <MerchantPayment /> },
-  ],
+    { index: true, element: <Navigate to="dashboard" replace /> },
+    { path: 'dashboard', element: <MerchantDashboard /> },
+    { path: 'shipments', element: <MerchantShipments /> },
+    { path: 'shipments/new', element: <CreateShipment /> },
+    { path: 'bulk-upload', element: <BulkUpload /> },
+    { path: 'cod-ledger', element: <CODLedger /> },
+    { path: 'manifests', element: <Manifests /> },
+    { path: 'documents', element: <MerchantDocumentUpload /> },
+    { path: 'notifications', element: <MerchantNotifications /> },
+    {path: 'payments', element: <MerchantPayment />},
+    { path: 'payment/verify', element: <Verify /> },],
 };

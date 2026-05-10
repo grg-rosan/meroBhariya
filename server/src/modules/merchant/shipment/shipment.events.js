@@ -9,7 +9,7 @@ export function publishShipmentNew(shipment, vehicleType, paymentType) {
     shipmentId:      shipment.id,
     trackingNumber:  shipment.trackingNumber,
     merchantId:      shipment.merchantId,
-    vehicleTypeId:   shipment.vehicleTypeId,
+vehicleTypeName: vehicleType?.name ?? "Unknown",
     vehicleTypeName: vehicleType.name,
     deliveryAddress: shipment.deliveryAddress,
     deliveryLat:     shipment.deliveryLat,

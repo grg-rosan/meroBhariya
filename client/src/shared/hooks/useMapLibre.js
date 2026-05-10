@@ -25,11 +25,17 @@ export function useMapLibre(containerRef, { center = [85.314, 27.717], zoom = 13
       mapRef.current?.remove();
       mapRef.current = null;
     };
-  }, []);
+  }, [center, containerRef, zoom]);
 
   const upsertMarker = useCallback((id, lngLat, options = {}) => {
     const map = mapRef.current;
     if (!map) return;
+
+      if (
+    !lngLat ||
+    lngLat[0] == null || lngLat[1] == null ||
+    !isFinite(lngLat[0]) || !isFinite(lngLat[1])
+  ) return;
 
     if (markersRef.current[id]) {
       markersRef.current[id].setLngLat(lngLat);

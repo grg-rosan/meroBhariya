@@ -4,7 +4,7 @@ import * as shipmentService from "./shipment.services.js";
 import { catchAsync }       from "../../../utils/error/errorHandler.js";
 import { parsePagination }  from "../../../utils/others/pagination.js";
 import AppError             from "../../../utils/error/appError.js";
-import { getAllDistricts }  from "../../zone/zone.service.js";
+import { getAllDistricts }  from "../zone/zone.service.js";
 
 // ── createShipment ────────────────────────────────────────────
 // computeFare middleware already ran and attached ctx to req

@@ -8,8 +8,7 @@ datasource db {
   extensions = [postgis]
 }
 
-// ─── ENUMS ───────────────────────────────────────────────────
-
+//_________enum_________
 enum Role {
   MERCHANT
   RIDER
@@ -20,6 +19,7 @@ enum Role {
 enum ShipmentStatus {
   UNPAID
   PENDING
+  AWAITING_PICKUP
   ASSIGNED
   PICKED_UP
   IN_HUB
@@ -104,8 +104,7 @@ enum ClaimStatus {
   PAID
 }
 
-// ─── USERS ───────────────────────────────────────────────────
-
+//_________users
 model User {
   id              String   @id @default(cuid())
   fullName        String
@@ -126,8 +125,7 @@ model User {
   codReconciled     CODRecord[]      @relation("CODReconciledBy")
 }
 
-// ─── MERCHANT ────────────────────────────────────────────────
-
+//_________merchant_________
 model MerchantProfile {
   id            String                                 @id @default(cuid())
   userId        String                                 @unique @map("user_id")
@@ -144,11 +142,10 @@ model MerchantProfile {
   khaltiPayments KhaltiPayment[]
 }
 
-// ─── ZONE & DISTRICT ─────────────────────────────────────────
-
+//_________zone & district
 model Zone {
   id          Int     @id @default(autoincrement())
-  name        String  // "Valley", "Highway", "Outstation", "Remote"
+  name        String // "Valley", "Highway", "Outstation", "Remote"
   description String?
   // Flat surcharge added on top of distance+weight fare
   surcharge   Decimal @default(0)
@@ -174,8 +171,7 @@ model District {
   @@index([zoneId])
 }
 
-// ─── VEHICLE & FARE ──────────────────────────────────────────
-
+//_________vehicle_________
 model VehicleType {
   id          Int     @id @default(autoincrement())
   name        String  @unique
@@ -193,10 +189,10 @@ model FareConfig {
   vehicleTypeId Int         @unique
   vehicleType   VehicleType @relation(fields: [vehicleTypeId], references: [id])
 
-  baseFare      Float   // flat base charge
-  perKmRate     Float   // Rs. per km
-  perKgRate     Float   // Rs. per kg
-  minFare       Float   // minimum fare floor
+  baseFare      Float // flat base charge
+  perKmRate     Float // Rs. per km
+  perKgRate     Float // Rs. per kg
+  minFare       Float // minimum fare floor
   fragileCharge Decimal @default(0) // extra for fragile items
 
   // Insurance rate — applied to orderValue, internal only, never shown to merchant
@@ -206,10 +202,10 @@ model FareConfig {
   fuelSurcharge Decimal @default(0)
 
   // Rider cut — used by RiderTransaction after delivery
-  riderCutPct Decimal @default(75.0)
-
-  isActive  Boolean  @default(true)
-  updatedAt DateTime @updatedAt
+  riderCutPct   Decimal  @default(75.0)
+  codChargeRate Decimal  @default(1.5)
+  isActive      Boolean  @default(true)
+  updatedAt     DateTime @updatedAt
 }
 
 // ─── SHIPMENT ────────────────────────────────────────────────
@@ -243,20 +239,21 @@ model Shipment {
   zone   Zone? @relation(fields: [zoneId], references: [id])
 
   // Shipment Details
-  weight    Float
-  isFragile Boolean @default(false)
+  weight     Float
+  isFragile  Boolean @default(false)
   orderValue Float
-  codAmount  Float  @default(0)
+  codAmount  Float   @default(0)
 
   // Fare — all frozen at creation by computeFare middleware
-  distanceKm     Float?   // computed via PostGIS
-  baseFare       Decimal? // FareConfig.baseFare snapshot
-  distanceFare   Decimal? // distanceKm × perKmRate
-  weightFare     Decimal? // weight × perKgRate
-  fragileCharge  Decimal? // if isFragile
-  zoneSurcharge  Decimal? // Zone.surcharge snapshot
-  insuranceFee   Decimal? // internal only — never exposed to merchant
-  totalFare      Decimal? // what merchant sees = all above combined
+  distanceKm    Float? // computed via PostGIS
+  baseFare      Decimal? // FareConfig.baseFare snapshot
+  distanceFare  Decimal? // distanceKm × perKmRate
+  weightFare    Decimal? // weight × perKgRate
+  fragileCharge Decimal? // if isFragile
+  zoneSurcharge Decimal? // Zone.surcharge snapshot
+  insuranceFee  Decimal? // internal only — never exposed to merchant
+  totalFare     Decimal? // what merchant sees = all above combined
+  codFee        Decimal?
 
   // Legacy — keep for backward compat
   fareSnapshot Float?
@@ -290,10 +287,9 @@ model Shipment {
   @@index([zoneId])
 }
 
-// ─── KHALTI PAYMENT ──────────────────────────────────────────
-
+//_________khalti payment _________
 model KhaltiPayment {
-  id         String @id @default(cuid())
+  id         String          @id @default(cuid())
   merchantId String
   merchant   MerchantProfile @relation(fields: [merchantId], references: [id])
 
@@ -305,9 +301,9 @@ model KhaltiPayment {
   status KhaltiPaymentStatus @default(INITIATED)
 
   // Khalti response fields
-  pidx      String?  @unique // Khalti payment index
-  txnId     String?          // Khalti transaction id
-  khaltiRef String?          // Khalti reference number
+  pidx      String? @unique // Khalti payment index
+  txnId     String? // Khalti transaction id
+  khaltiRef String? // Khalti reference number
 
   initiatedAt DateTime  @default(now())
   completedAt DateTime?
@@ -348,8 +344,7 @@ model InsuranceClaim {
   @@index([status])
 }
 
-// ─── RIDER ───────────────────────────────────────────────────
-
+//_________rider_________
 model RiderProfile {
   id              String                                 @id @default(cuid())
   userId          String                                 @unique @map("user_id")
@@ -366,7 +361,7 @@ model RiderProfile {
   shipments      Shipment[]
   wallet         RiderWallet?
   payouts        RiderPayout[]
-  codCollections CODRecord[] @relation("CODCollectedBy")
+  codCollections CODRecord[]     @relation("CODCollectedBy")
 
   @@index([vehicleTypeId])
   @@index([isOnline, isVerified])
@@ -409,9 +404,7 @@ model RiderPayout {
 
   @@index([riderId, status])
 }
-
-// ─── COD ─────────────────────────────────────────────────────
-
+//_________cod_________
 model CODRecord {
   id         String    @id @default(cuid())
   shipmentId String    @unique
@@ -433,10 +426,13 @@ model CODRecord {
 
   merchantPayout Decimal?
   notes          String?
+
+  khaltiRef   String? // Khalti reference when admin remits to merchant
+  khaltiTxnId String? // Khalti transaction ID
+  paidAt      DateTime? // when admin actually paid merchant
 }
 
-// ─── DOCUMENTS ───────────────────────────────────────────────
-
+//_________documents_________
 model MerchantDocument {
   id         String          @id @default(cuid())
   merchantId String
@@ -465,8 +461,7 @@ model RiderDocument {
   @@index([riderId, status])
 }
 
-// ─── LOGS & TRANSACTION ──────────────────────────────────────
-
+//_________logs & transaction_________
 model ShipmentLog {
   id          String         @id @default(cuid())
   shipmentId  String

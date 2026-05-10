@@ -45,14 +45,16 @@ export function useAPI(path) {
 
 // ── Standalone fetch helpers ──────────────────────────────────────────────────
 
-export async function apiGet(path) {
-  const res = await fetch(`${API}${path}`, {
+export async function apiGet(path, params) {
+  const url = params
+    ? `${API}${path}?${new URLSearchParams(params).toString()}`
+    : `${API}${path}`;
+  const res = await fetch(url, {
     method: "GET",
     headers: authHeaders(),
   });
   return handleResponse(res);
 }
-
 export async function apiPost(path, body) {
   const res = await fetch(`${API}${path}`, {
     method: "POST",

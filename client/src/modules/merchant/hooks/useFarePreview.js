@@ -1,17 +1,33 @@
+// src/modules/merchant/hooks/useFarePreview.js
 import { useState, useRef, useCallback, useEffect } from "react";
-import { apiPost } from "../../../shared/hooks/useApi";
+import { apiPost } from "../../../shared/hooks/useApi.js";
 
-export function useFarePreview(form) {
+// getFarePreview response shape (from shipment.controller.js):
+// { distanceKm, zone, baseFare, distanceFare, weightFare,
+//   fragileCharge, zoneSurcharge, codFee, totalFare }
+
+export function useFarePreview(form, fromDistrictId) {
   const [fareData, setFareData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const fareTimerRef = useRef(null);
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState(null);
+  const timerRef                = useRef(null);
 
   const getFare = useCallback(async () => {
-    const { deliveryLatLng, weightKg, deliveryAddress, vehicleTypeId, isFragile, codAmount } = form;
-    
-    // Validation: Don't call API if essential data is missing
-    if (!deliveryLatLng || !weightKg || weightKg <= 0) {
+    const {
+      deliveryLat, deliveryLng,
+      weight, vehicleTypeId,
+      isFragile, codAmount,
+      paymentType, orderValue,
+      toDistrictId,
+    } = form;
+
+    // Need all required fields before calling
+    if (
+      !deliveryLat || !deliveryLng     ||
+      !weight      || Number(weight) <= 0 ||
+      !fromDistrictId || !toDistrictId ||
+      !orderValue  || Number(orderValue) <= 0
+    ) {
       setFareData(null);
       return;
     }
@@ -20,29 +36,32 @@ export function useFarePreview(form) {
     setError(null);
 
     try {
-      const data = await apiPost("/api/merchant/shipments/fare-preview", {
-        pickupAddress: "Merchant pickup address", // Replace with actual merchant location if available
-        deliveryAddress,
-        weightKg: parseFloat(weightKg),
-        isFragile,
-        codAmount: parseFloat(codAmount || 0),
-        vehicleTypeId,
+      const res = await apiPost("/api/merchant/shipments/fare-preview", {
+        vehicleTypeId:  Number(vehicleTypeId),
+        weight:         parseFloat(weight),
+        isFragile:      isFragile ?? false,
+        orderValue:     parseFloat(orderValue),
+        codAmount:      paymentType === "COD" ? parseFloat(codAmount || 0) : 0,
+        paymentType,
+        deliveryLat:    parseFloat(deliveryLat),
+        deliveryLng:    parseFloat(deliveryLng),
+        fromDistrictId: Number(fromDistrictId),
+        toDistrictId:   Number(toDistrictId),
       });
-      setFareData(data);
+      setFareData(res.data);
     } catch (e) {
       setError(e.message);
+      setFareData(null);
     } finally {
       setLoading(false);
     }
-  }, [form]);
+  }, [form, fromDistrictId]);
 
-  // Debounce effect
   useEffect(() => {
-    clearTimeout(fareTimerRef.current);
-    fareTimerRef.current = setTimeout(getFare, 800);
-    
-    return () => clearTimeout(fareTimerRef.current);
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(getFare, 800);
+    return () => clearTimeout(timerRef.current);
   }, [getFare]);
 
-  return { fareData, loading, error, setFareData };
+  return { fareData, loading, error };
 }

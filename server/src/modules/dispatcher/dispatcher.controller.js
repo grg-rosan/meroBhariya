@@ -60,3 +60,19 @@ export const updateStatus = catchAsync(async (req, res) => {
   const shipment = await dispatcherService.updateShipmentStatus(req.params.id, status, req.userId);
   res.json(shipment);
 });
+
+
+export const getPickupQueue = catchAsync(async (req, res) => {
+  const { zoneId, districtId } = req.query;
+  const { page, limit, skip }  = parsePagination(req.query);
+  const result = await dispatcherService.getPickupQueue({ page, limit, skip, zoneId, districtId });
+  res.json({ success: true, ...result });
+});
+
+export const assignRiderForPickup = catchAsync(async (req, res) => {
+  const { id }             = req.params;
+  const { riderProfileId } = req.body;
+  if (!riderProfileId) return res.status(400).json({ message: "riderProfileId is required." });
+  const result = await dispatcherService.assignRiderForPickup(id, riderProfileId, req.userId);
+  res.json({ success: true, data: result });
+});

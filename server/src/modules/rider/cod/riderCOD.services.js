@@ -2,146 +2,159 @@ import { prisma }      from "../../../config/db.config.js";
 import AppError        from "../../../utils/error/appError.js";
 import { findProfile } from "../rider.services.js";
 
+// ── getRiderCODSummary ────────────────────────────────────────
+// Shows rider what COD cash they are currently holding
+// and what they have already remitted to admin
 
-export const getRiderCODSummary = async (userId) => {
+export async function getRiderCODSummary(userId) {
   const profile = await findProfile(userId);
 
   const [holding, remitted] = await Promise.all([
-    // Cash rider still physically holds — delivered but not remitted
-    prisma.shipment.findMany({
+    // Cash rider physically holds — delivered but not yet remitted to admin
+    prisma.cODRecord.findMany({
       where: {
-        riderId:   profile.id,
-        status:    "DELIVERED",
-        codAmount: { gt: 0 },
-        transaction: {
-          paymentType: "COD",
-          isRemitted:  false,
-        },
+        collectedById: profile.id,
+        status:        "COLLECTED",   // rider has cash, not handed to admin yet
       },
       select: {
-        id:             true,
-        trackingNumber: true,
-        receiverName:   true,
-        deliveryAddress: true,
-        codAmount:      true,
-        updatedAt:      true,
-        transaction: {
+        id:          true,
+        amount:      true,
+        collectedAt: true,
+        shipment: {
           select: {
-            collectedByRider: true,
-            isRemitted:       true,
+            id:              true,
+            trackingNumber:  true,
+            receiverName:    true,
+            deliveryAddress: true,
+            codAmount:       true,
           },
         },
       },
-      orderBy: { updatedAt: "desc" },
+      orderBy: { collectedAt: "desc" },
     }),
 
-    // Already handed to dispatcher
-    prisma.shipment.findMany({
+    // Already remitted to admin
+    prisma.cODRecord.findMany({
       where: {
-        riderId:   profile.id,
-        status:    "DELIVERED",
-        codAmount: { gt: 0 },
-        transaction: {
-          paymentType: "COD",
-          isRemitted:  true,
-        },
+        collectedById: profile.id,
+        status:        { in: ["REMITTED", "RECONCILED"] },
       },
       select: {
-        id:             true,
-        trackingNumber: true,
-        receiverName:   true,
-        deliveryAddress: true,
-        codAmount:      true,
-        updatedAt:      true,
-        transaction: {
+        id:          true,
+        amount:      true,
+        collectedAt: true,
+        remittedAt:  true,
+        status:      true,
+        shipment: {
           select: {
-            collectedByRider: true,
-            isRemitted:       true,
-            remittedAt:       true,
+            id:             true,
+            trackingNumber: true,
+            receiverName:   true,
+            codAmount:      true,
           },
         },
       },
-      orderBy: { updatedAt: "desc" },
-      take:    20, // last 20 remitted
+      orderBy: { remittedAt: "desc" },
+      take:    20,
     }),
   ]);
 
-  const totalHolding  = holding.reduce((sum, s) => sum + s.codAmount, 0);
-  const totalRemitted = remitted.reduce((sum, s) => sum + s.codAmount, 0);
+  const totalHolding  = holding.reduce((sum, r) => sum + Number(r.amount), 0);
+  const totalRemitted = remitted.reduce((sum, r) => sum + Number(r.amount), 0);
 
-  return {
-    totalHolding,
-    totalRemitted,
-    holding,
-    recentlyRemitted: remitted,
-  };
-};
+  return { totalHolding, totalRemitted, holding, recentlyRemitted: remitted };
+}
 
+// ── markCODCollected ──────────────────────────────────────────
+// Called when rider marks shipment as DELIVERED
+// Moves CODRecord from PENDING → COLLECTED
+// This should be called inside your delivery confirmation flow
 
-export const remitCODToDispatcher = async (userId, shipmentIds) => {
+export async function markCODCollected(shipmentId, riderId) {
+  const codRecord = await prisma.cODRecord.findUnique({
+    where: { shipmentId },
+  });
+
+  if (!codRecord) return; // PREPAID shipment — nothing to do
+  if (codRecord.status !== "PENDING") {
+    throw new AppError(`COD record is already in status: ${codRecord.status}.`, 400);
+  }
+
+  return prisma.cODRecord.update({
+    where: { shipmentId },
+    data: {
+      status:        "COLLECTED",
+      collectedById: riderId,
+      collectedAt:   new Date(),
+    },
+  });
+}
+
+// ── remitCODToAdmin ───────────────────────────────────────────
+// Rider declares they have handed cash to admin physically
+// Admin must confirm on their end via reconcileCOD (separate admin service)
+
+export async function remitCODToAdmin(userId, shipmentIds) {
   const profile = await findProfile(userId);
 
   if (!Array.isArray(shipmentIds) || shipmentIds.length === 0) {
     throw new AppError("shipmentIds must be a non-empty array.", 400);
   }
 
-  // Verify all shipments belong to this rider + are unremitted COD
-  const shipments = await prisma.shipment.findMany({
+  // Verify all COD records belong to this rider and are COLLECTED (not yet remitted)
+  const codRecords = await prisma.cODRecord.findMany({
     where: {
-      id:      { in: shipmentIds },
-      riderId: profile.id,
-      status:  "DELIVERED",
-      transaction: {
-        paymentType: "COD",
-        isRemitted:  false,
-      },
+      shipmentId:    { in: shipmentIds },
+      collectedById: profile.id,
+      status:        "COLLECTED",
     },
     select: {
-      id:             true,
-      trackingNumber: true,
-      codAmount:      true,
-      transaction:    { select: { id: true } },
+      id:         true,
+      shipmentId: true,
+      amount:     true,
+      shipment:   { select: { trackingNumber: true } },
     },
   });
 
-  // Check all requested IDs were found and are valid
-  if (shipments.length !== shipmentIds.length) {
-    const foundIds   = shipments.map((s) => s.id);
+  if (codRecords.length !== shipmentIds.length) {
+    const foundIds   = codRecords.map((r) => r.shipmentId);
     const invalidIds = shipmentIds.filter((id) => !foundIds.includes(id));
     throw new AppError(
-      `Some shipments are invalid, not yours, or already remitted: ${invalidIds.join(", ")}`,
+      `Some shipments are invalid, not yours, or not in COLLECTED status: ${invalidIds.join(", ")}`,
       400
     );
   }
 
-  const totalAmount = shipments.reduce((sum, s) => sum + s.codAmount, 0);
+  const totalAmount = codRecords.reduce((sum, r) => sum + Number(r.amount), 0);
   const now         = new Date();
 
-  // Mark as remitted — dispatcher confirms on their end separately
   await prisma.$transaction(async (tx) => {
-    await tx.transaction.updateMany({
-      where: { shipmentId: { in: shipmentIds }, isRemitted: false },
-      data:  { isRemitted: true, remittedAt: now },
+    // Move CODRecords to REMITTED — admin confirms separately
+    await tx.cODRecord.updateMany({
+      where: { shipmentId: { in: shipmentIds }, status: "COLLECTED" },
+      data:  { status: "REMITTED", remittedToId: null, remittedAt: now },
+      // remittedToId left null until admin confirms receipt
     });
 
+    // Log on each shipment
     await tx.shipmentLog.createMany({
       data: shipmentIds.map((shipmentId) => ({
         shipmentId,
         status:      "DELIVERED",
-        note:        "COD cash handed to dispatcher by rider.",
+        note:        "COD cash remitted to admin by rider.",
         updatedById: profile.userId,
       })),
     });
   });
 
   return {
-    remittedCount: shipments.length,
+    remittedCount: codRecords.length,
     totalAmount,
     remittedAt:    now,
-    shipments:     shipments.map((s) => ({
-      id:             s.id,
-      trackingNumber: s.trackingNumber,
-      codAmount:      s.codAmount,
+    shipments: codRecords.map((r) => ({
+      shipmentId:     r.shipmentId,
+      trackingNumber: r.shipment.trackingNumber,
+      amount:         Number(r.amount),
     })),
   };
-};
+}
