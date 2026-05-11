@@ -166,6 +166,7 @@ export const usePickupQueue = (filters = {}) => {
     ...result,
     shipments: result.data?.shipments ?? [],
     total:     result.data?.total     ?? 0,
+    refresh:   result.refetch,   // ← alias refetch → refresh
   };
 };
 

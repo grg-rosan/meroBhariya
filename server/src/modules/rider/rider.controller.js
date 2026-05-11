@@ -2,7 +2,7 @@
 import { catchAsync }        from "../../utils/error/errorHandler.js";
 import AppError              from "../../utils/error/appError.js";
 import * as riderService     from "./rider.services.js";
-import { uploadToCloudinary, deleteFromCloudinary } from "../../utils/services/cloudinary.js";
+import { uploadToCloudinary, deleteFromCloudinary } from "../../utils/others/services/cloudinary.js";
 
 export const getDashboard = catchAsync(async (req, res) => {
   const data = await riderService.getShiftSummary(req.userId);

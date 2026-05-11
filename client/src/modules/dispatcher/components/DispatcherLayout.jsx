@@ -4,7 +4,8 @@ import {
   GitBranch,
   ScanLine,
   AlertOctagon,
-  Bell
+  Bell,
+  PackageSearch
 } from "lucide-react";
 import RoleLayout from "../../../layouts/RoleLayout";
 import { useDispatcherNotifications } from "../hooks/useDispatcherNotification";
@@ -16,6 +17,7 @@ export default function DispatcherLayout() {
   const { user } = useAuth()
   const { unreadCount } = useDispatcherNotifications();
   const NAV = [
+    {to:"/dispatcher/pickup-queue",label:"Pickup Queue", icon:PackageSearch},
     { to: "/dispatcher/inventory", label: "Hub inventory", icon: Boxes },
     { to: "/dispatcher/assign", label: "Assign routes", icon: GitBranch },
     { to: "/dispatcher/scan-in", label: "Scan in", icon: ScanLine },
@@ -32,7 +34,7 @@ export default function DispatcherLayout() {
       nav={NAV}
       accentClass="bg-emerald-500"
       user={{
-        name: user?.fullName ?? "Rider",
+        name: user?.fullName ?? "Dispatcher",
         initials: initials(user?.fullName),
       }}
     />

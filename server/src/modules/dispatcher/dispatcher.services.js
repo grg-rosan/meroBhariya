@@ -423,7 +423,7 @@ export async function assignRiderForPickup(
     trackingNumber: updated.trackingNumber,
     deliveryAddress: updated.deliveryAddress,
     merchantName: shipment.merchant.businessName,
-    event: "shipment:pickup_assigned",
+    event: "shipment:assigned",
     message: `Go collect shipment ${updated.trackingNumber} from ${shipment.merchant.businessName}.`,
   });
 

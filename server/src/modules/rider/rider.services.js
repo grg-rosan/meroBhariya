@@ -113,7 +113,7 @@ export const getRiderManifest = async (userId) => {
   return prisma.shipment.findMany({
     where: {
       riderId: profile.id,
-      status: { in: ["PICKED_UP", "OUT_FOR_DELIVERY"] },
+      status: { in: ["AWAITING_PICKUP","PICKED_UP", "OUT_FOR_DELIVERY"] },
     },
     orderBy: { updatedAt: "asc" },
     select: {

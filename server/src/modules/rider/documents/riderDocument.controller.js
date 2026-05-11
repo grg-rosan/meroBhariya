@@ -1,7 +1,7 @@
 import { catchAsync } from "../../../utils/error/errorHandler.js";
 import AppError from "../../../utils/error/appError.js";
 import * as docService from "./riderDocument.services.js";
-import { uploadToCloudinary,deleteFromCloudinary } from "../../../utils/services/cloudinary.js";
+import { uploadToCloudinary,deleteFromCloudinary } from "../../../utils/others/services/cloudinary.js";
 
 export const getDocuments = catchAsync(async (req, res) => {
   const data = await docService.getRiderDocuments(req.userId);
