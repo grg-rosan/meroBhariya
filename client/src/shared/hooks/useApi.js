@@ -23,7 +23,11 @@ export function useAPI(path) {
   const toast = useToast();
 
   const fetch_ = useCallback(async () => {
-    if (!path) return;
+    if (!path) {
+      setData(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch(`${API}${path}`, { headers: authHeaders() });

@@ -23,24 +23,33 @@ export function useToggleDuty() {
 export function useScanPackage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
-  const toast = useToast()
+  const [error, setError] = useState(null);
+  const toast = useToast();
   const scan = async (trackingNumber, action) => {
     setLoading(true);
+    setError(null);
     setResult(null);
     try {
       const data = await apiPost(`/api/shipments/${trackingNumber}/scan`, {
         action,
       });
-      setResult(data);
-      return data;
+      const payload = data?.data ?? data;
+      setResult(payload);
+      return payload;
     } catch (e) {
-      toast({message:e.message,type:"error" });
+      const msg = e.message ?? "Scan failed";
+      setError(msg);
+      toast({ message: msg, type: "error" });
       throw e;
     } finally {
       setLoading(false);
     }
   };
-  return { scan, loading, result,  };
+  const reset = () => {
+    setResult(null);
+    setError(null);
+  };
+  return { scan, loading, result, error, reset };
 }
 
 export function useConfirmDelivery() {

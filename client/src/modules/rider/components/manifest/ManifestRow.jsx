@@ -6,7 +6,7 @@ export function ManifestStopRow({ stop }) {
   const navigate = useNavigate();
 
   const handleNavigate = () => {
-    navigate("/rider/navigate", { state: { stop } });
+    navigate("/rider/navigation", { state: { stop } });
   };
 
   return (
@@ -46,28 +46,34 @@ export function ManifestStopRow({ stop }) {
         <span className="text-xs text-green-400 font-medium shrink-0">
           Delivered
         </span>
-      ) : stop.isActive ? (
+      ) : (
         <div className="flex items-center gap-2 shrink-0">
           <button
+            type="button"
             onClick={handleNavigate}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500 hover:bg-sky-600 text-white text-xs font-medium rounded-lg transition-all"
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+              stop.isActive
+                ? "bg-sky-500 hover:bg-sky-600 text-white"
+                : "border border-zinc-600 hover:bg-zinc-800 text-sky-400"
+            }`}
           >
             <Navigation size={12} />
             Navigate
           </button>
-
-          {/* Fixed: Added missing <a tag start */}
-          <a
-            href={`tel:${stop.phone}`}
-            className="w-8 h-8 flex items-center justify-center border border-gray-300 dark:border-zinc-700 hover:bg-gray-100 dark:bg-blue-950 text-gray-500 dark:text-zinc-400 rounded-lg transition-all"
-          >
-            <Phone size={13} />
-          </a>
+          {stop.isActive && (
+            <a
+              href={`tel:${stop.phone}`}
+              className="w-8 h-8 flex items-center justify-center border border-gray-300 dark:border-zinc-700 hover:bg-gray-100 dark:bg-blue-950 text-gray-500 dark:text-zinc-400 rounded-lg transition-all"
+            >
+              <Phone size={13} />
+            </a>
+          )}
+          {!stop.isActive && (
+            <span className="text-xs text-gray-400 dark:text-zinc-500 font-medium">
+              Pending
+            </span>
+          )}
         </div>
-      ) : (
-        <span className="text-xs text-gray-400 dark:text-zinc-500 font-medium shrink-0">
-          Pending
-        </span>
       )}
     </div>
   );

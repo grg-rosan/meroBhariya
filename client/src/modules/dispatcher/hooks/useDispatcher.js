@@ -2,6 +2,7 @@
 import { useState }                  from "react";
 import { useAPI, apiPost, apiPatch } from "../../../shared/hooks/useApi";
 import { useToast }                  from "../../../context/ToastContext";
+import { useAuth }                   from "../../auth/AuthContext";
 
 // ── Shipment hooks ────────────────────────────────────────────────────────────
 
@@ -15,7 +16,10 @@ export const usePendingShipments = () => {
 };
 
 export const useHubInventory = () => {
-  const result = useAPI("/api/dispatcher/shipments/hub");
+  const { user } = useAuth();
+  const path =
+    user?.role === "DISPATCHER" ? "/api/dispatcher/shipments/hub" : null;
+  const result = useAPI(path);
   return {
     ...result,
     shipments: result.data?.data?.shipments ?? [],

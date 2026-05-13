@@ -5,6 +5,7 @@ import { catchAsync }       from "../../../utils/error/errorHandler.js";
 import { parsePagination }  from "../../../utils/others/pagination.js";
 import AppError             from "../../../utils/error/appError.js";
 import { getAllDistricts }  from "../zone/zone.service.js";
+import { scanAssignedShipment } from "../../rider/rider.services.js";
 
 // ── createShipment ────────────────────────────────────────────
 // computeFare middleware already ran and attached ctx to req
@@ -99,4 +100,23 @@ export const bulkCreateShipments = catchAsync(async (req, res) => {
     req.userId,
   );
   return res.status(201).json({ success: true, data: result });
+});
+
+
+export const riderScanShipment = catchAsync(async (req, res) => {
+  const { trackingNumber } = req.params;
+  const { action } = req.body ?? {};
+  const data = await scanAssignedShipment(req.userId, trackingNumber, action);
+  res.status(200).json({ success: true, data });
+});
+
+export const deliverShipment = catchAsync(async (req, res) => {
+  // riderLocation is attached by geofenceCheck middleware
+  const { codCollected, podNote } = req.body;
+  const data = await shipmentService.deliverShipment(
+    req.params.id,
+    req.userId,
+    { codCollected, podNote, riderLocation: req.riderLocation }
+  );
+  res.status(200).json({ success: true, data });
 });

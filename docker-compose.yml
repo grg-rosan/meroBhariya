@@ -72,7 +72,8 @@ services:
       redis:
         condition: service_healthy
     command: >
-      sh -c "until npx prisma migrate deploy; do echo 'Waiting for DB...'; sleep 3; done &&
+      sh -c "npx prisma generate &&
+      until npx prisma migrate deploy; do echo 'Waiting for DB...'; sleep 3; done &&
       until node prisma/seed.js; do echo 'Seed failed, retrying...'; sleep 3; done &&
       npm run dev"
   client:

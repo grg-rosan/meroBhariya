@@ -14,6 +14,7 @@ export default function RiderScanner() {
     loading: scanLoading,
     result: scanResult,
     error: scanError,
+    reset: resetScan,
   } = useScanPackage();
   const { deliver, loading: deliverLoading } = useConfirmDelivery();
 
@@ -22,11 +23,17 @@ export default function RiderScanner() {
   const [codInput, setCod] = useState("");
   const [podFile, setPod] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [pickupSuccess, setPickupSuccess] = useState(false);
 
   const handleScan = async () => {
     if (!input.trim()) return;
     try {
-      await scan(input.trim(), mode);
+      const payload = await scan(input.trim(), mode);
+      if (mode === "PICKUP" && payload) {
+        setPickupSuccess(true);
+        setInput("");
+        resetScan();
+      }
     } catch (_) {}
   };
 
@@ -58,6 +65,8 @@ export default function RiderScanner() {
             onClick={() => {
               setMode(m);
               setSuccess(false);
+              setPickupSuccess(false);
+              resetScan();
             }}
             className={`px-4 py-1.5 text-xs rounded-md font-medium transition-all ${mode === m ? "bg-sky-500 text-white" : "text-gray-500  hover:text-gray-800 dark:text-zinc-200"}`}
           >
@@ -68,7 +77,11 @@ export default function RiderScanner() {
 
       {/* Scan box */}
       <div
-        className={`border-2 border-dashed rounded-xl p-8 text-center mb-4 ${scanResult ? "border-green-600 bg-green-500/5" : "border-gray-300 dark:border-zinc-700 bg-white dark:bg-gray-900"}`}
+        className={`border-2 border-dashed rounded-xl p-8 text-center mb-4 ${
+          scanResult || pickupSuccess
+            ? "border-green-600 bg-green-500/5"
+            : "border-gray-300 dark:border-zinc-700 bg-white dark:bg-gray-900"
+        }`}
       >
         <div className="w-16 h-16 border-2 border-sky-500/50 rounded-xl mx-auto mb-3 flex items-center justify-center">
           <ScanLine size={28} className="text-sky-500" />
@@ -94,8 +107,26 @@ export default function RiderScanner() {
         </div>
       </div>
 
+      {pickupSuccess && !success && (
+        <div className="bg-green-500/10 border border-green-700/50 rounded-xl p-4 mb-4 flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <CheckCircle size={16} className="text-green-400 shrink-0" />
+            <span className="text-sm text-green-300 font-medium">
+              Pickup recorded — take parcel to the hub for dispatcher scan.
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setPickupSuccess(false)}
+            className="text-xs text-sky-400 hover:underline self-start"
+          >
+            Scan another package
+          </button>
+        </div>
+      )}
+
       {/* Scan result */}
-      {scanResult && !success && (
+      {scanResult && !success && !pickupSuccess && (
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-4 mb-4">
           <div className="flex items-center gap-2 mb-3">
             <CheckCircle size={15} className="text-green-400" />
@@ -169,12 +200,9 @@ export default function RiderScanner() {
             </div>
           )}
           {mode === "PICKUP" && (
-            <button
-              onClick={handleScan}
-              className="w-full py-2 bg-sky-500 hover:bg-sky-600 text-white text-sm rounded-lg font-medium transition-all"
-            >
-              Confirm pickup
-            </button>
+            <p className="text-xs text-zinc-500 text-center">
+              Tap <span className="text-zinc-300 font-medium">Scan</span> above to confirm pickup and update status.
+            </p>
           )}
         </div>
       )}

@@ -12,6 +12,7 @@ import adminRoutes from "./modules/admin/admin.routes.js";
 import dispatcherRoutes from "./modules/dispatcher/dispatcher.route.js";
 import merchantRoutes from "./modules/merchant/merchant.routes.js";
 import riderRoutes from "./modules/rider/rider.route.js";
+import shipmentSharedRoutes from "./modules/merchant/shipment/shipment.shared.route.js"
 
 connectDB();
 
@@ -33,6 +34,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/dispatcher", dispatcherRoutes);
 app.use("/api/rider", riderRoutes);
 app.use("/api/merchant", merchantRoutes);
+app.use("/api/shipments", shipmentSharedRoutes);
 
 app.all("/{*path}", (req, res, next) => {
   next(new AppError(`Can't find ${req.url} on this server`, 404));

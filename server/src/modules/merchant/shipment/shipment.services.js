@@ -384,3 +384,52 @@ export async function bulkCreateShipments(merchantId, file, userId) {
     })),
   };
 }
+
+export async function deliverShipment(shipmentId, userId, { codCollected, podNote }) {
+  // find rider profile from userId
+  const riderProfile = await prisma.riderProfile.findUnique({
+    where: { userId },
+    select: { id: true },
+  });
+  if (!riderProfile) throw new AppError("Rider profile not found.", 404);
+
+  const shipment = await prisma.shipment.findUnique({
+    where:   { id: shipmentId },
+    include: { merchant: { select: { userId: true } } },
+  });
+  if (!shipment)                         throw new AppError("Shipment not found.", 404);
+  if (shipment.riderId !== riderProfile.id) throw new AppError("Not assigned to you.", 403);
+  if (shipment.status !== "OUT_FOR_DELIVERY")
+    throw new AppError(`Cannot deliver — status is ${shipment.status}.`, 400);
+
+  const [updated] = await prisma.$transaction([
+    prisma.shipment.update({
+      where: { id: shipmentId },
+      data:  { status: "DELIVERED" },
+      select: { id: true, trackingNumber: true, status: true },
+    }),
+    prisma.shipmentLog.create({
+      data: { shipmentId, status: "DELIVERED", note: podNote ?? null, updatedById: userId },
+    }),
+    prisma.transaction.update({
+      where: { shipmentId },
+      data:  { collectedByRider: codCollected ?? 0 },
+    }),
+  ]);
+
+  publishMerchantNotification({
+    merchantUserId: shipment.merchant.userId,
+    shipmentId:     updated.id,
+    trackingNumber: updated.trackingNumber,
+    status:         "DELIVERED",
+    message:        `Your shipment ${updated.trackingNumber} has been delivered.`,
+  });
+
+  publish("shipment.delivered", {
+    shipmentId:     updated.id,
+    trackingNumber: updated.trackingNumber,
+    codCollected:   codCollected ?? 0,
+  });
+
+  return updated;
+}

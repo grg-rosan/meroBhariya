@@ -1,48 +1,62 @@
-  // src/rider/components/navigation/CurrentStop.jsx
-  import { Navigation, Phone } from "lucide-react";
+import { Phone, Store, User, Warehouse } from "lucide-react";
 
-  export function CurrentStop({ stop, stopCount }) {
-    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(stop.deliveryAddress)}`;
+export function CurrentStop({ stop, dest }) {
+  const isPickup    = stop.status === "AWAITING_PICKUP";
+  const isHubReturn = stop.status === "PICKED_UP";
+  const phone       = isPickup
+    ? stop.merchant?.user?.phoneNumber
+    : stop.receiverPhone;
 
-    return (
-      <div className="bg-sky-500/10 border border-sky-500/30 rounded-xl p-5">
-        <span className="text-xs font-medium text-sky-400 uppercase tracking-wider">
-          Next stop · {stop.stopNum} of {stopCount}
-        </span>
+  return (
+    <div className={`border rounded-xl p-5 space-y-3 ${
+      isPickup
+        ? "bg-violet-500/10 border-violet-500/30"
+        : isHubReturn
+          ? "bg-amber-500/10 border-amber-500/30"
+          : "bg-sky-500/10 border-sky-500/30"
+    }`}>
 
-        <h2 className="text-lg font-semibold text-white mt-2 mb-0.5">
-          {stop.receiverName}
-        </h2>
-        <p className="text-sm text-gray-500 dark:text-zinc-400 mb-3">
-          {stop.deliveryAddress}
-        </p>
+      {/* Label */}
+      <span className={`text-xs font-medium uppercase tracking-wider ${
+        isPickup ? "text-violet-400" : isHubReturn ? "text-amber-400" : "text-sky-400"
+      }`}>
+        {isPickup ? "Pickup stop" : isHubReturn ? "Hub drop-off" : "Delivery stop"}
+      </span>
 
-        {stop.codAmount > 0 && (
-          <div className="mb-3 px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-lg inline-flex items-center gap-2">
-            <span className="text-xs text-amber-400">
-              Collect COD: रु {stop.codAmount.toLocaleString()}
-            </span>
-          </div>
-        )}
-
-        <div className="flex gap-2">
-          <a
-            href={mapsUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-sky-500 hover:bg-sky-600 text-white text-sm rounded-lg font-medium transition-all"
-          >
-            <Navigation size={14} />
-            Open in maps
-          </a>
-          <a
-            href={`tel:${stop.phone}`}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 dark:border-zinc-700 text-gray-500  hover:bg-gray-100 dark:bg-blue-950 text-sm rounded-lg transition-all"
-          >
-            <Phone size={14} />
-            Call
-          </a>
+      {/* Name + address */}
+      <div className="flex items-start gap-2">
+        {isPickup
+          ? <Store size={15} className="text-violet-400 mt-0.5 shrink-0" />
+          : isHubReturn
+            ? <Warehouse size={15} className="text-amber-400 mt-0.5 shrink-0" />
+            : <User  size={15} className="text-sky-400 mt-0.5 shrink-0" />}
+        <div>
+          <h2 className="text-base font-semibold text-white">
+            {isPickup ? stop.merchant?.businessName : stop.receiverName}
+          </h2>
+          <p className="text-sm text-zinc-400 mt-0.5">{dest.label}</p>
         </div>
       </div>
-    );
-  }
+
+      {/* COD badge */}
+      {!isHubReturn && stop.codAmount > 0 && (
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+          <span className="text-xs text-amber-400">
+            Collect COD: रु {stop.codAmount.toLocaleString()}
+          </span>
+        </div>
+      )}
+
+      {/* Call button */}
+      {!isHubReturn && phone && (
+        <a
+          href={`tel:${phone}`}
+          className="flex items-center justify-center gap-2 w-full py-2.5 border border-zinc-700 hover:bg-zinc-800 text-zinc-300 text-sm rounded-lg transition-all"
+        >
+          <Phone size={14} />
+          Call {isPickup ? "merchant" : "receiver"}
+        </a>
+      )}
+    </div>
+  );
+}

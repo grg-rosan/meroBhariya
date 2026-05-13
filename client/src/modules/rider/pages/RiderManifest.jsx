@@ -5,13 +5,13 @@ import { useNavigate } from "react-router-dom";
 // ── Status config ─────────────────────────────────────────────
 const STATUS = {
   AWAITING_PICKUP: {
-    label:  "Go collect",
+    label:  "Awaiting pickup",
     color:  "bg-violet-500/10 text-violet-400 border-violet-500/20",
     action: "pickup",
   },
   PICKED_UP: {
-    label:  "At hub",
-    color:  "bg-blue-500/10 text-blue-400 border-blue-500/20",
+    label:  "Pending hub",
+    color:  "bg-amber-500/10 text-amber-400 border-amber-500/20",
     action: null,
   },
   OUT_FOR_DELIVERY: {
@@ -58,6 +58,11 @@ function StopRow({ stop, index, isActive }) {
               Pickup from {stop.merchant?.businessName}
             </span>
           )}
+          {stop.status === "PICKED_UP" && (
+            <span className="text-xs px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-full">
+              Bring to hub for scan
+            </span>
+          )}
         </div>
         <p className="text-xs text-zinc-500 truncate mt-0.5">
           {stop.trackingNumber} · {stop.deliveryAddress} · {stop.weight} kg
@@ -67,31 +72,56 @@ function StopRow({ stop, index, isActive }) {
       {/* Actions */}
       <div className="shrink-0">
         {isDone ? (
-          <span className={`text-xs px-2 py-1 rounded-full border ${cfg.color}`}>{cfg.label}</span>
-        ) : isActive && stop.status === "OUT_FOR_DELIVERY" ? (
-          <div className="flex items-center gap-2">
+          <span
+            role="status"
+            className={`text-xs px-2 py-1 rounded-full border cursor-default select-none ${cfg.color}`}
+          >
+            {cfg.label}
+          </span>
+        ) : (
+          <div className="flex items-center gap-2 flex-wrap justify-end">
             <button
-              onClick={() => nav("/rider/navigate", { state: { stop } })}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500 hover:bg-sky-600 text-white text-xs font-medium rounded-lg transition-all"
+              type="button"
+              onClick={() => nav("/rider/navigation", { state: { stop } })}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                isActive && stop.status === "OUT_FOR_DELIVERY"
+                  ? "bg-sky-500 hover:bg-sky-600 text-white"
+                  : "border border-zinc-600 hover:bg-zinc-800 text-sky-400"
+              }`}
             >
               <Navigation size={12} /> Navigate
             </button>
-            <a
-              href={`tel:${stop.receiverPhone}`}
-              className="w-8 h-8 flex items-center justify-center border border-zinc-700 hover:bg-zinc-800 text-zinc-400 rounded-lg transition-all"
-            >
-              <Phone size={13} />
-            </a>
+            {isActive && stop.status === "OUT_FOR_DELIVERY" && (
+              <a
+                href={`tel:${stop.receiverPhone}`}
+                className="w-8 h-8 flex items-center justify-center border border-zinc-700 hover:bg-zinc-800 text-zinc-400 rounded-lg transition-all"
+              >
+                <Phone size={13} />
+              </a>
+            )}
+            {isActive && stop.status === "AWAITING_PICKUP" && (
+              <button
+                type="button"
+                onClick={() =>
+                  nav("/rider/scanner", {
+                    state: { mode: "pickup", trackingNumber: stop.trackingNumber },
+                  })
+                }
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-500 text-white text-xs font-medium rounded-lg transition-all"
+              >
+                <Package size={12} /> Scan pickup
+              </button>
+            )}
+            {!(isActive && (stop.status === "OUT_FOR_DELIVERY" || stop.status === "AWAITING_PICKUP")) && (
+              <span
+                role="status"
+                title="Shipment status"
+                className={`text-xs px-2 py-1 rounded-full border cursor-default select-none ${cfg.color}`}
+              >
+                {cfg.label}
+              </span>
+            )}
           </div>
-        ) : isActive && stop.status === "AWAITING_PICKUP" ? (
-          <button
-            onClick={() => nav("/rider/scanner", { state: { mode: "pickup", trackingNumber: stop.trackingNumber } })}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-500 text-white text-xs font-medium rounded-lg transition-all"
-          >
-            <Package size={12} /> Scan pickup
-          </button>
-        ) : (
-          <span className={`text-xs px-2 py-1 rounded-full border ${cfg.color}`}>{cfg.label}</span>
         )}
       </div>
     </div>
