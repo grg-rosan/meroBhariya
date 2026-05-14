@@ -1,6 +1,7 @@
 import { prisma, pool } from "../src/config/db.config.js";
 import bcrypt from "bcryptjs";
 import "dotenv/config";
+import logger from "../src/utils/logger.js";
 
 //_________data_________
 const ZONES = [
@@ -14,7 +15,7 @@ const ZONES = [
       { name: "Kathmandu", province: "Bagmati" },
       { name: "Lalitpur", province: "Bagmati" },
       { name: "Bhaktapur", province: "Bagmati" },
-      {name:"Makwanpur", province:"Bagmati"}
+      { name: "Makwanpur", province: "Bagmati" },
     ],
   },
   {
@@ -136,7 +137,7 @@ async function findOrCreateUser({
 // ─────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log("🌱 Starting seed...");
+  logger.info("🌱 Starting seed...");
 
   // ── 1. Super Admin ────────────────────────────────────────
   await findOrCreateUser({
@@ -146,7 +147,7 @@ async function main() {
     phoneNumber: "9800000000",
     role: "ADMIN",
   });
-  console.log("✅ Super Admin seeded.");
+  logger.info("✅ Super Admin seeded.");
 
   // ── 2. Dispatcher ─────────────────────────────────────────
   await findOrCreateUser({
@@ -156,7 +157,7 @@ async function main() {
     phoneNumber: "9800000001",
     role: "DISPATCHER",
   });
-  console.log("✅ Dispatcher seeded.");
+  logger.info("✅ Dispatcher seeded.");
 
   // ── 3. Zones + Districts ──────────────────────────────────
   for (const zd of ZONES) {
@@ -194,7 +195,7 @@ async function main() {
       }
     }
   }
-  console.log("✅ Zones and Districts seeded.");
+  logger.info("✅ Zones and Districts seeded.");
 
   // ── 4. Vehicle Types + Fare Configs ──────────────────────
   for (const v of VEHICLES) {
@@ -209,7 +210,7 @@ async function main() {
       create: { vehicleTypeId: vt.id, ...v.fare },
     });
   }
-  console.log("✅ Vehicles and FareConfigs seeded.");
+  logger.info("✅ Vehicles and FareConfigs seeded.");
 
   // ── 5. Test Merchant (dev only) ───────────────────────────
   // Pre-verified so you can create shipments immediately in dev
@@ -272,7 +273,7 @@ async function main() {
         ],
       });
     }
-    console.log("✅ Test Merchant seeded (dev only).");
+    logger.info("✅ Test Merchant seeded (dev only).");
 
     // ── 6. Test Rider (dev only) ────────────────────────────
     const bikeType = await prisma.vehicleType.findUnique({
@@ -361,15 +362,15 @@ async function main() {
         data: { riderId: riderProfile.id, balance: 0, totalEarned: 0 },
       });
     }
-    console.log("✅ Test Rider seeded (dev only).");
+    logger.info("✅ Test Rider seeded (dev only).");
   }
 
-  console.log("✨ Seed complete.");
+  logger.info("✨ Seed complete.");
 }
 
 main()
   .catch((e) => {
-    console.error("❌ Seed error:", e);
+    logger.error({ err: e }, "❌ Seed error");
     process.exit(1);
   })
   .finally(async () => {

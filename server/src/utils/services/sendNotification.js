@@ -5,17 +5,18 @@
 //
 // To add email: install nodemailer and fill in sendEmail() below.
 // To add SMS:   install axios and use Sparrow SMS API (sparrowsms.com).
+import logger from "../logger.js";
 
 // ─── Notification types ───────────────────────────────────────────────────────
 
 export const NOTIFICATION_TYPE = {
-  DOC_APPROVED:       "DOC_APPROVED",
-  DOC_REJECTED:       "DOC_REJECTED",
-  RIDER_VERIFIED:     "RIDER_VERIFIED",
-  SHIPMENT_ASSIGNED:  "SHIPMENT_ASSIGNED",
+  DOC_APPROVED: "DOC_APPROVED",
+  DOC_REJECTED: "DOC_REJECTED",
+  RIDER_VERIFIED: "RIDER_VERIFIED",
+  SHIPMENT_ASSIGNED: "SHIPMENT_ASSIGNED",
   SHIPMENT_DELIVERED: "SHIPMENT_DELIVERED",
-  COD_SETTLED:        "COD_SETTLED",
-  MERCHANT_VERIFIED: "MERCHANT_VERIFIED"
+  COD_SETTLED: "COD_SETTLED",
+  MERCHANT_VERIFIED: "MERCHANT_VERIFIED",
 };
 
 // ─── Main dispatcher ──────────────────────────────────────────────────────────
@@ -30,11 +31,14 @@ export async function sendNotification({ type, user, payload = {} }) {
   const message = buildMessage(type, user, payload);
 
   if (!message) {
-    console.warn(`[Notification] Unknown type: ${type}`);
+    logger.warn({ type }, "[Notification] Unknown type");
     return;
   }
 
-  console.log(`[Notification → ${user.fullName}] ${message}`);
+  logger.info(
+    { userId: user.id, fullName: user.fullName, message },
+    "[Notification]",
+  );
 
   // Uncomment when ready:
   // await sendEmail({ to: user.email, subject: message.subject, body: message.body });
@@ -49,33 +53,33 @@ function buildMessage(type, user, payload) {
   const templates = {
     [NOTIFICATION_TYPE.DOC_APPROVED]: {
       subject: "Your document has been approved — Porter",
-      body:    `Hi ${name}, your document (${payload.docType}) has been approved.`,
-      sms:     `Porter: Your document has been approved. You can now start using the platform.`,
+      body: `Hi ${name}, your document (${payload.docType}) has been approved.`,
+      sms: `Porter: Your document has been approved. You can now start using the platform.`,
     },
     [NOTIFICATION_TYPE.DOC_REJECTED]: {
       subject: "Action required: Document rejected — Porter",
-      body:    `Hi ${name}, your document (${payload.docType}) was rejected. Reason: ${payload.note ?? "Please re-upload a clearer copy."}`,
-      sms:     `Porter: Your document was rejected. Please re-upload. Reason: ${payload.note ?? "unclear image"}.`,
+      body: `Hi ${name}, your document (${payload.docType}) was rejected. Reason: ${payload.note ?? "Please re-upload a clearer copy."}`,
+      sms: `Porter: Your document was rejected. Please re-upload. Reason: ${payload.note ?? "unclear image"}.`,
     },
     [NOTIFICATION_TYPE.RIDER_VERIFIED]: {
       subject: "You're verified! Start accepting rides — Porter",
-      body:    `Hi ${name}, all your documents have been approved. You can now go online and accept deliveries.`,
-      sms:     `Porter: Congratulations ${name}! You are now verified. Go online to start earning.`,
+      body: `Hi ${name}, all your documents have been approved. You can now go online and accept deliveries.`,
+      sms: `Porter: Congratulations ${name}! You are now verified. Go online to start earning.`,
     },
     [NOTIFICATION_TYPE.SHIPMENT_ASSIGNED]: {
       subject: "New shipment assigned — Porter",
-      body:    `Hi ${name}, shipment #${payload.trackingNumber} has been assigned to you.`,
-      sms:     `Porter: New shipment #${payload.trackingNumber} assigned. Open the app for details.`,
+      body: `Hi ${name}, shipment #${payload.trackingNumber} has been assigned to you.`,
+      sms: `Porter: New shipment #${payload.trackingNumber} assigned. Open the app for details.`,
     },
     [NOTIFICATION_TYPE.SHIPMENT_DELIVERED]: {
       subject: "Shipment delivered — Porter",
-      body:    `Shipment #${payload.trackingNumber} was delivered by ${name}.`,
-      sms:     `Porter: Shipment #${payload.trackingNumber} delivered successfully.`,
+      body: `Shipment #${payload.trackingNumber} was delivered by ${name}.`,
+      sms: `Porter: Shipment #${payload.trackingNumber} delivered successfully.`,
     },
     [NOTIFICATION_TYPE.COD_SETTLED]: {
       subject: "COD settlement processed — Porter",
-      body:    `Hi ${name}, your COD amount of रू ${payload.amount} has been settled.`,
-      sms:     `Porter: COD settlement of Rs ${payload.amount} processed for ${name}.`,
+      body: `Hi ${name}, your COD amount of रू ${payload.amount} has been settled.`,
+      sms: `Porter: COD settlement of Rs ${payload.amount} processed for ${name}.`,
     },
   };
 

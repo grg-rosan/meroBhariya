@@ -26,7 +26,7 @@ export default function ProfileCard({
       {/* Pop-up Menu */}
 {isOpen && (
   <div className="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl shadow-2xl p-2 z-50 overflow-hidden">          {/* User info header */}
-          <div className="flex items-center gap-3 p-3 border-b border-gray-100 dark:border-gray-200/50 dark:border-zinc-800/50 mb-1">
+          <div className="flex items-center gap-3 p-3 border-b border-gray-100 dark:border-zinc-800/50 mb-1">
             <div
               className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold text-white shrink-0 ${accentClass}`}
             >
@@ -65,7 +65,7 @@ export default function ProfileCard({
                 onChangePassword();
                 setIsOpen(false);
               }}
-              className="flex items-center gap-3 w-full px-3 py-2 text-xs text-gray-500  dark:  text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-all"
+              className="flex items-center gap-3 w-full px-3 py-2 text-xs text-gray-500  dark:  hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-all"
             >
               <Lock size={14} /> Change password
             </button>

@@ -4,6 +4,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 import bcrypt from "bcryptjs";
 import "dotenv/config";
+import logger from "../utils/logger.js";
 
 // ── Self-contained client (seed doesn't need the app's pool) ──
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
@@ -12,11 +13,10 @@ const prisma = new PrismaClient({ adapter });
 const connectDB = async () => {
   try {
     await prisma.$connect();
-    console.log("DB connected via Prisma");
+    logger.info("DB connected via Prisma");
   } catch (error) {
-    console.error("DB connection error: " + error.message);
+    logger.error({ err: error }, "DB connection error");
   }
-
 };
 
 const disconnectDB = async () => {

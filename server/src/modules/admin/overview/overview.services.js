@@ -20,7 +20,7 @@ export async function getPlatformStats() {
       where: { createdAt: { gte: todayStart } },
     }),
     prisma.transaction.aggregate({
-      _sum:  { codAmount: true },
+      _sum:  { codAmount: true }, // codAmount is Float, _sum returns JS number
       where: { isRemitted: false, paymentType: 'COD' },
     }),
   ]);

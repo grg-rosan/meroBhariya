@@ -37,7 +37,7 @@ export default function RiderNavigation() {
     const idx = manifestList.findIndex((s) => s.id === mergedStop.id);
     if (idx < 0) return [];
     return manifestList.slice(idx + 1).filter((s) => s.status !== "DELIVERED");
-  }, [manifestList, mergedStop?.id]);
+  }, [manifestList, mergedStop]);
 
   if (!stop) {
     return (

@@ -1,11 +1,11 @@
-import { prisma }      from "../../../config/db.config.js";
+import { prisma } from "../../../config/db.config.js";
 import { getRedisClient } from "../../../config/redis.config.js";
-import AppError        from "../../../utils/error/appError.js";
-import * as khalti     from "../../../utils/services/khaltiClient.js";
+import AppError from "../../../utils/error/appError.js";
+import * as khalti from "../../../utils/services/khaltiClient.js";
 import { generateTrackingNumber } from "../shipment/shipment.helpers.js";
-import QRCode          from "qrcode";
+import QRCode from "qrcode";
 import { publishShipmentNew } from "../shipment/shipment.events.js";
-
+import { khaltiConfig } from "../../../config/khalti.config.js";
 const SESSION_TTL = 60 * 30; // 30 minutes
 
 // ── initiatePaymentSession ────────────────────────────────────
@@ -15,13 +15,12 @@ const SESSION_TTL = 60 * 30; // 30 minutes
 export async function initiatePaymentSession(merchantId, userId, body, ctx) {
   const redis = await getRedisClient();
   const { fare, zone, distanceKm, deliveryLat, deliveryLng } = ctx;
-
   // Store everything needed to create shipment later
   const sessionToken = crypto.randomUUID();
-  const sessionData  = JSON.stringify({
+  const sessionData = JSON.stringify({
     merchantId,
     userId,
-    body,   // full form payload
+    body,
     ctx: {
       fare,
       zone,
@@ -31,49 +30,67 @@ export async function initiatePaymentSession(merchantId, userId, body, ctx) {
     },
   });
 
-  await redis.set(`pay_session:${sessionToken}`, sessionData, "EX", SESSION_TTL);
+  await redis.set(
+    `pay_session:${sessionToken}`,
+    sessionData,
+    "EX",
+    SESSION_TTL,
+  );
 
   const totalAmount = Number(fare.totalFare);
+  if (!totalAmount || isNaN(totalAmount) || totalAmount <= 0) {
+    throw new AppError("Invalid fare amount", 400);
+  }
   const amountPaisa = Math.round(totalAmount * 100);
 
   const khaltiRes = await khalti.requestKhaltiInitiate({
-    return_url:          `${process.env.FRONTEND_URL}/merchant/payment/verify`,
-    website_url:         process.env.FRONTEND_URL,
-    amount:              amountPaisa,
-    purchase_order_id:   sessionToken,        // ← session token, not shipment id
+    return_url: khaltiConfig.returnUrl,
+    website_url: khaltiConfig.websiteUrl,
+    amount: amountPaisa,
+    purchase_order_id: sessionToken, // ← session token, not shipment id
     purchase_order_name: `meroBhariya Delivery - ${zone.name} zone`,
   });
-  console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
-
   // Store pidx → sessionToken mapping for verify step
-  await redis.set(`pay_pidx:${khaltiRes.pidx}`, sessionToken, "EX", SESSION_TTL);
-
+  await redis.set(
+    `pay_pidx:${khaltiRes.pidx}`,
+    sessionToken,
+    "EX",
+    SESSION_TTL,
+  );
+  logger.info(
+    { pidx: khaltiRes.pidx, sessionToken, userId, merchantId, amountPaisa },
+    "Khalti payment session initiated",
+  );
   return {
     paymentUrl: khaltiRes.payment_url,
-    pidx:       khaltiRes.pidx,
-    totalFare:  totalAmount,
-    zone:       zone.name,
+    pidx: khaltiRes.pidx,
+    totalFare: totalAmount,
+    zone: zone.name,
   };
 }
 
-// ── verifyAndCreateShipment ───────────────────────────────────
-// Called after Khalti redirects back
-// Verifies payment → creates shipment → returns QR
-
 export async function verifyAndCreateShipment(pidx, merchantId, userId) {
+  const existing = await prisma.khaltiPayment.findUnique({ where: { pidx } });
+  if (existing) {
+    throw new AppError("Payment already verified.", 409);
+  }
   // 1. Look up session
   const redis = await getRedisClient();
   const sessionToken = await redis.get(`pay_pidx:${pidx}`);
-  if (!sessionToken) throw new AppError("Payment session expired or not found.", 404);
+  if (!sessionToken)
+    throw new AppError("Payment session expired or not found.", 404);
 
   const raw = await redis.get(`pay_session:${sessionToken}`);
-  if (!raw)  throw new AppError("Payment session data expired.", 404);
+  if (!raw) throw new AppError("Payment session data expired.", 404);
 
   const session = JSON.parse(raw);
   // 2. Verify with Khalti
   const khaltiRes = await khalti.requestKhaltiLookup(pidx);
   if (khaltiRes.status !== "Completed") {
-    throw new AppError(`Payment not completed. Khalti status: ${khaltiRes.status}`, 402);
+    throw new AppError(
+      `Payment not completed. Khalti status: ${khaltiRes.status}`,
+      402,
+    );
   }
 
   // 3. Create shipment now that payment is confirmed
@@ -81,46 +98,53 @@ export async function verifyAndCreateShipment(pidx, merchantId, userId) {
   const { fare, zone, distanceKm, deliveryLat, deliveryLng } = ctx;
 
   const {
-    receiverName, receiverPhone, deliveryAddress,
-    vehicleTypeId, weight, isFragile, orderValue,
-    codAmount, paymentType, fromDistrictId, toDistrictId,
+    receiverName,
+    receiverPhone,
+    deliveryAddress,
+    vehicleTypeId,
+    weight,
+    isFragile,
+    orderValue,
+    codAmount,
+    paymentType,
+    fromDistrictId,
+    toDistrictId,
   } = body;
-  console.log("Session body:", body);
-
+  logger.debug({ body }, "Verified session body");
 
   const resolvedCodAmount = paymentType === "COD" ? Number(codAmount) : 0;
-  const trackingNumber    = generateTrackingNumber();
+  const trackingNumber = generateTrackingNumber();
 
   const shipment = await prisma.$transaction(async (tx) => {
     const newShipment = await tx.shipment.create({
       data: {
         trackingNumber,
         merchantId,
-        vehicleTypeId:   Number(vehicleTypeId),
+        vehicleTypeId: Number(vehicleTypeId),
         receiverName,
         receiverPhone,
         deliveryAddress,
         deliveryLat,
         deliveryLng,
-        fromDistrictId:  Number(fromDistrictId),
-        toDistrictId:    Number(toDistrictId),
-        zoneId:          zone.id,
-        weight:          Number(weight),
-        isFragile:       isFragile ?? false,
-        orderValue:      Number(orderValue),
-        codAmount:       resolvedCodAmount,
+        fromDistrictId: Number(fromDistrictId),
+        toDistrictId: Number(toDistrictId),
+        zoneId: zone.id,
+        weight: Number(weight),
+        isFragile: isFragile ?? false,
+        orderValue: Number(orderValue),
+        codAmount: resolvedCodAmount,
         paymentType,
         distanceKm,
-        baseFare:        fare.baseFare,
-        distanceFare:    fare.distanceFare,
-        weightFare:      fare.weightFare,
-        fragileCharge:   fare.fragileCharge,
-        zoneSurcharge:   fare.zoneSurcharge,
-        codFee:          fare.codFee,
-        insuranceFee:    fare.insuranceFee,
-        totalFare:       fare.totalFare,
-        fareSnapshot:    fare.totalFare,
-        status:          "PENDING",   // ← born as PENDING, never UNPAID
+        baseFare: fare.baseFare,
+        distanceFare: fare.distanceFare,
+        weightFare: fare.weightFare,
+        fragileCharge: fare.fragileCharge,
+        zoneSurcharge: fare.zoneSurcharge,
+        codFee: fare.codFee,
+        insuranceFee: fare.insuranceFee,
+        totalFare: fare.totalFare,
+        fareSnapshot: fare.totalFare,
+        status: "PENDING", // ← born as PENDING, never UNPAID
       },
     });
 
@@ -131,10 +155,10 @@ export async function verifyAndCreateShipment(pidx, merchantId, userId) {
       data: {
         merchantId,
         shipmentId: newShipment.id,
-        amount:     Number(fare.totalFare),
+        amount: Number(fare.totalFare),
         pidx,
-        txnId:      khaltiRes.transaction_id,
-        status:     "COMPLETED",
+        txnId: khaltiRes.transaction_id,
+        status: "COMPLETED",
         completedAt: new Date(),
       },
     });
@@ -142,28 +166,35 @@ export async function verifyAndCreateShipment(pidx, merchantId, userId) {
     // Transaction record
     await tx.transaction.create({
       data: {
-        shipmentId:       newShipment.id,
+        shipmentId: newShipment.id,
         paymentType,
-        totalFare:        Number(fare.totalFare),
-        codAmount:        resolvedCodAmount,
+        totalFare: Number(fare.totalFare),
+        codAmount: resolvedCodAmount,
         collectedByRider: 0,
-        isRemitted:       false,
+        isRemitted: false,
       },
     });
-
+    logger.info(
+      { shipmentId: shipment.id, trackingNumber, pidx, userId, merchantId },
+      "Shipment created after Khalti payment verification",
+    );
     // COD record
     if (paymentType === "COD" && resolvedCodAmount > 0) {
       await tx.cODRecord.create({
-        data: { shipmentId: newShipment.id, amount: resolvedCodAmount, status: "PENDING" },
+        data: {
+          shipmentId: newShipment.id,
+          amount: resolvedCodAmount,
+          status: "PENDING",
+        },
       });
     }
 
     // Shipment log
     await tx.shipmentLog.create({
       data: {
-        shipmentId:  newShipment.id,
-        status:      "PENDING",
-        note:        `Payment verified via Khalti. txnId: ${khaltiRes.transaction_id}`,
+        shipmentId: newShipment.id,
+        status: "PENDING",
+        note: `Payment verified via Khalti. txnId: ${khaltiRes.transaction_id}`,
         updatedById: userId,
       },
     });
@@ -171,22 +202,29 @@ export async function verifyAndCreateShipment(pidx, merchantId, userId) {
     return newShipment;
   });
 
-  // Clean up Redis
+  const qrCode = await QRCode.toDataURL(shipment.trackingNumber);
+  try {
+    await publishShipmentNew(shipment, vehicleType, paymentType);
+  } catch (err) {
+    logger.warn(
+      { err, shipmentId: shipment.id },
+      "Shipment publish event failed — non-critical",
+    );
+  }
+  if (!vehicleType) {
+    logger.warn(
+      { vehicleTypeId },
+      "Vehicle type not found after shipment creation",
+    );
+  }
   await redis.del(`pay_pidx:${pidx}`);
   await redis.del(`pay_session:${sessionToken}`);
 
-  const vehicleType = await prisma.vehicleType.findUnique({
-  where: { id: Number(vehicleTypeId) },
-});
-publishShipmentNew(shipment, vehicleType, paymentType);
-
-  const qrCode = await QRCode.toDataURL(shipment.trackingNumber);
-
   return {
-    verified:       true,
-    shipmentId:     shipment.id,
+    verified: true,
+    shipmentId: shipment.id,
     trackingNumber: shipment.trackingNumber,
-    totalFare:      Number(fare.totalFare),
+    totalFare: Number(fare.totalFare),
     qrCode,
   };
 }

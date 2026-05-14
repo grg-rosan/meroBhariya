@@ -2,8 +2,8 @@
 // Polls /api/merchant/shipment/:id/rider-location every 10s
 // Used by the merchant live tracking map
 
-import { useState, useEffect, useRef } from 'react';
-import { authHeaders, API } from './useAPI';
+import { useState, useEffect, useRef } from "react";
+import { authHeaders, API } from "./useApi.js";
 
 const POLL_INTERVAL_MS = 10_000;
 
@@ -12,9 +12,9 @@ const POLL_INTERVAL_MS = 10_000;
  * @returns {{ location: {lat, lng} | null, lastUpdated: Date | null, error: string | null }}
  */
 export function useRiderLocation(shipmentId) {
-  const [location, setLocation]       = useState(null);
+  const [location, setLocation] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
-  const [error, setError]             = useState(null);
+  const [error, setError] = useState(null);
   const intervalRef = useRef(null);
 
   useEffect(() => {
@@ -22,9 +22,12 @@ export function useRiderLocation(shipmentId) {
 
     const poll = async () => {
       try {
-        const res  = await fetch(`${API}/api/merchant/shipment/${shipmentId}/rider-location`, {
-          headers: authHeaders(),
-        });
+        const res = await fetch(
+          `${API}/api/merchant/shipment/${shipmentId}/rider-location`,
+          {
+            headers: authHeaders(),
+          },
+        );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         if (data.lat && data.lng) {

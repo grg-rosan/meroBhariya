@@ -3,7 +3,7 @@ export function PageShell({ children, wide = false }) {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-zinc-950 flex items-start justify-center px-4 py-12 relative overflow-x-hidden">
       {/* Ambient glow — visible in dark mode only */}
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-orange-500/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-150 h-75 bg-orange-500/5 rounded-full blur-3xl pointer-events-none" />
       <div
         className={`relative z-10 w-full mt-6 ${wide ? "max-w-2xl" : "max-w-md"}`}
       >
@@ -28,10 +28,17 @@ export function Card({ children, className = "" }) {
 export function Brand({ subtitle }) {
   return (
     <div className="mb-8">
-      <div className="flex items-center gap-2 mb-1">
-        <span className="text-orange-500 text-2xl">⬡</span>
+      <div className="flex items-center gap-4 mb-1">
+        {/* scale-125 makes it 25% larger visually without changing the layout height */}
+        <div className="flex items-center justify-center h-10 w-12"> 
+          <img 
+            src="/logo4.png" 
+            alt="meroBhariya" 
+            className="h-full w-auto object-contain transform scale-150" 
+          />
+        </div>
         <span className="font-bold text-gray-900 dark:text-white text-xl tracking-tight">
-          Porter
+          meroBhariya
         </span>
       </div>
       {subtitle && (
@@ -230,5 +237,33 @@ export function InfoBanner({ children }) {
     <div className="bg-orange-50 dark:bg-orange-500/5 border border-orange-200 dark:border-orange-500/20 rounded-xl px-4 py-3 text-sm text-gray-600 dark:text-zinc-400 leading-relaxed mb-6">
       {children}
     </div>
+  );
+}
+
+export function Bar({ label, pct, color = "bg-violet-500" }) {
+  const safePct = pct ?? 0;
+  return (
+    <div className="mb-3 last:mb-0">
+      <div className="flex justify-between text-xs mb-1.5">
+        <span className="text-gray-500 dark:text-zinc-400">{label}</span>
+        <span className="text-gray-700 dark:text-zinc-300 font-medium">
+          {safePct}%
+        </span>
+      </div>
+      <div className="h-1.5 bg-gray-100 dark:bg-blue-950 rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all duration-700 ${color}`}
+          style={{ width: `${safePct}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+export default function Badge({ label, className = "" }) {
+  return (
+    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${className}`}>
+      {label}
+    </span>
   );
 }

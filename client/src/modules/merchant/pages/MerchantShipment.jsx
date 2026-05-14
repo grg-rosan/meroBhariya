@@ -169,7 +169,7 @@ export default function MerchantShipments() {
 
                       {/* Location */}
                       <td className="px-6 py-4">
-                        <p className="text-sm text-gray-600 dark:text-zinc-400 max-w-[180px] truncate">
+                        <p className="text-sm text-gray-600 dark:text-zinc-400 max-w-180px truncate">
                           {s.deliveryAddress}
                         </p>
                       </td>

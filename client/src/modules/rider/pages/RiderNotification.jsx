@@ -44,7 +44,7 @@ export default function RiderNotifications() {
               className={`p-4 rounded-xl border cursor-pointer transition-all ${
                 n.read
                   ? "bg-white dark:bg-gray-900 border-gray-200 dark:border-zinc-800 opacity-60"
-                  : "bg-white dark:bg-gray-900 border-gray-300 dark:border-zinc-700 hover:border-gray-400 dark:border-zinc-600"
+                  : "bg-white dark:bg-gray-900 border-gray-300 dark:border-zinc-700 hover:border-gray-400 "
               }`}
             >
               <div className="flex items-start gap-3">

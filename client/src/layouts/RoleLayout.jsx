@@ -4,6 +4,7 @@ import { Truck } from "lucide-react";
 import ProfileCard from "../components/common/ProfileCard";
 import ChangePasswordModal from "../components/modals/ChangePasswordModal";
 import { useAuth } from "../modules/auth/AuthContext";
+import logger from "../utils/logger.js";
 
 export default function RoleLayout({ role, nav, accentClass, user }) {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ export default function RoleLayout({ role, nav, accentClass, user }) {
     try {
       await logout();
     } catch (error) {
-      console.log(error);
+      logger.error({ err: error }, "Logout failed");
     } finally {
       navigate("/login");
     }
@@ -22,7 +23,9 @@ export default function RoleLayout({ role, nav, accentClass, user }) {
 
   return (
     <div className="flex h-screen font-['DM_Sans',sans-serif] overflow-hidden bg-gray-50 dark:bg-zinc-950">
-      <aside className="w-56 flex flex-col bg-white dark:bg-zinc-900 border-r border-gray-200 dark:border-zinc-800 shrink-0">        {/* Logo */}
+      <aside className="w-56 flex flex-col bg-white dark:bg-zinc-900 border-r border-gray-200 dark:border-zinc-800 shrink-0">
+        {" "}
+        {/* Logo */}
         <div className="px-5 py-5 border-b border-gray-200 dark:border-zinc-800">
           <div className="flex items-center gap-2">
             <div
@@ -35,7 +38,6 @@ export default function RoleLayout({ role, nav, accentClass, user }) {
             </span>
           </div>
         </div>
-
         {/* Nav links */}
         <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
           {nav.map(({ to, label, icon: Icon }) => (
@@ -44,9 +46,10 @@ export default function RoleLayout({ role, nav, accentClass, user }) {
               to={to}
               end
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all ${isActive
-                  ? "bg-gray-100 dark:bg-zinc-800 text-gray-900 dark:text-white font-medium"
-                  : "text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-zinc-800"
+                `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all ${
+                  isActive
+                    ? "bg-gray-100 dark:bg-zinc-800 text-gray-900 dark:text-white font-medium"
+                    : "text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-zinc-800"
                 }`
               }
             >
@@ -55,7 +58,6 @@ export default function RoleLayout({ role, nav, accentClass, user }) {
             </NavLink>
           ))}
         </nav>
-
         {/* ProfileCard — theme toggle lives inside the popup menu */}
         <div className="p-3 border-t border-gray-200 dark:border-zinc-800 mt-auto">
           <ProfileCard

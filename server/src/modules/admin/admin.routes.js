@@ -55,7 +55,7 @@ router.patch("/finance/cod/:transactionId/settle", financeCtrl.settleCODHandler)
 router.post ("/finance/cod/settle-rider/:riderId", financeCtrl.settleAllCODForRiderHandler);
 
 // ─── Settlements ──────────────────────────────────────────────────────────────
-router.get("/settlements/riders",                    settlementsCtrl.getRiderSettlementSummaryHandler);
+router.get("/settlements/riders",                    settlementsCtrl.getRiderSettlementsHandler);
 router.get("/settlements/riders/:riderId",           settlementsCtrl.getRiderSettlementDetailHandler);
 router.get("/settlements/shipment/:shipmentId/logs", settlementsCtrl.getShipmentLogsHandler);
 

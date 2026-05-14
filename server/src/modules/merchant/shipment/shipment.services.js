@@ -386,7 +386,6 @@ export async function bulkCreateShipments(merchantId, file, userId) {
 }
 
 export async function deliverShipment(shipmentId, userId, { codCollected, podNote }) {
-  // find rider profile from userId
   const riderProfile = await prisma.riderProfile.findUnique({
     where: { userId },
     select: { id: true },

@@ -1,54 +1,45 @@
 import axios from "axios";
+import AppError from "../error/appError";
+import logger from "./logger";
+import { deflateRaw } from "node:zlib";
+import { khaltiConfig } from "../../config/khalti.config";
 
-/**
- * Khalti API Client
- * This file is responsible ONLY for external HTTP communication.
- */
 
 const khaltiApi = axios.create({
-  baseURL: process.env.KHALTI_BASE_URL,
+  baseURL: khaltiConfig.KHALTI_BASE_URL,
   headers: {
-    Authorization: `Key ${process.env.KHALTI_SECRET_KEY}`,
+    Authorization: `Key ${khaltiConfig.KHALTI_SECRET_KEY}`,
     "Content-Type": "application/json",
   },
 });
 
-/**
- * Initiate a payment session with Khalti
- * @param {Object} payload - The payment details (amount, order_id, etc.)
- * @returns {Promise<Object>} Khalti response (pidx, payment_url)
- */
 export async function requestKhaltiInitiate(payload) {
   try {
-    const { data } = await khaltiApi.post("/epayment/initiate/", payload);
+    const { data } = await khaltiApi.post("/epayment/initiate/", {
+      
+    });
     return data;
   } catch (error) {
-    // Extracts Khalti's specific error message if available
     const errorDetail = error.response?.data || error.message;
-    console.error("Khalti Initiate Error:", errorDetail);
-    throw errorDetail;
+    logger.error({error: error, detail: errorDetail()});
+    throw AppError(errorDetail?.detail || errorDetail?.message ||"Khalti Payment Initiation Failed",  error.response?.status || 502) ;
   }
 }
 
-/**
- * Verify/Lookup a payment using the pidx
- * @param {string} pidx - The unique payment identifier from Khalti
- * @returns {Promise<Object>} Status details (Completed, Pending, etc.)
- */
 export async function requestKhaltiLookup(pidx) {
   try {
     const { data } = await khaltiApi.post("/epayment/lookup/", { pidx });
     return data;
   } catch (error) {
     const errorDetail = error.response?.data || error.message;
-    console.error("Khalti Lookup Error:", errorDetail);
-    throw errorDetail;
+    logger.error({ err: error, detail: errorDetail }, "Khalti lookup failed");
+    throw new AppError(
+      errorDetail?.detail || errorDetail?.message || "Khalti payment lookup failed",
+      error.response?.status || 502
+    );
   }
 }
 
-/**
- * Optional: Check status (Alias for lookup, often used for background sync)
- */
 export const checkPaymentStatus = async (pidx) => {
   return await requestKhaltiLookup(pidx);
 };

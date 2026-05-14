@@ -93,3 +93,14 @@ export async function apiDelete(path) {
   });
   return handleResponse(res);
 }
+
+export async function apiPostForm(path, formData) {
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${API}${path}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    // No Content-Type — browser sets it automatically with the correct boundary
+    body: formData,
+  });
+  return handleResponse(res);
+}

@@ -1,7 +1,6 @@
-// src/modules/rider/pages/RiderDocUpload.jsx
+// src/modules/rider/pages/RiderDocumentUpload.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAPI, API } from "../../../shared/hooks/useApi.js";
 import {
   PageShell,
   Card,
@@ -11,7 +10,6 @@ import {
 import {
   Rider_DOCS as DOCS,
   Rider_DOC_LABELS as DOC_LABELS,
-  ALLOWED_TYPES,
   STEPS,
 } from "../../../shared/constants/doc.constants.js";
 import {
@@ -20,63 +18,39 @@ import {
   ReviewStep,
   DoneStep,
 } from "../../../components/docs/DocSteps.jsx";
-
-async function submitDocs(files) {
-  const token = localStorage.getItem("token");
-  const fd = new FormData();
-  // key = RiderDocType enum value — multer.fields() on backend reads this
-  Object.entries(files).forEach(([type, file]) => {
-    if (file) fd.append(type, file);
-  });
-
-  const res = await fetch(`${API}/api/rider/documents`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-    body: fd,
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message || "Upload failed");
-  return data;
-}
+import {
+  useDocUpload,
+  useDocStatus,
+  validateDocFiles,
+} from "../../../shared/hooks/useDockUpload.js";
 
 export default function RiderDocumentUpload() {
   const navigate = useNavigate();
-  const { data: existingDocs, loading } = useAPI("/api/rider/documents");
+  const { docs, docsLoading, uploadDocs, uploading, uploadError } =
+    useDocUpload({ apiBase: "/api/rider" });
 
   const [step, setStep] = useState(0);
   const [files, setFiles] = useState({});
-  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
   const [reupload, setReupload] = useState(false);
 
   const setFile = (key, file) => setFiles((p) => ({ ...p, [key]: file }));
-
-  // Backend returns { success, data: RiderDocument[] }
-  const docs = existingDocs?.data ?? [];
-  const hasDocs = docs.length > 0;
-  const allApproved = hasDocs && docs.every((d) => d.status === "APPROVED");
-  const hasRejected = hasDocs && docs.some((d) => d.status === "REJECTED");
-  const rejectedTypes = docs
-    .filter((d) => d.status === "REJECTED")
-    .map((d) => d.type);
+  const { hasDocs, allApproved, hasRejected, rejectedTypes } =
+    useDocStatus(docs);
 
   async function handleSubmit() {
-    for (const [, file] of Object.entries(files)) {
-      if (file && !ALLOWED_TYPES.includes(file.type)) {
-        setError(`${file.name}: only JPG, PNG, WebP or PDF allowed.`);
-        return;
-      }
+    const validationError = validateDocFiles(files);
+    if (validationError) {
+      setError(validationError);
+      return;
     }
     setError(null);
-    setUploading(true);
     try {
-      await submitDocs(files);
+      await uploadDocs(files);
       setStep(2);
       setTimeout(() => navigate("/rider/dashboard"), 3000);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setUploading(false);
+    } catch {
+      setError(uploadError);
     }
   }
 
@@ -94,7 +68,7 @@ export default function RiderDocumentUpload() {
     setStep(0);
   }
 
-  if (loading)
+  if (docsLoading)
     return (
       <div className="p-6 text-gray-500 dark:text-zinc-400">Loading...</div>
     );

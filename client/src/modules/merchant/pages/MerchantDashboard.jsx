@@ -9,25 +9,7 @@ import { useShipments } from "../hooks/useShipment.js";
 import { useAuth } from "../../auth/AuthContext";
 import StatCard from "../../../components/common/StatCard";
 import StatusBadge from "../../../components/common/StatusBadge";
-function Bar({ label, pct }) {
-  return (
-    <div className="mb-3 last:mb-0">
-      <div className="flex justify-between text-xs mb-1.5">
-        <span className="text-gray-500 dark:text-zinc-400">{label}</span>
-        <span className="text-gray-700 dark:text-zinc-300 font-medium">
-          {pct}%
-        </span>
-      </div>
-      <div className="h-1.5 bg-gray-100 dark:bg-blue-950 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-rose-500 rounded-full"
-          style={{ width: pct + "%" }}
-        />
-      </div>
-    </div>
-  );
-}
-
+import { Bar } from "../../../shared/ui/porter-ui.jsx";
 export default function MerchantDashboard() {
   const { user } = useAuth();
   const { data, loading, refetch } = useShipments("", 1);

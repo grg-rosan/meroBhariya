@@ -1,11 +1,12 @@
 // src/modules/merchant/document/merchant.document.controller.js
 import { prisma } from "../../../config/db.config.js";
 import * as docService from "./merchant.doc.service.js";
+import logger from "../../../utils/logger.js";
 
 function handleError(res, err) {
   if (err.status && err.message)
     return res.status(err.status).json({ message: err.message });
-  console.error("[Merchant/Documents]", err);
+  logger.error({ err }, "[Merchant/Documents]");
   return res.status(500).json({ message: "Internal server error." });
 }
 
@@ -50,7 +51,7 @@ export async function uploadDocumentsHandler(req, res) {
 export async function getDocumentsHandler(req, res) {
   try {
     const profile = await getMerchantProfile(req.userId);
-    const docs    = await docService.getMerchantDocuments(profile.id);
+    const docs = await docService.getMerchantDocuments(profile.id);
     return res.json({ success: true, data: docs });
   } catch (err) {
     return handleError(res, err);
@@ -62,7 +63,7 @@ export async function getDocumentsHandler(req, res) {
 export async function getDocumentStatusHandler(req, res) {
   try {
     const profile = await getMerchantProfile(req.userId);
-    const status  = await docService.getMerchantDocumentStatus(profile.id);
+    const status = await docService.getMerchantDocumentStatus(profile.id);
     return res.json({ success: true, data: status });
   } catch (err) {
     return handleError(res, err);

@@ -6,6 +6,7 @@ import {
   useCallback,
 } from "react";
 import { authAPI } from "../../shared/services/authService";
+import logger from "../../utils/logger.js";
 
 const AuthContext = createContext(null);
 
@@ -23,16 +24,13 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false));
   }, []);
 
-  const login = useCallback(
-    async (email, password) => {
-      const { token, user } = await authAPI.login(email, password);
-      localStorage.setItem("token", token);
-      setUser(user);
-      console.log(user);
-      return user;
-    },
-    [],
-  );
+  const login = useCallback(async (email, password) => {
+    const { token, user } = await authAPI.login(email, password);
+    localStorage.setItem("token", token);
+    setUser(user);
+    logger.info({ user }, "Authenticated user");
+    return user;
+  }, []);
 
   const logout = useCallback(async () => {
     await authAPI.logout();

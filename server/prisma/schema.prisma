@@ -456,6 +456,7 @@ model RiderDocument {
   status     DocumentStatus @default(PENDING)
   uploadedAt DateTime       @default(now())
   reviewedAt DateTime?
+  expiresAt  DateTime? 
   reviewNote String?
 
   @@index([riderId, status])

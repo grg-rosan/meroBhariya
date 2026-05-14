@@ -21,24 +21,34 @@ function SkeletonRow({ cols }) {
 
 export default function Finance() {
   const { data: summary, loading: summaryLoading } = useRevenueSummary();
-  const { data: codData, loading: codLoading } = usePendingCOD();
-  const { data: riders, loading: ridersLoading } = useRiderSettlements();
+  const { data: codData,  loading: codLoading     } = usePendingCOD();
+  const { data: riderData, loading: ridersLoading } = useRiderSettlements();
 
   const s = summary ?? {};
-  const codDisplay = (val) =>
-    val != null ? `रु ${(val / 100000).toFixed(1)}L` : "—";
 
-  // backend shapes:
-  // /finance/revenue     → { totalCOD, heldByRiders, owedToMerchants, platformRevenue }
-  // /finance/cod/pending → { transactions: [{ id, rider, merchant, amount, ... }] }
-  // /settlements/riders  → { riders: [{ id, fullName, vehicleType, codHeld, lastDrop }] }
+  // ── Map backend fields correctly ──────────────────────────────────────────
+  // backend returns: totalFareRevenue, totalCodCollected, totalShipments,
+  //                  totalTransactions, totalRiderEarnings
+  const totalCOD        = s.totalCodCollected  ?? 0;
+  const platformRevenue = s.totalFareRevenue   ?? 0;
+  const riderEarnings   = s.totalRiderEarnings ?? 0;
+  const totalShipments  = s.totalShipments     ?? 0;
+
+  // ── COD data from /finance/cod/pending ────────────────────────────────────
+  // backend: { transactions: [{ id, shipmentId, codAmount, shipment: { trackingNumber, merchant, rider } }] }
   const transactions = codData?.transactions ?? [];
-  const riderList = riders?.riders ?? [];
+  const totalHeld    = codData?.totalHeld    ?? 0;
 
-  const totalCOD = s.totalCOD ?? 0;
-  const heldByRiders = s.heldByRiders ?? 0;
-  const owedToMerchants = s.owedToMerchants ?? 0;
-  const platformRevenue = s.platformRevenue ?? 0;
+  // ── Rider settlements from /settlements/riders ────────────────────────────
+  // backend: { riders: [{ id, fullName, vehicleType, codHeld, txCount, lastDrop }], totalHeld }
+  const riderList        = riderData?.riders    ?? [];
+  const ridersHoldingCOD = riderData?.totalHeld ?? 0;
+
+  const codDisplay = (val) =>
+    val != null ? `रु ${Number(val).toLocaleString()}` : "—";
+
+  // Cash flow bar — only show if we have real values
+  const barTotal = totalCOD + platformRevenue + riderEarnings;
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
@@ -60,13 +70,13 @@ export default function Finance() {
         <StatCard
           icon={AlertTriangle}
           label="Held by riders"
-          value={summaryLoading ? "…" : codDisplay(heldByRiders)}
+          value={ridersLoading ? "…" : codDisplay(ridersHoldingCOD)}
           color="red"
         />
         <StatCard
           icon={Users}
-          label="Owed to merchants"
-          value={summaryLoading ? "…" : codDisplay(owedToMerchants)}
+          label="Total shipments"
+          value={summaryLoading ? "…" : totalShipments.toLocaleString()}
           color="amber"
         />
         <StatCard
@@ -78,7 +88,7 @@ export default function Finance() {
       </div>
 
       {/* Cash flow bar */}
-      {!summaryLoading && totalCOD > 0 && (
+      {!summaryLoading && barTotal > 0 && (
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5 mb-4">
           <h2 className="text-sm font-medium text-white mb-3">
             Cash flow breakdown
@@ -86,29 +96,29 @@ export default function Finance() {
           <div className="h-5 bg-gray-100 dark:bg-blue-950 rounded-full overflow-hidden flex">
             <div
               className="h-full bg-red-500/70 transition-all"
-              style={{ width: `${(heldByRiders / totalCOD) * 100}%` }}
+              style={{ width: `${(ridersHoldingCOD / barTotal) * 100}%` }}
             />
             <div
               className="h-full bg-amber-500/70 transition-all"
-              style={{ width: `${(owedToMerchants / totalCOD) * 100}%` }}
+              style={{ width: `${(totalCOD / barTotal) * 100}%` }}
             />
             <div
               className="h-full bg-violet-500/70 transition-all"
-              style={{ width: `${(platformRevenue / totalCOD) * 100}%` }}
+              style={{ width: `${(platformRevenue / barTotal) * 100}%` }}
             />
           </div>
           <div className="flex gap-4 mt-3 text-xs">
             <span className="flex items-center gap-1.5 text-gray-500 dark:text-zinc-400">
               <span className="w-2.5 h-2.5 rounded-sm bg-red-500/70 inline-block" />
-              Riders
+              Riders holding
             </span>
             <span className="flex items-center gap-1.5 text-gray-500 dark:text-zinc-400">
               <span className="w-2.5 h-2.5 rounded-sm bg-amber-500/70 inline-block" />
-              Merchants
+              COD collected
             </span>
             <span className="flex items-center gap-1.5 text-gray-500 dark:text-zinc-400">
               <span className="w-2.5 h-2.5 rounded-sm bg-violet-500/70 inline-block" />
-              Platform
+              Platform revenue
             </span>
           </div>
         </div>
@@ -122,7 +132,7 @@ export default function Finance() {
               Cash held by riders
             </h2>
             <span className="text-xs text-red-400">
-              रु {heldByRiders.toLocaleString()} total
+              रु {ridersHoldingCOD.toLocaleString()} total
             </span>
           </div>
           <table className="w-full text-sm">
@@ -154,16 +164,16 @@ export default function Finance() {
                 riderList.map((r) => (
                   <tr
                     key={r.id}
-                    className="border-b border-gray-200/50 dark:border-zinc-800/50 hover:bg-gray-100 dark:bg-blue-950/30"
+                    className="border-b border-gray-200/50 dark:border-zinc-800/50 hover:bg-gray-100 dark:hover:bg-blue-950/30"
                   >
                     <td className="px-4 py-3 text-sm text-gray-800 dark:text-zinc-200 font-medium">
-                      {r.fullName ?? r.name}
+                      {r.fullName}
                     </td>
                     <td className="px-4 py-3 text-xs text-gray-400 dark:text-zinc-500">
                       {r.vehicleType}
                     </td>
                     <td className="px-4 py-3 text-sm font-medium text-red-400">
-                      रु {(r.codHeld ?? r.held ?? 0).toLocaleString()}
+                      रु {Number(r.codHeld ?? 0).toLocaleString()}
                     </td>
                     <td className="px-4 py-3 text-xs text-gray-400 dark:text-zinc-500">
                       {r.lastDrop ?? "—"}
@@ -182,7 +192,7 @@ export default function Finance() {
               Pending COD transactions
             </h2>
             <span className="text-xs text-amber-400">
-              रु {owedToMerchants.toLocaleString()} owed
+              रु {Number(totalHeld).toLocaleString()} held
             </span>
           </div>
           <table className="w-full text-sm">
@@ -214,19 +224,19 @@ export default function Finance() {
                 transactions.map((t) => (
                   <tr
                     key={t.id}
-                    className="border-b border-gray-200/50 dark:border-zinc-800/50 hover:bg-gray-100 dark:bg-blue-950/30"
+                    className="border-b border-gray-200/50 dark:border-zinc-800/50 hover:bg-gray-100 dark:hover:bg-blue-950/30"
                   >
                     <td className="px-4 py-3 text-xs text-gray-500 dark:text-zinc-400 font-mono">
-                      {t.trackingNumber ?? t.shipment?.trackingNumber ?? "—"}
+                      {t.shipment?.trackingNumber ?? "—"}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-800 dark:text-zinc-200 font-medium">
-                      {t.merchantName ?? t.merchant?.businessName ?? "—"}
+                      {t.shipment?.merchant?.businessName ?? "—"}
                     </td>
                     <td className="px-4 py-3 text-sm font-medium text-amber-400">
-                      रु {(t.codAmount ?? 0).toLocaleString()}
+                      रु {Number(t.codAmount ?? 0).toLocaleString()}
                     </td>
                     <td className="px-4 py-3 text-xs text-gray-400 dark:text-zinc-500">
-                      {t.riderName ?? t.rider?.user?.fullName ?? "—"}
+                      {t.shipment?.rider?.user?.fullName ?? "—"}
                     </td>
                   </tr>
                 ))

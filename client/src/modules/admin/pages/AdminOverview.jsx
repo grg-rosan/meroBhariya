@@ -1,5 +1,3 @@
-// src/admin/pages/AdminOverview.jsx
-import { Link } from "react-router-dom";
 import { Users, Bike, Package, Wallet } from "lucide-react";
 import {
   useOverviewStats,
@@ -8,66 +6,9 @@ import {
   useOverviewActivity,
 } from "../hooks/useAdmin";
 import StatCard from "../../../components/common/StatCard";
-
-const DOT = {
-  success: "bg-green-500",
-  info: "bg-sky-500",
-  warning: "bg-amber-500",
-  error: "bg-red-500",
-};
-
-function Bar({ label, pct, color = "bg-violet-500" }) {
-  const safePct = pct ?? 0;
-  return (
-    <div className="mb-3 last:mb-0">
-      <div className="flex justify-between text-xs mb-1.5">
-        <span className="text-gray-500 dark:text-zinc-400">{label}</span>
-        <span className="text-gray-700 dark:text-zinc-300 font-medium">
-          {safePct}%
-        </span>
-      </div>
-      <div className="h-1.5 bg-gray-100 dark:bg-blue-950 rounded-full overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all duration-700 ${color}`}
-          style={{ width: `${safePct}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
-const QUICK_ACTIONS = [
-  {
-    label: "Review pending merchants",
-    key: "pendingMerchants",
-    to: "/admin/verify",
-    color: "text-violet-400",
-  },
-  {
-    label: "Review pending riders",
-    key: "pendingRiders",
-    to: "/admin/verify",
-    color: "text-sky-400",
-  },
-  {
-    label: "Settle pending COD",
-    key: null,
-    to: "/admin/finance",
-    color: "text-amber-400",
-  },
-  {
-    label: "Update fare configs",
-    key: null,
-    to: "/admin/fleet",
-    color: "text-green-400",
-  },
-  {
-    label: "Manage staff",
-    key: null,
-    to: "/admin/staff",
-    color: "text-gray-500 dark:text-zinc-400",
-  },
-];
+import PlatformHealth from "../components/overview/PlatformHealth";
+import QuickActions from "../components/overview/QuickAction";
+import ActivityFeed from "../components/overview/ActivityFeed";
 
 export default function AdminOverview() {
   const { data: stats, loading: statsLoading } = useOverviewStats();
@@ -87,7 +28,6 @@ export default function AdminOverview() {
         </p>
       </div>
 
-      {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         <StatCard
           icon={Users}
@@ -116,121 +56,13 @@ export default function AdminOverview() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4">
-        {/* Platform health */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5">
-          <h2 className="text-sm font-medium text-white mb-4">
-            Platform health
-          </h2>
-          {healthLoading || qaLoading ? (
-            <div className="space-y-4">
-              {[...Array(2)].map((_, i) => (
-                <div
-                  key={i}
-                  className="h-5 bg-gray-100 dark:bg-blue-950 rounded animate-pulse"
-                />
-              ))}
-            </div>
-          ) : (
-            <>
-              <Bar
-                label="Delivery success rate"
-                pct={health?.successRate}
-                color="bg-green-500"
-              />
-              <Bar
-                label="Rider availability"
-                pct={health?.riderAvailability}
-                color="bg-violet-500"
-              />
-            </>
-          )}
-          <div className="mt-5 pt-4 border-t border-gray-200 dark:border-zinc-800 space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-400 dark:text-zinc-500">
-                Pending verifications
-              </span>
-              <div className="flex gap-2">
-                <span className="text-xs bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded">
-                  {qaLoading ? "…" : (qa?.pendingMerchants ?? 0)} merchants
-                </span>
-                <span className="text-xs bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded">
-                  {qaLoading ? "…" : (qa?.pendingRiders ?? 0)} riders
-                </span>
-              </div>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-400 dark:text-zinc-500">
-                Expired documents
-              </span>
-              <span className="text-xs bg-red-500/10 text-red-400 px-2 py-0.5 rounded">
-                {qaLoading ? "…" : (qa?.expiredDocs ?? 0)} expired
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick actions */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5">
-          <h2 className="text-sm font-medium text-white mb-4">Quick actions</h2>
-          <div className="space-y-2">
-            {QUICK_ACTIONS.map((a) => (
-              <Link
-                key={a.label}
-                to={a.to}
-                className="flex items-center justify-between p-3 border border-gray-200 dark:border-zinc-800 rounded-lg hover:bg-gray-100 dark:bg-blue-950 transition-all group"
-              >
-                <span className="text-sm text-gray-700 dark:text-zinc-300 group-hover:text-white transition-colors">
-                  {a.label}
-                </span>
-                {a.key != null && (
-                  <span className={`text-xs font-semibold ${a.color}`}>
-                    {qaLoading ? "…" : (qa?.[a.key] ?? 0)}
-                  </span>
-                )}
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Activity feed */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5">
-          <h2 className="text-sm font-medium text-white mb-4">
-            Recent activity
-          </h2>
-          <div className="space-y-3">
-            {actLoading ? (
-              [...Array(5)].map((_, i) => (
-                <div key={i} className="flex gap-3">
-                  <div className="w-2 h-2 rounded-full mt-1.5 bg-gray-200 dark:bg-blue-900 shrink-0 animate-pulse" />
-                  <div className="flex-1 space-y-1.5">
-                    <div className="h-3 bg-gray-100 dark:bg-blue-950 rounded animate-pulse w-4/5" />
-                    <div className="h-2.5 bg-gray-100 dark:bg-blue-950 rounded animate-pulse w-1/4" />
-                  </div>
-                </div>
-              ))
-            ) : activity?.length ? (
-              activity.map((a, i) => (
-                <div key={i} className="flex gap-3">
-                  <div
-                    className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${DOT[a.type] ?? "bg-gray-300 dark:bg-zinc-600"}`}
-                  />
-                  <div>
-                    <p className="text-xs text-gray-700 dark:text-zinc-300 leading-relaxed">
-                      {a.text}
-                    </p>
-                    <p className="text-xs text-gray-300 dark:text-zinc-600 mt-0.5">
-                      {a.time}
-                    </p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-xs text-gray-300 dark:text-zinc-600">
-                No recent activity
-              </p>
-            )}
-          </div>
-        </div>
+        <PlatformHealth
+          health={health}
+          qa={qa}
+          loading={healthLoading || qaLoading}
+        />
+        <QuickActions qa={qa} loading={qaLoading} />
+        <ActivityFeed activity={activity} loading={actLoading} />
       </div>
     </div>
   );

@@ -27,9 +27,9 @@ export function globalErrorMiddleware(err, req, res, next) {
   }else{
     logger.warn(logContext,'Client Error')
   }
-
   return res.status(statusCode).json({ 
     success:false,
-    message: isOperational ? err.message : "Something Went Wrong"
+    message: isOperational ? err.message : "Something Went Wrong",
+    ...(process.env.NODE_ENV === "development" && {stack:err.stack})
    });
 }

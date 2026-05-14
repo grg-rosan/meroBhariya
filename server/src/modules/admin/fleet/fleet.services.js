@@ -17,7 +17,7 @@ export async function getAllVehicleTypes() {
 export async function createVehicleType({ name, maxWeightKg, description }) {
   const exists = await prisma.vehicleType.findUnique({ where: { name } });
   if (exists) throw { status: 409, message: `Vehicle type "${name}" already exists.` };
-
+  if (!name || maxWeightKg == null) throw { status: 409, message: "Name and maxWeightKg are required." };
   return prisma.vehicleType.create({
     data: { name, maxWeightKg, description },
   });
@@ -48,10 +48,10 @@ export async function upsertFareConfig(vehicleTypeId, data) {
   const vt = await prisma.vehicleType.findUnique({ where: { id: vehicleTypeId } });
   if (!vt) throw { status: 404, message: "Vehicle type not found." };
 
-  const {
-    baseFare, perKmRate, perKgRate, minFare,
-    fragileCharge, codChargeRate, nightSurcharge, cancelCharge,
-  } = data;
+const {
+  baseFare, perKmRate, perKgRate, minFare,
+  fragileCharge, codChargeRate, insuranceRate, fuelSurcharge, riderCutPct,
+} = data;
 
   return prisma.fareConfig.upsert({
     where:  { vehicleTypeId },
@@ -59,16 +59,18 @@ export async function upsertFareConfig(vehicleTypeId, data) {
       vehicleTypeId,
       baseFare, perKmRate, perKgRate, minFare,
       fragileCharge:  fragileCharge  ?? 0,
-      codChargeRate:  codChargeRate  ?? 0,
-      nightSurcharge: nightSurcharge ?? 0,
-      cancelCharge:   cancelCharge   ?? 0,
+      codChargeRate:  codChargeRate  ?? 1.5,
+      insuranceRate:  insuranceRate  ?? 1.0,
+      fuelSurcharge:  fuelSurcharge  ?? 0,
+      riderCutPct:    riderCutPct    ?? 75.0,
     },
     update: {
       baseFare, perKmRate, perKgRate, minFare,
       fragileCharge:  fragileCharge  ?? 0,
-      codChargeRate:  codChargeRate  ?? 0,
-      nightSurcharge: nightSurcharge ?? 0,
-      cancelCharge:   cancelCharge   ?? 0,
+      codChargeRate:  codChargeRate  ?? 1.5,
+      insuranceRate:  insuranceRate  ?? 1.0,
+      fuelSurcharge:  fuelSurcharge  ?? 0,
+      riderCutPct:    riderCutPct    ?? 75.0,
       isActive: true,
     },
   });

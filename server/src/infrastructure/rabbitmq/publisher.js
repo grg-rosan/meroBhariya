@@ -1,20 +1,22 @@
 import { getChannel } from "./connection.js";
 import { EXCHANGE } from "./queue.js";
+import logger from "../../utils/logger.js";
 
 export function publish(routingKey, payload) {
   const ch = getChannel();
   if (!ch) {
-    console.warn("[Publisher] RabbitMQ unavailable — skipping:", routingKey);
+    logger.warn({ routingKey }, "[Publisher] RabbitMQ unavailable — skipping");
     return;
   }
-  ch.publish(EXCHANGE, routingKey, Buffer.from(JSON.stringify(payload)), { persistent: true });
-  console.log("[Publisher]", routingKey, payload);
+  ch.publish(EXCHANGE, routingKey, Buffer.from(JSON.stringify(payload)), {
+    persistent: true,
+  });
+  logger.info({ routingKey, payload }, "[Publisher]");
 }
 
 // ─── Shipment created → dispatcher board ─────────────────────────────────────
 
-export const publishNewShipment = (payload) =>
-  publish("shipment.new", payload);
+export const publishNewShipment = (payload) => publish("shipment.new", payload);
 
 // ─── Rider notification → rider's socket room ─────────────────────────────────
 // Caller must include riderUserId (User.id, not RiderProfile.id)
@@ -23,7 +25,7 @@ export const publishRiderNotification = (payload) =>
   publish("notification.rider.assigned", {
     ...payload,
     riderUserId: payload.riderUserId,
-    event:       "shipment:assigned",
+    event: "shipment:assigned",
   });
 
 // ─── Merchant notification → merchant's socket room ──────────────────────────
@@ -34,5 +36,5 @@ export const publishMerchantNotification = (payload) =>
   publish("notification.merchant.update", {
     ...payload,
     merchantUserId: payload.merchantUserId,
-    event:          payload.event ?? "shipment:status_updated",
+    event: payload.event ?? "shipment:status_updated",
   });

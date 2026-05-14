@@ -5,13 +5,14 @@
 
 import { getChannel } from "../../infrastructure/rabbitmq/connection.js";
 import { QUEUE } from "../../infrastructure/rabbitmq/queue.js";
+import logger from "../../utils/logger.js";
 let io = null;
 
 export async function startNotificationConsumers(socketIO) {
   io = socketIO;
   await consumeMerchantNotifications();
   await consumeRiderNotifications();
-  console.log("[NotificationConsumer] Both consumers started");
+  logger.info("[NotificationConsumer] Both consumers started");
 }
 
 // ─── Merchant queue ───────────────────────────────────────────────────────────
@@ -19,7 +20,7 @@ export async function startNotificationConsumers(socketIO) {
 async function consumeMerchantNotifications() {
   const ch = getChannel();
   if (!ch) {
-    console.warn("[RabbitMQ] Cannot start consumer: Channel is null.");
+    logger.warn("[RabbitMQ] Cannot start consumer: Channel is null.");
     return;
   }
 
@@ -32,7 +33,7 @@ async function consumeMerchantNotifications() {
         emitToUser(payload.merchantUserId, payload.event, payload);
         ch.ack(msg);
       } catch (err) {
-        console.error("[NotificationConsumer/Merchant]", err.message);
+        logger.error({ err }, "[NotificationConsumer/Merchant]");
         ch.nack(msg, false, false);
       }
     },
@@ -45,7 +46,7 @@ async function consumeMerchantNotifications() {
 async function consumeRiderNotifications() {
   const ch = getChannel();
   if (!ch) {
-    console.warn("[RabbitMQ] Cannot start consumer: Channel is null.");
+    logger.warn("[RabbitMQ] Cannot start consumer: Channel is null.");
     return;
   }
   await ch.consume(
@@ -57,7 +58,7 @@ async function consumeRiderNotifications() {
         emitToUser(payload.riderUserId, payload.event, payload);
         ch.ack(msg);
       } catch (err) {
-        console.error("[NotificationConsumer/Rider]", err.message);
+        logger.error({ err }, "[NotificationConsumer/Rider]");
         ch.nack(msg, false, false);
       }
     },
@@ -72,5 +73,5 @@ function emitToUser(userId, event, payload) {
 
   const room = `user:${userId}`;
   io.to(room).emit(event, payload);
-  console.log(`[NotificationConsumer] Emitted "${event}" → room ${room}`);
+  logger.info({ event, room }, "[NotificationConsumer] Emitted");
 }

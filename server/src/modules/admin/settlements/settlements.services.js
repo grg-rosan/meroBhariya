@@ -4,7 +4,7 @@ import AppError from "../../../utils/error/appError.js";
 
 // ─── Rider settlement summary ─────────────────────────────────────────────────
 
-export async function getRiderSettlementSummary({ page = 1, limit = 20 } = {}) {
+export async function getRiderSettlements({ page = 1, limit = 20 } = {}) {
   const skip = (page - 1) * limit;
 
   const [riders, total] = await Promise.all([

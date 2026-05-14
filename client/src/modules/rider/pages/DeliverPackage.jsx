@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useDeliverPackage } from "../hooks/useDeliverPackage";
 import { GpsStatus } from "../components/deliver/GpsStatus";
-import { DeliverForm } from "../components/deliver/DeliverForm";
+import { DeliveryForm } from "../components/deliver/DeliveryForm";
 import { ResultBanner } from "../components/deliver/ResultBanner";
 import { SubmitButton } from "../components/deliver/SubmitButton";
 export default function DeliverPackage() {

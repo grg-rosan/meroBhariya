@@ -79,18 +79,24 @@ export function useUpsertFare() {
 }
 
 // __________Finance ____________________
-export const useRevenueSummary = () => useAPI("/api/admin/finance/revenue");
-export const useTransactions = () => useAPI("/api/admin/finance/transactions");
+export const useRevenueSummary = (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return useAPI(`/api/admin/finance/revenue${query ? `?${query}` : ""}`);
+};
+export const useTransactions = (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return useAPI(`/api/admin/finance/transactions${query ? `?${query}` : ""}`);
+};
 export const usePendingCOD = () => useAPI("/api/admin/finance/cod/pending");
 
 export function useSettleCOD() {
   const [loading, setLoading] = useState(false);
   const toast = useToast(); 
 
-  const settle = async (transactionId) => {
+  const settle = async (transactionId, { collectedByRider = 0 } = {}) => {
     setLoading(true);
     try {
-      return await apiPatch(`/api/admin/finance/cod/${transactionId}/settle`);
+      return await apiPatch(`/api/admin/finance/cod/${transactionId}/settle`, { collectedByRider });
     } catch (e) {
       toast({ message: e.message, type: "error" }); // ← add
       throw e;

@@ -1,4 +1,5 @@
 import { getChannel } from "./connection.js";
+import logger from "../../utils/logger.js";
 
 export const EXCHANGE = "porter.shipments";
 
@@ -12,7 +13,7 @@ export const QUEUE = {
 export async function assertQueues() {
   const ch = getChannel();
   if (!ch) {
-    console.warn("[RabbitMQ] Skipping queue assertion - no channel");
+    logger.warn("[RabbitMQ] Skipping queue assertion - no channel");
     return;
   }
 
@@ -37,5 +38,5 @@ export async function assertQueues() {
   await ch.assertQueue(QUEUE.DELIVERY_EVENTS, { durable: true });
   await ch.bindQueue(QUEUE.DELIVERY_EVENTS, EXCHANGE, "shipment.delivered");
 
-  console.log("[RabbitMQ] Queues asserted");
+  logger.info("[RabbitMQ] Queues asserted");
 }

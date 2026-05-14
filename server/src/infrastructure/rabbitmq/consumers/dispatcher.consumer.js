@@ -1,16 +1,21 @@
 import { getChannel } from "../connection.js";
 import { QUEUE } from "../queue.js";
 import { getIO } from "../../socket/socket.handler.js";
+import logger from "../../../utils/logger.js";
 
 export async function startDispatcherConsumer() {
   const ch = getChannel();
-  if (!ch) return console.warn("[Consumer] No channel - skipping dispatcher consumer");
+  if (!ch)
+    return logger.warn("[Consumer] No channel - skipping dispatcher consumer");
 
   await ch.consume(QUEUE.DISPATCHER_ASSIGNMENTS, (msg) => {
     if (!msg) return;
     try {
       const shipment = JSON.parse(msg.content.toString());
-      console.log("[Dispatcher] New shipment to assign:", shipment.trackingNumber);
+      logger.info(
+        { trackingNumber: shipment.trackingNumber },
+        "[Dispatcher] New shipment to assign",
+      );
 
       // Push to dispatcher dashboard in real time
       const io = getIO();
@@ -20,10 +25,10 @@ export async function startDispatcherConsumer() {
 
       ch.ack(msg);
     } catch (err) {
-      console.error("[Dispatcher Consumer] Failed to process message:", err.message);
+      logger.error({ err }, "[Dispatcher Consumer] Failed to process message");
       ch.nack(msg, false, false);
     }
   });
 
-  console.log("[Consumer] Dispatcher consumer started");
+  logger.info("[Consumer] Dispatcher consumer started");
 }

@@ -6,7 +6,11 @@ import { prisma } from "../../config/db.config.js";
 import AppError from "../../utils/error/appError.js";
 import { getRedisClient } from "../../config/redis.config.js";
 import { transporter } from "../../config/email.config.js";
-import { resetEmailTemplate, otpEmailTemplate } from "../../utils/services/emailTemplate.js";
+import {
+  resetEmailTemplate,
+  otpEmailTemplate,
+} from "../../utils/services/emailTemplate.js";
+import logger from "../../utils/logger.js";
 
 const SALT_ROUNDS = 12;
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -24,12 +28,12 @@ function signToken(payload) {
 
 function sanitizeUser(user) {
   return {
-    id:              user.id,
-    email:           user.email,
-    fullName:        user.fullName,
-    phoneNumber:     user.phoneNumber,
-    role:            user.role,
-    isActive:        user.isActive,
+    id: user.id,
+    email: user.email,
+    fullName: user.fullName,
+    phoneNumber: user.phoneNumber,
+    role: user.role,
+    isActive: user.isActive,
     isEmailVerified: user.isEmailVerified ?? false,
   };
 }
@@ -46,16 +50,26 @@ async function sendEmail(to, subject, html) {
 // ─── Role creators for registration ──────────────────────────────────────────
 
 const ROLE_CREATORS = {
-  rider: async (tx, { name, email, phone, passwordHash, vehicleType, plateNumber }) => {
+  rider: async (
+    tx,
+    { name, email, phone, passwordHash, vehicleType, plateNumber },
+  ) => {
     const vehicleTypeRecord = await prisma.vehicleType.findUnique({
       where: { name: vehicleType },
     });
     if (!vehicleTypeRecord?.isActive)
-      throw new AppError(`Vehicle type "${vehicleType}" not found or inactive.`, 400);
+      throw new AppError(
+        `Vehicle type "${vehicleType}" not found or inactive.`,
+        400,
+      );
 
     return tx.user.create({
       data: {
-        fullName: name, email, phoneNumber: phone, passwordHash, role: "RIDER",
+        fullName: name,
+        email,
+        phoneNumber: phone,
+        passwordHash,
+        role: "RIDER",
         isEmailVerified: true, // verified via OTP during registration
         riderProfile: {
           create: {
@@ -68,10 +82,17 @@ const ROLE_CREATORS = {
     });
   },
 
-  merchant: async (tx, { name, email, phone, passwordHash, businessName, address, panNumber }) => {
+  merchant: async (
+    tx,
+    { name, email, phone, passwordHash, businessName, address, panNumber },
+  ) => {
     return tx.user.create({
       data: {
-        fullName: name, email, phoneNumber: phone, passwordHash, role: "MERCHANT",
+        fullName: name,
+        email,
+        phoneNumber: phone,
+        passwordHash,
+        role: "MERCHANT",
         isEmailVerified: true, // verified via OTP during registration
         merchantProfile: {
           create: {
@@ -106,24 +127,33 @@ export async function initiateRegistration(role, payload) {
   const redis = await getRedisClient();
   const { email, phone } = payload;
 
-  if (!ROLE_CREATORS[role])
-    throw new AppError("Invalid role.", 400);
+  if (!ROLE_CREATORS[role]) throw new AppError("Invalid role.", 400);
 
   const existing = await prisma.user.findFirst({
     where: { OR: [{ email }, { phoneNumber: phone }] },
   });
   if (existing) {
     throw new AppError(
-      existing.email === email ? "Email already registered." : "Phone number already registered.",
-      409
+      existing.email === email
+        ? "Email already registered."
+        : "Phone number already registered.",
+      409,
     );
   }
 
   const otp = randomInt(100000, 1000000).toString();
-  await redis.set(`pending_reg:${email}`, JSON.stringify({ role, payload, otp }), { EX: 600 });
+  await redis.set(
+    `pending_reg:${email}`,
+    JSON.stringify({ role, payload, otp }),
+    { EX: 600 },
+  );
 
-  await sendEmail(email, "Verify Your MeroBhariya Account", otpEmailTemplate(otp));
-  console.log(`[DEV] OTP for ${email}: ${otp}`);
+  await sendEmail(
+    email,
+    "Verify Your MeroBhariya Account",
+    otpEmailTemplate(otp),
+  );
+  logger.info({ email, otp }, "[DEV] OTP for email");
 
   return { message: "OTP sent to your email." };
 }
@@ -134,7 +164,8 @@ export async function completeRegistration(email, inputOtp) {
   const redis = await getRedisClient();
   const raw = await redis.get(`pending_reg:${email}`);
 
-  if (!raw) throw new AppError("Registration expired. Please start again.", 400);
+  if (!raw)
+    throw new AppError("Registration expired. Please start again.", 400);
 
   const { role, payload, otp } = JSON.parse(raw);
 
@@ -145,7 +176,7 @@ export async function completeRegistration(email, inputOtp) {
 
   const passwordHash = await bcrypt.hash(payload.password, SALT_ROUNDS);
 
-  await prisma.$transaction(tx => creator(tx, { ...payload, passwordHash }));
+  await prisma.$transaction((tx) => creator(tx, { ...payload, passwordHash }));
 
   await redis.del(`pending_reg:${email}`);
 
@@ -158,15 +189,23 @@ export async function resendRegistrationOtp(email) {
   const redis = await getRedisClient();
   const raw = await redis.get(`pending_reg:${email}`);
 
-  if (!raw) throw new AppError("Registration session expired. Please start again.", 400);
+  if (!raw)
+    throw new AppError(
+      "Registration session expired. Please start again.",
+      400,
+    );
 
   const parsed = JSON.parse(raw);
   const otp = randomInt(100000, 1000000).toString();
   parsed.otp = otp;
 
   await redis.set(`pending_reg:${email}`, JSON.stringify(parsed), { EX: 600 });
-  await sendEmail(email, "Verify Your MeroBhariya Account", otpEmailTemplate(otp));
-  console.log(`[DEV] Resent OTP for ${email}: ${otp}`);
+  await sendEmail(
+    email,
+    "Verify Your MeroBhariya Account",
+    otpEmailTemplate(otp),
+  );
+  logger.info({ email, otp }, "[DEV] Resent OTP for email");
 
   return { message: "OTP resent." };
 }
@@ -185,8 +224,12 @@ export async function sendOtp(userId, email) {
   const otp = randomInt(100000, 1000000).toString();
   await redis.set(`otp:${userId}`, otp, { EX: OTP_TTL });
 
-  await sendEmail(email, "Verify Your MeroBhariya Account", otpEmailTemplate(otp));
-  console.log(`[DEV] OTP for userId ${userId}: ${otp}`);
+  await sendEmail(
+    email,
+    "Verify Your MeroBhariya Account",
+    otpEmailTemplate(otp),
+  );
+  logger.info({ userId, otp }, "[DEV] OTP for userId");
 
   return { message: "OTP sent successfully." };
 }
@@ -197,7 +240,8 @@ export async function verifyOtp(userId, inputOtp) {
   const redis = await getRedisClient();
   const stored = await redis.get(`otp:${userId}`);
 
-  if (!stored) throw new AppError("OTP has expired. Please request a new one.", 400);
+  if (!stored)
+    throw new AppError("OTP has expired. Please request a new one.", 400);
   if (stored !== inputOtp) throw new AppError("Invalid OTP.", 400);
 
   await redis.del(`otp:${userId}`);
@@ -217,7 +261,9 @@ export async function forgotPassword(email) {
   const user = await prisma.user.findUnique({ where: { email } });
 
   if (!user || !user.isActive) {
-    return { message: "If that email is registered, a reset code has been sent." };
+    return {
+      message: "If that email is registered, a reset code has been sent.",
+    };
   }
 
   const limitKey = `pwd_reset_limit:${user.id}`;
@@ -229,10 +275,16 @@ export async function forgotPassword(email) {
   const code = randomInt(100000, 1000000).toString();
   await redis.set(`pwd_reset:${user.id}`, code, { EX: RESET_TTL });
 
- await sendEmail(email, "Reset Your MeroBhariya Password", resetEmailTemplate(user.name, code));
-  console.log(`[DEV] Reset code for ${email}: ${code}`);
+  await sendEmail(
+    email,
+    "Reset Your MeroBhariya Password",
+    resetEmailTemplate(user.name, code),
+  );
+  logger.info({ email, code }, "[DEV] Reset code for email");
 
-  return { message: "If that email is registered, a reset code has been sent." };
+  return {
+    message: "If that email is registered, a reset code has been sent.",
+  };
 }
 
 // ─── Reset Password ───────────────────────────────────────────────────────────
@@ -246,7 +298,11 @@ export async function resetPassword(email, code, newPassword) {
   const key = `pwd_reset:${user.id}`;
   const stored = await redis.get(key);
 
-  if (!stored) throw new AppError("Reset code has expired. Please request a new one.", 400);
+  if (!stored)
+    throw new AppError(
+      "Reset code has expired. Please request a new one.",
+      400,
+    );
   if (stored !== code) throw new AppError("Invalid reset code.", 400);
 
   const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
@@ -266,7 +322,10 @@ export async function changePassword(userId, currentPassword, newPassword) {
   if (!isMatch) throw new AppError("Current password is incorrect.", 400);
 
   if (currentPassword === newPassword)
-    throw new AppError("New password must be different from current password.", 400);
+    throw new AppError(
+      "New password must be different from current password.",
+      400,
+    );
 
   const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
   await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
@@ -284,22 +343,28 @@ export async function getMe(userId) {
         select: { id: true, businessName: true, pickupAddress: true },
       },
       riderProfile: {
-        select: { id: true, isVerified: true, isOnline: true, vehicleTypeId: true },
+        select: {
+          id: true,
+          isVerified: true,
+          isOnline: true,
+          vehicleTypeId: true,
+        },
       },
     },
   });
 
   if (!user) throw new AppError("User not found.", 404);
 
-  const profile = user.role === "RIDER" ? user.riderProfile : user.merchantProfile;
+  const profile =
+    user.role === "RIDER" ? user.riderProfile : user.merchantProfile;
 
   return {
-    id:              user.id,
-    email:           user.email,
-    fullName:        user.fullName,
-    phoneNumber:     user.phoneNumber,
-    role:            user.role,
-    isActive:        user.isActive,
+    id: user.id,
+    email: user.email,
+    fullName: user.fullName,
+    phoneNumber: user.phoneNumber,
+    role: user.role,
+    isActive: user.isActive,
     isEmailVerified: user.isEmailVerified,
     profile,
   };
@@ -307,7 +372,14 @@ export async function getMe(userId) {
 
 // ─── Staff ────────────────────────────────────────────────────────────────────
 
-export async function createStaff({ name, email, phone, password, role, createdByUserId }) {
+export async function createStaff({
+  name,
+  email,
+  phone,
+  password,
+  role,
+  createdByUserId,
+}) {
   if (!["ADMIN", "DISPATCHER"].includes(role))
     throw new AppError("Invalid staff role. Must be ADMIN or DISPATCHER.", 400);
 
@@ -316,7 +388,9 @@ export async function createStaff({ name, email, phone, password, role, createdB
   });
   if (existing) {
     throw new AppError(
-      existing.email === email ? "Email already registered." : "Phone number already registered.",
+      existing.email === email
+        ? "Email already registered."
+        : "Phone number already registered.",
       409,
     );
   }
@@ -334,7 +408,7 @@ export async function createStaff({ name, email, phone, password, role, createdB
     },
   });
 
-  console.log(`[Auth] Staff created: ${role} — ${email} (by userId: ${createdByUserId})`);
+  logger.info({ role, email, createdByUserId }, "[Auth] Staff created");
   return sanitizeUser(user);
 }
 
@@ -346,12 +420,21 @@ export async function toggleStaffStatus(targetUserId, adminUserId) {
     throw new AppError("You cannot deactivate your own account.", 400);
 
   if (!["ADMIN", "DISPATCHER"].includes(user.role))
-    throw new AppError("Use the verify module to manage riders and merchants.", 400);
+    throw new AppError(
+      "Use the verify module to manage riders and merchants.",
+      400,
+    );
 
   return prisma.user.update({
     where: { id: targetUserId },
     data: { isActive: !user.isActive },
-    select: { id: true, fullName: true, email: true, role: true, isActive: true },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      role: true,
+      isActive: true,
+    },
   });
 }
 
@@ -359,8 +442,13 @@ export async function getStaffList() {
   return prisma.user.findMany({
     where: { role: { in: ["ADMIN", "DISPATCHER"] } },
     select: {
-      id: true, fullName: true, email: true,
-      phoneNumber: true, role: true, isActive: true, createdAt: true,
+      id: true,
+      fullName: true,
+      email: true,
+      phoneNumber: true,
+      role: true,
+      isActive: true,
+      createdAt: true,
     },
     orderBy: { createdAt: "desc" },
   });

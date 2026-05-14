@@ -4,13 +4,13 @@
 // Polls rider location every 10s via useRiderLocation.
 
 import { useRef, useEffect } from "react";
-import { Navigation2, Clock, MapPin, Radio } from "lucide-react";
+import { Navigation2, Radio } from "lucide-react";
 import { useMapLibre } from "../../../shared/hooks/useMapLibre";
 import { useRiderLocation } from "../../../shared/hooks/useRiderLocation";
 
 export default function LiveTrackingMap({ shipment }) {
   const mapContainerRef = useRef(null);
-  const { mapRef, upsertMarker, drawRoute, flyTo } = useMapbox(
+  const { mapRef, upsertMarker, drawRoute, flyTo } = useMapLibre(
     mapContainerRef,
     {
       center: [

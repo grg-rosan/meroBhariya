@@ -1,7 +1,11 @@
 import { catchAsync } from "../../../utils/error/errorHandler.js";
 import AppError from "../../../utils/error/appError.js";
 import * as docService from "./riderDocument.services.js";
-import { uploadToCloudinary,deleteFromCloudinary } from "../../../utils/services/cloudinary.js";
+import {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+} from "../../../utils/services/cloudinary.js";
+import logger from "../../../utils/logger.js";
 
 export const getDocuments = catchAsync(async (req, res) => {
   const data = await docService.getRiderDocuments(req.userId);
@@ -22,14 +26,14 @@ export const uploadDocuments = catchAsync(async (req, res) => {
     const existing = await docService.getRiderDocumentByType(req.userId, type);
     if (existing?.filePublicId) {
       await deleteFromCloudinary(existing.filePublicId).catch((err) =>
-        console.warn(`[RiderDocs] Failed to delete old asset: ${err.message}`)
+        logger.warn({ err }, "[RiderDocs] Failed to delete old asset"),
       );
     }
 
     // Upload to Cloudinary
     const result = await uploadToCloudinary(
       file.path,
-      `porter/rider/${req.userId}/documents`
+      `porter/rider/${req.userId}/documents`,
     );
 
     // Save to DB

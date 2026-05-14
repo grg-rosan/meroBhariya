@@ -144,7 +144,7 @@ export default function HubInventory() {
                   <td className="px-4 py-3 text-sm text-gray-800 dark:text-zinc-200">
                     {i.merchant?.businessName ?? "—"}
                   </td>
-                  <td className="px-4 py-3 text-xs text-gray-500 dark:text-zinc-400 max-w-[140px] truncate">
+                  <td className="px-4 py-3 text-xs text-gray-500 dark:text-zinc-400 max-w-35 truncate">
                     {i.deliveryAddress ?? "—"}
                   </td>
                   <td className="px-4 py-3">

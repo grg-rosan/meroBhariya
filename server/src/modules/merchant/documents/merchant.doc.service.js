@@ -1,6 +1,10 @@
 // src/modules/merchant/document/merchant.document.service.js
 import { prisma } from "../../../config/db.config.js";
-import { uploadToCloudinary, deleteFromCloudinary } from "../../../utils/services/cloudinary.js";
+import {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+} from "../../../utils/services/cloudinary.js";
+import logger from "../../../utils/logger.js";
 
 // ─── Required doc types (matches MerchantDocType enum in schema) ──────────────
 
@@ -22,7 +26,7 @@ export async function uploadMerchantDocuments({ merchantId, files }) {
   }
 
   const invalidTypes = Object.keys(files).filter(
-    (t) => !REQUIRED_DOC_TYPES.includes(t)
+    (t) => !REQUIRED_DOC_TYPES.includes(t),
   );
   if (invalidTypes.length) {
     throw {
@@ -41,14 +45,17 @@ export async function uploadMerchantDocuments({ merchantId, files }) {
 
     if (existing?.filePublicId) {
       await deleteFromCloudinary(existing.filePublicId).catch((err) =>
-        console.warn(`[MerchantDocs] Failed to delete old Cloudinary asset: ${err.message}`)
+        logger.warn(
+          { err },
+          "[MerchantDocs] Failed to delete old Cloudinary asset",
+        ),
       );
     }
 
     // Upload new file to Cloudinary
     const { url: fileUrl, public_id: filePublicId } = await uploadToCloudinary(
       file.path,
-      { folder: `porter/merchant/${merchantId}/documents` }
+      { folder: `porter/merchant/${merchantId}/documents` },
     );
 
     if (existing) {
@@ -110,10 +117,11 @@ export async function getMerchantDocumentStatus(merchantId) {
   });
 
   const uploadedTypes = docs.map((d) => d.type);
-  const missing       = REQUIRED_DOC_TYPES.filter((t) => !uploadedTypes.includes(t));
-  const allSubmitted  = missing.length === 0;
-  const allApproved   = allSubmitted && docs.every((d) => d.status === "APPROVED");
-  const hasRejected   = docs.some((d) => d.status === "REJECTED");
+  const missing = REQUIRED_DOC_TYPES.filter((t) => !uploadedTypes.includes(t));
+  const allSubmitted = missing.length === 0;
+  const allApproved =
+    allSubmitted && docs.every((d) => d.status === "APPROVED");
+  const hasRejected = docs.some((d) => d.status === "REJECTED");
 
   return {
     documents: docs,

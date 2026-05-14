@@ -1,23 +1,28 @@
-import { getChannel }            from "../connection.js";
-import { QUEUE }                 from "../queue.js";
-import { settleDelivery }        from "../../../modules/admin/finance/finance.services.js";
+import { getChannel } from "../connection.js";
+import { QUEUE } from "../queue.js";
+import { settleDelivery } from "../../../modules/admin/finance/finance.services.js";
+import logger from "../../../utils/logger.js";
 
 export async function startDeliveryConsumer() {
   const ch = getChannel();
-  if (!ch) return console.warn("[Consumer] No channel - skipping delivery consumer");
+  if (!ch)
+    return logger.warn("[Consumer] No channel - skipping delivery consumer");
 
   await ch.consume(QUEUE.DELIVERY_EVENTS, async (msg) => {
     if (!msg) return;
     try {
       const payload = JSON.parse(msg.content.toString());
-      console.log("[Consumer] shipment.delivered:", payload.trackingNumber);
-      await settleDelivery(payload);   
+      logger.info(
+        { trackingNumber: payload.trackingNumber },
+        "[Consumer] shipment.delivered",
+      );
+      await settleDelivery(payload);
       ch.ack(msg);
     } catch (err) {
-      console.error("[Consumer] Settlement failed:", err.message);
+      logger.error({ err }, "[Consumer] Settlement failed");
       ch.nack(msg, false, false);
     }
   });
 
-  console.log("[Consumer] Delivery consumer started");
+  logger.info("[Consumer] Delivery consumer started");
 }
