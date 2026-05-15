@@ -4,7 +4,6 @@ import { Truck } from "lucide-react";
 import ProfileCard from "../components/common/ProfileCard";
 import ChangePasswordModal from "../components/modals/ChangePasswordModal";
 import { useAuth } from "../modules/auth/AuthContext";
-import logger from "../utils/logger.js";
 
 export default function RoleLayout({ role, nav, accentClass, user }) {
   const navigate = useNavigate();
@@ -15,7 +14,7 @@ export default function RoleLayout({ role, nav, accentClass, user }) {
     try {
       await logout();
     } catch (error) {
-      logger.error({ err: error }, "Logout failed");
+      console.error({ err: error }, "Logout failed");
     } finally {
       navigate("/login");
     }

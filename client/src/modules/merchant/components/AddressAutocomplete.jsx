@@ -2,7 +2,6 @@
 import { useRef, useState, useEffect } from "react";
 import { MapPin, X, Loader2 } from "lucide-react";
 import { useAddressSearch } from "../../../shared/hooks/useAddressSearch.js";
-import logger from "../../../utils/logger.js";
 
 function resolveDistrict(photonProps, districts, label = "") {
   if (!districts?.length || !photonProps) return null;
@@ -86,8 +85,8 @@ export default function AddressAutocomplete({
   };
 
   const handleSelect = (suggestion) => {
-    logger.debug({ raw: suggestion._raw }, "Photon raw props");
-    logger.debug(
+    console.debug({ raw: suggestion._raw }, "Photon raw props");
+    console.debug(
       { districts: districts.map((d) => ({ id: d.id, name: d.name })) },
       "Districts list",
     );
@@ -97,7 +96,7 @@ export default function AddressAutocomplete({
       districts,
       suggestion.label,
     );
-    logger.debug({ districtId }, "Resolved districtId");
+    console.debug({ districtId }, "Resolved districtId");
 
     setRaw(suggestion.label);
     setOpen(false);

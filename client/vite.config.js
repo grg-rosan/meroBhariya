@@ -2,21 +2,35 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
-// https://vite.dev/config/
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
-  server: {
-    host: true,
-    port: 5173,
-    proxy: {
-      "/api": {
-        target: "http://localhost:5000",
-        changeOrigin: true,
+export default defineConfig(({ mode }) => {
+  const isProd = mode === "production";
+
+  return {
+    plugins: [react(), tailwindcss()],
+    server: {
+      host: true,
+      port: 5173,
+      proxy: {
+        "/api": {
+          target: "http://localhost:5000",
+          changeOrigin: true,
+        },
+      },
+      watch: {
+        usePolling: true,
+        interval: 500,
       },
     },
-    watch: {
-      usePolling: true, // ← fixes Windows/Docker file change detection
-      interval: 500,
+    build: {
+      minify: isProd ? "terser" : false,
+      terserOptions: isProd
+        ? {
+            compress: {
+              drop_console: true,
+              drop_debugger: true,
+            },
+          }
+        : {},
     },
-  },
+  };
 });

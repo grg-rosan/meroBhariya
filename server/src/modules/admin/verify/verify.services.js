@@ -48,8 +48,9 @@ export async function getPendingMerchants({ page = 1, limit = 20 } = {}) {
             type: true,
             fileUrl: true,
             status: true,
-            note: true,
+            reviewNote: true,  // ← fixed: was `note`
             uploadedAt: true,
+            reviewedAt: true,
           },
         },
       },
@@ -91,9 +92,10 @@ export async function getPendingRiders({ page = 1, limit = 20 } = {}) {
             type: true,
             fileUrl: true,
             status: true,
-            note: true,
+            reviewNote: true,  // ← fixed: was `note`
             expiresAt: true,
             uploadedAt: true,
+            reviewedAt: true,
           },
         },
       },
@@ -119,7 +121,7 @@ export async function reviewMerchantDocument({ docId, status, note, adminId }) {
 
   const updated = await prisma.merchantDocument.update({
     where: { id: docId },
-    data: { status, note: note ?? null, reviewedAt: new Date() },
+    data: { status, reviewNote: note ?? null, reviewedAt: new Date() },  // ← fixed: was `note:`
   });
 
   const merchant = await prisma.merchantProfile.findUnique({
@@ -151,8 +153,6 @@ export async function reviewMerchantDocument({ docId, status, note, adminId }) {
 }
 
 // ─── Auto-verify merchant when ALL required docs are approved ─────────────────
-// Note: schema has no isVerified on MerchantProfile — extend if needed.
-// Currently just publishes the event; add DB update when field is added.
 
 async function maybeVerifyMerchant(merchantId, user) {
   const docs = await prisma.merchantDocument.findMany({ where: { merchantId } });
@@ -168,7 +168,7 @@ async function maybeVerifyMerchant(merchantId, user) {
   });
 
   await sendNotification({
-    type: NOTIFICATION_TYPE.MERCHANT_VERIFIED,   // add to NOTIFICATION_TYPE if missing
+    type: NOTIFICATION_TYPE.MERCHANT_VERIFIED,
     user,
     payload: {},
   });
@@ -196,7 +196,7 @@ export async function reviewRiderDocument({ docId, status, note, expiresAt, admi
     where: { id: docId },
     data: {
       status,
-      note: note ?? null,
+      reviewNote: note ?? null,  // ← fixed: was `note:`
       expiresAt: expiresAt ? new Date(expiresAt) : doc.expiresAt,
       reviewedAt: new Date(),
     },
@@ -230,7 +230,6 @@ export async function reviewRiderDocument({ docId, status, note, expiresAt, admi
 }
 
 // ─── Auto-verify rider when ALL required docs are approved ────────────────────
-// Fixed: notification was firing even when not all docs approved
 
 async function maybeVerifyRider(riderId, user) {
   const docs = await prisma.riderDocument.findMany({ where: { riderId } });
@@ -238,7 +237,7 @@ async function maybeVerifyRider(riderId, user) {
   const approvedTypes = docs.filter((d) => d.status === "APPROVED").map((d) => d.type);
   const allApproved   = REQUIRED_RIDER_DOC_TYPES.every((t) => approvedTypes.includes(t));
 
-  if (!allApproved) return; // ← original bug: was notifying even when not verified
+  if (!allApproved) return;
 
   await prisma.riderProfile.update({
     where: { id: riderId },

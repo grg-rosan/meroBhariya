@@ -4,6 +4,7 @@ import AppError from "../../../utils/error/appError.js";
 import { publishMerchantNotification } from "../../../infrastructure/rabbitmq/publisher.js";
 import { settleDeliveryEarning } from "../../rider/finance/rider.earnings.service.js";
 import logger from "../../../utils/logger.js";
+import { buildDateFilter } from "../../../utils/others/dateFilter.js";
 // ─── Settle delivery (called by RabbitMQ delivery consumer) ──────────────────
 
 export async function settleDelivery({
@@ -465,12 +466,4 @@ export async function getRevenueSummary({ from, to } = {}) {
     totalRiderEarnings: Number(riderEarnings._sum.amount ?? 0),
   };
 }
-// ─── Helper ───────────────────────────────────────────────────────────────────
 
-function buildDateFilter(from, to) {
-  if (!from && !to) return undefined;
-  return {
-    ...(from && { gte: new Date(from) }),
-    ...(to && { lte: new Date(to) }),
-  };
-}

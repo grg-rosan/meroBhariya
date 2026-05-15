@@ -23,9 +23,8 @@ export default function FleetFares() {
       </div>
 
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-4 mb-6 text-xs text-gray-400 dark:text-zinc-500">
-        <strong className="text-gray-500 dark:text-zinc-400">Fare formula: </strong>
-        Base fare + (distance × per km rate) + (weight × per kg rate) + fragile charge
-        + COD charge (% of COD amount). Night surcharge added 9 PM – 6 AM.
+       <strong className="text-gray-500 dark:text-zinc-400">Fare formula: </strong>
+Base fare + (distance × per km rate) + (weight × per kg rate) + fragile charge + COD charge (% of COD amount).
       </div>
 
       {loading ? (

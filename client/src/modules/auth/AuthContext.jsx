@@ -6,7 +6,6 @@ import {
   useCallback,
 } from "react";
 import { authAPI } from "../../shared/services/authService";
-import logger from "../../utils/logger.js";
 
 const AuthContext = createContext(null);
 
@@ -28,7 +27,7 @@ export function AuthProvider({ children }) {
     const { token, user } = await authAPI.login(email, password);
     localStorage.setItem("token", token);
     setUser(user);
-    logger.info({ user }, "Authenticated user");
+    console.info({ user }, "Authenticated user");
     return user;
   }, []);
 

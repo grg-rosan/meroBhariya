@@ -6,6 +6,7 @@ import { generateTrackingNumber } from "../shipment/shipment.helpers.js";
 import QRCode from "qrcode";
 import { publishShipmentNew } from "../shipment/shipment.events.js";
 import { khaltiConfig } from "../../../config/khalti.config.js";
+import logger from "../../../utils/logger.js";
 const SESSION_TTL = 60 * 30; // 30 minutes
 
 // ── initiatePaymentSession ────────────────────────────────────
@@ -18,6 +19,7 @@ export async function initiatePaymentSession(merchantId, userId, body, ctx) {
   // Store everything needed to create shipment later
   const sessionToken = crypto.randomUUID();
   const sessionData = JSON.stringify({
+    type: "CREATE_SHIPMENT",
     merchantId,
     userId,
     body,
@@ -69,12 +71,77 @@ export async function initiatePaymentSession(merchantId, userId, body, ctx) {
   };
 }
 
+export async function initiateExistingShipmentPayment(merchantId, userId, shipmentId) {
+  const shipment = await prisma.shipment.findFirst({
+    where: { id: shipmentId, merchantId },
+    include: {
+      khaltiPayment: true,
+      zone: { select: { name: true } },
+    },
+  });
+
+  if (!shipment) throw new AppError("Shipment not found.", 404);
+  if (shipment.status !== "UNPAID") {
+    throw new AppError("Only unpaid shipments can be paid.", 400);
+  }
+  if (shipment.khaltiPayment) {
+    throw new AppError("This shipment already has a Khalti payment.", 409);
+  }
+
+  const totalAmount = Number(shipment.totalFare ?? shipment.fareSnapshot ?? 0);
+  if (!totalAmount || isNaN(totalAmount) || totalAmount <= 0) {
+    throw new AppError("Invalid fare amount", 400);
+  }
+
+  const redis = await getRedisClient();
+  const sessionToken = crypto.randomUUID();
+  await redis.set(
+    `pay_session:${sessionToken}`,
+    JSON.stringify({
+      type: "EXISTING_SHIPMENT",
+      merchantId,
+      userId,
+      shipmentId,
+    }),
+    "EX",
+    SESSION_TTL,
+  );
+
+  const amountPaisa = Math.round(totalAmount * 100);
+  const khaltiRes = await khalti.requestKhaltiInitiate({
+    return_url: khaltiConfig.returnUrl,
+    website_url: khaltiConfig.websiteUrl,
+    amount: amountPaisa,
+    purchase_order_id: sessionToken,
+    purchase_order_name: `meroBhariya Delivery - ${shipment.zone?.name ?? "delivery"}`,
+  });
+
+  await redis.set(
+    `pay_pidx:${khaltiRes.pidx}`,
+    sessionToken,
+    "EX",
+    SESSION_TTL,
+  );
+
+  logger.info(
+    { pidx: khaltiRes.pidx, sessionToken, shipmentId, userId, merchantId, amountPaisa },
+    "Existing shipment Khalti payment initiated",
+  );
+
+  return {
+    paymentUrl: khaltiRes.payment_url,
+    pidx: khaltiRes.pidx,
+    shipmentId,
+    totalFare: totalAmount,
+  };
+}
+
 export async function verifyAndCreateShipment(pidx, merchantId, userId) {
-  const existing = await prisma.khaltiPayment.findUnique({ where: { pidx } });
-  if (existing) {
+  const completedPayment = await prisma.khaltiPayment.findUnique({ where: { pidx } });
+  if (completedPayment?.status === "COMPLETED") {
     throw new AppError("Payment already verified.", 409);
   }
-  // 1. Look up session
+
   const redis = await getRedisClient();
   const sessionToken = await redis.get(`pay_pidx:${pidx}`);
   if (!sessionToken)
@@ -84,13 +151,24 @@ export async function verifyAndCreateShipment(pidx, merchantId, userId) {
   if (!raw) throw new AppError("Payment session data expired.", 404);
 
   const session = JSON.parse(raw);
-  // 2. Verify with Khalti
   const khaltiRes = await khalti.requestKhaltiLookup(pidx);
   if (khaltiRes.status !== "Completed") {
     throw new AppError(
       `Payment not completed. Khalti status: ${khaltiRes.status}`,
       402,
     );
+  }
+
+  if (session.type === "EXISTING_SHIPMENT") {
+    return verifyExistingShipmentPayment({
+      pidx,
+      khaltiRes,
+      merchantId,
+      userId,
+      shipmentId: session.shipmentId,
+      redis,
+      sessionToken,
+    });
   }
 
   // 3. Create shipment now that payment is confirmed
@@ -112,6 +190,9 @@ export async function verifyAndCreateShipment(pidx, merchantId, userId) {
   } = body;
   logger.debug({ body }, "Verified session body");
 
+  const vehicleType = await prisma.vehicleType.findUnique({
+    where: { id: Number(vehicleTypeId) },
+  });
   const resolvedCodAmount = paymentType === "COD" ? Number(codAmount) : 0;
   const trackingNumber = generateTrackingNumber();
 
@@ -175,7 +256,7 @@ export async function verifyAndCreateShipment(pidx, merchantId, userId) {
       },
     });
     logger.info(
-      { shipmentId: shipment.id, trackingNumber, pidx, userId, merchantId },
+      { shipmentId: newShipment.id, trackingNumber, pidx, userId, merchantId },
       "Shipment created after Khalti payment verification",
     );
     // COD record
@@ -226,5 +307,97 @@ export async function verifyAndCreateShipment(pidx, merchantId, userId) {
     trackingNumber: shipment.trackingNumber,
     totalFare: Number(fare.totalFare),
     qrCode,
+  };
+}
+
+async function verifyExistingShipmentPayment({
+  pidx,
+  khaltiRes,
+  merchantId,
+  userId,
+  shipmentId,
+  redis,
+  sessionToken,
+}) {
+  const shipment = await prisma.shipment.findFirst({
+    where: { id: shipmentId, merchantId },
+    include: { vehicleType: true },
+  });
+
+  if (!shipment) throw new AppError("Shipment not found.", 404);
+  if (shipment.status !== "UNPAID") {
+    throw new AppError("Shipment is no longer unpaid.", 409);
+  }
+
+  const totalFare = Number(shipment.totalFare ?? shipment.fareSnapshot ?? 0);
+  const codAmount = shipment.paymentType === "COD" ? Number(shipment.codAmount ?? 0) : 0;
+
+  const updated = await prisma.$transaction(async (tx) => {
+    const paidShipment = await tx.shipment.update({
+      where: { id: shipment.id },
+      data: { status: "PENDING" },
+    });
+
+    await tx.khaltiPayment.create({
+      data: {
+        merchantId,
+        shipmentId: shipment.id,
+        amount: totalFare,
+        pidx,
+        txnId: khaltiRes.transaction_id,
+        status: "COMPLETED",
+        completedAt: new Date(),
+      },
+    });
+
+    await tx.transaction.upsert({
+      where: { shipmentId: shipment.id },
+      update: {
+        paymentType: shipment.paymentType,
+        totalFare,
+        codAmount,
+        collectedByRider: 0,
+        isRemitted: false,
+      },
+      create: {
+        shipmentId: shipment.id,
+        paymentType: shipment.paymentType,
+        totalFare,
+        codAmount,
+        collectedByRider: 0,
+        isRemitted: false,
+      },
+    });
+
+    await tx.shipmentLog.create({
+      data: {
+        shipmentId: shipment.id,
+        status: "PENDING",
+        note: `Payment verified via Khalti. txnId: ${khaltiRes.transaction_id}`,
+        updatedById: userId,
+      },
+    });
+
+    return paidShipment;
+  });
+
+  try {
+    await publishShipmentNew(updated, shipment.vehicleType, shipment.paymentType);
+  } catch (err) {
+    logger.warn(
+      { err, shipmentId: shipment.id },
+      "Shipment publish event failed - non-critical",
+    );
+  }
+
+  await redis.del(`pay_pidx:${pidx}`);
+  await redis.del(`pay_session:${sessionToken}`);
+
+  return {
+    verified: true,
+    shipmentId: updated.id,
+    trackingNumber: updated.trackingNumber,
+    totalFare,
+    qrCode: await QRCode.toDataURL(updated.trackingNumber),
   };
 }

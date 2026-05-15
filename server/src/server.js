@@ -13,20 +13,26 @@ import logger from "./utils/logger.js";
 
 const port = 3000;
 
-// Auto-migrate on startup
-try {
-  logger.info("Running database migrations...");
-  execSync("npx prisma migrate deploy", {
-    stdio: "inherit",
-    env: {
-      ...process.env,
-      DATABASE_URL: "postgresql://user:password@localhost:5433/meroBhariya",
-    },
-  });
-  logger.info("Migrations complete.");
-} catch (err) {
-  logger.warn({ err }, "Migration warning");
-}
+// Auto-migrate on startup with retry logic
+const runMigrations = (retries = 5, delayMs = 3000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      logger.info(`Running database migrations (attempt ${i + 1}/${retries})...`);
+      execSync("npx prisma migrate deploy", { stdio: "inherit" });
+      logger.info("Migrations complete.");
+      return;
+    } catch (err) {
+      if (i < retries - 1) {
+        logger.warn(`Migration failed, retrying in ${delayMs}ms...`);
+        execSync(`sleep ${delayMs / 1000}`);
+      } else {
+        logger.warn({ err }, "Migration warning — all retries exhausted, continuing startup");
+      }
+    }
+  }
+};
+
+runMigrations();
 
 const server = http.createServer(app);
 const io = new socketIOServer(server, {

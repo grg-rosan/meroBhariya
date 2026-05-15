@@ -1,8 +1,8 @@
 import axios from "axios";
-import AppError from "../error/appError";
-import logger from "./logger";
+import AppError from "../error/appError.js";
+import logger from "./logger.js";
 import { deflateRaw } from "node:zlib";
-import { khaltiConfig } from "../../config/khalti.config";
+import { khaltiConfig } from "../../config/khalti.config.js";
 
 
 const khaltiApi = axios.create({

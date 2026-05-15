@@ -10,8 +10,6 @@ const FIELDS = [
   { key: "minFare", label: "Min fare (रु)", step: "1" },
   { key: "fragileCharge", label: "Fragile charge (रु)", step: "1" },
   { key: "codChargeRate", label: "COD charge (%)", step: "0.1" },
-  { key: "nightSurcharge", label: "Night surcharge (रु)", step: "1" },
-  { key: "cancelCharge", label: "Cancel fee (रु)", step: "1" },
 ];
 
 export default function FareCard({ config, onSave, saving }) {
@@ -58,7 +56,6 @@ export default function FareCard({ config, onSave, saving }) {
       {/* Expanded fields */}
       {expanded && (
         <div className="px-5 pb-5 border-t border-gray-200 dark:border-zinc-800">
-          // replace the FIELDS.map block with:
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
             {FIELDS.map((f) => (
               <FareField

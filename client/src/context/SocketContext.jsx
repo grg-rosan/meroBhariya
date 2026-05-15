@@ -3,7 +3,6 @@ import { createContext, useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { io } from "socket.io-client";
 import { useAuth } from "../modules/auth/AuthContext";
-import logger from "../utils/logger.js";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const SocketContext = createContext(null);
@@ -22,13 +21,13 @@ export const SocketProvider = () => {
 
     s.on("connect", () => {
       setSocket(s);
-      logger.info({ socketId: s.id }, "[Socket] Connected");
+      console.info({ socketId: s.id }, "[Socket] Connected");
     });
     s.on("disconnect", () => {
       setSocket(null);
-      logger.info("[Socket] Disconnected");
+      console.info("[Socket] Disconnected");
     });
-    s.on("connect_error", (err) => logger.error({ err }, "[Socket] Error"));
+    s.on("connect_error", (err) => console.error({ err }, "[Socket] Error"));
 
     return () => {
       s.disconnect();

@@ -29,9 +29,20 @@ export const useHubInventory = () => {
 
 export const useStuckPackages = () => {
   const result = useAPI("/api/dispatcher/shipments/stuck");
+  const stuck = (result.data?.data ?? []).map((pkg) => {
+    const hoursInHub = Math.round((pkg.stuckDurationMinutes ?? 0) / 60);
+    return {
+      ...pkg,
+      hoursInHub,
+      merchant: pkg.merchant?.businessName ?? "Unknown merchant",
+      destination: pkg.deliveryAddress ?? "Unknown destination",
+      reason: pkg.stuckReason,
+    };
+  });
   return {
     ...result,
-    packages: result.data?.data ?? [],
+    data: result.data ? { ...result.data, stuck } : null,
+    packages: stuck,
   };
 };
 
@@ -78,7 +89,6 @@ export function useAssignRider() {
 export function useBulkAssignRider() {
   const [loading, setLoading]   = useState(false);
   const [progress, setProgress] = useState(0);
-  const toast = useToast();
 
   const assignAll = async (shipmentIds, riderId) => {
     setLoading(true);

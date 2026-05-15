@@ -18,7 +18,8 @@ function startOf(unit) {
 export const getRiderEarnings = async (userId, query) => {
   const profile               = await findProfile(userId);
   const { page, limit, skip } = parsePagination(query);
-  const dateFilter            = buildDateFilter(query);
+ const { from, to, page: _page, limit: _limit } = query;
+const dateFilter = buildDateFilter(from, to);
 
   const deliveryWhere = {
     riderId: profile.id,

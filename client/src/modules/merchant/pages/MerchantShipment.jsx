@@ -27,7 +27,7 @@ export default function MerchantShipments() {
   const [payingId,     setPayingId]     = useState(null); // shipment id currently being paid
 
   const { data, loading, refetch }          = useShipments(activeStatus, page);
-  const { initiatePayment, loading: paying } = usePayment();
+  const { initiateExistingPayment, loading: paying } = usePayment();
 
   const shipments  = data?.shipments ?? [];
   const totalCount = data?.total     ?? 0;
@@ -42,7 +42,7 @@ export default function MerchantShipments() {
   const handlePayNow = async (shipment) => {
     setPayingId(shipment.id);
     try {
-      await initiatePayment(shipment.id); // redirects to Khalti
+      await initiateExistingPayment(shipment.id); // redirects to Khalti
     } catch {
       setPayingId(null); // only reached if initiation itself fails
     }

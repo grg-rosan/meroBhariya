@@ -25,7 +25,7 @@ const StatusBadge = ({ status }) => {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function MerchantPayment() {
-  const { initiatePayment, loading: payLoading, error: payError } = usePayment();
+  const { initiateExistingPayment, loading: payLoading, error: payError } = usePayment();
 
   const [shipments, setShipments]   = useState([]);
   const [fetching, setFetching]     = useState(true);
@@ -38,7 +38,7 @@ export default function MerchantPayment() {
     try {
       // Fetch shipments that are UNPAID — adjust endpoint/params to match your API
       const data = await apiGet("/api/merchant/shipments", { status: "UNPAID", limit: 50 });
-      setShipments(data.data?.shipments ?? data.data ?? []);
+      setShipments(data.shipments ?? []);
     } catch (err) {
       setFetchError(err.message ?? "Failed to load shipments.");
     } finally {
@@ -51,7 +51,7 @@ export default function MerchantPayment() {
   const handlePay = async (shipmentId) => {
     setPayingId(shipmentId);
     try {
-      await initiatePayment(shipmentId); // redirects away on success
+      await initiateExistingPayment(shipmentId); // redirects away on success
     } catch {
       // error shown via payError
     } finally {

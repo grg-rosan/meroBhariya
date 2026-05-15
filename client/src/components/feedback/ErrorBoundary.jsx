@@ -1,6 +1,5 @@
 // src/shared/components/ErrorBoundary.jsx
 import { Component } from "react";
-import logger from "../../utils/logger.js";
 
 export default class ErrorBoundary extends Component {
   state = { error: null };
@@ -10,7 +9,7 @@ export default class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
-    logger.error({ err: error, info }, "[ErrorBoundary]");
+    console``.error({ err: error, info }, "[ErrorBoundary]");
   }
 
   render() {

@@ -20,21 +20,27 @@ async function handleResponse(res) {
 export function useAPI(path) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const toast = useToast();
 
   const fetch_ = useCallback(async () => {
     if (!path) {
       setData(null);
       setLoading(false);
+      setError(null);
       return;
     }
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch(`${API}${path}`, { headers: authHeaders() });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setData(await res.json());
+      const json = await handleResponse(res);
+      setData(json);
+      return json;
     } catch (e) {
-      toast(e.message);
+      const message = e.message ?? "Request failed";
+      setError(message);
+      toast({ message, type: "error" });
     } finally {
       setLoading(false);
     }
@@ -44,7 +50,7 @@ export function useAPI(path) {
     fetch_();
   }, [fetch_]);
 
-  return { data, loading, refetch: fetch_ };
+  return { data, loading, error, refetch: fetch_ };
 }
 
 // ── Standalone fetch helpers ──────────────────────────────────────────────────

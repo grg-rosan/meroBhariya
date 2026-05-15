@@ -19,7 +19,7 @@ const toast = useToast();
     setLoading(true);
     try {
       const res = await apiPost("/api/admin/staff", payload);
-      return res;
+      return res.user ?? res.data ?? res;
     } catch (e) {
  toast({ message: e.message, type: "error" });  
       throw e;

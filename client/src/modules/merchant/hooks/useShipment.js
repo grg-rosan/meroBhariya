@@ -7,20 +7,27 @@ import { useAPI, apiPost, apiDelete, API, authHeaders } from "../../../shared/ho
 
 // useAPI doesn't accept a deps array — for filter/page changes we need
 // to rebuild the path string so useAPI re-runs via its own useEffect on path change
-export const useShipments = (status = "", page = 1) =>
-  useAPI(
+export const useShipments = (status = "", page = 1) => {
+  const result = useAPI(
     `/api/merchant/shipments?${new URLSearchParams({
       ...(status && { status }),
       page,
       limit: 20,
     }).toString()}`
   );
+  const { success: _success, ...payload } = result.data ?? {};
+  return { ...result, data: result.data ? payload : null };
+};
 
-export const useShipment = (id) =>
-  useAPI(id ? `/api/merchant/shipments/${id}` : null);
+export const useShipment = (id) => {
+  const result = useAPI(id ? `/api/merchant/shipments/${id}` : null);
+  return { ...result, data: result.data?.data ?? null };
+};
 
-export const useCODLedger = () =>
-  useAPI("/api/merchant/shipments/cod-ledger");
+export const useCODLedger = () => {
+  const result = useAPI("/api/merchant/shipments/cod-ledger");
+  return { ...result, data: result.data?.data ?? null };
+};
 
 // ── Create shipment ───────────────────────────────────────────────────────────
 

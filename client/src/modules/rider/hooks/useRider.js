@@ -80,5 +80,7 @@ export const useRiderManifest = () => {
 
 export const useRiderEarnings = () => {
   const result = useAPI("/api/rider/earnings");
-  return { ...result, data: result.data?.data ?? null };
+  if (!result.data) return { ...result, data: null };
+  const { success: _success, ...earnings } = result.data;
+  return { ...result, data: earnings };
 };

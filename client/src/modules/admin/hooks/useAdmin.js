@@ -121,7 +121,25 @@ export function useSettleCOD() {
 }
 
 // __________Settlements ____________________
-export const useRiderSettlements = () => useAPI("/api/admin/settlements/riders");
+export const useRiderSettlements = () => {
+  const result = useAPI("/api/admin/settlements/riders");
+  const summary = result.data?.summary ?? [];
+  const riders = summary.map((r) => ({
+    ...r,
+    id: r.riderId,
+    fullName: r.riderName,
+    name: r.riderName,
+    totalCOD: r.unremittedTotal,
+    codHeld: r.unremittedTotal,
+    shipmentCount: r.pendingOrders,
+    txCount: r.pendingOrders,
+  }));
+  const totalHeld = riders.reduce((sum, r) => sum + (r.unremittedTotal ?? 0), 0);
+  return {
+    ...result,
+    data: result.data ? { ...result.data, riders, totalHeld } : null,
+  };
+};
 
 export function useRiderSettlementDetail(riderId) {
   return useAPI(riderId ? `/api/admin/settlements/riders/${riderId}` : null);

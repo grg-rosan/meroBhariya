@@ -1,6 +1,10 @@
 import logger from "../../../utils/logger.js";
 import { catchAsync } from "../../../utils/error/errorHandler.js";
-import { initiatePaymentSession, verifyAndCreateShipment } from "./payment.service.js";
+import {
+  initiateExistingShipmentPayment,
+  initiatePaymentSession,
+  verifyAndCreateShipment,
+} from "./payment.service.js";
 import AppError from "../../../utils/error/appError.js";
 
 export const initiatePayment = catchAsync(async (req, res) => {
@@ -17,6 +21,23 @@ export const initiatePayment = catchAsync(async (req, res) => {
   };
 
   const result = await initiatePaymentSession(merchantId, req.userId, req.body, ctx);
+  return res.status(201).json({ success: true, data: result });
+});
+
+export const initiateExistingPayment = catchAsync(async (req, res) => {
+  const merchantId = req.merchantProfileId;
+  const { shipmentId } = req.params;
+
+  logger.info(
+    { merchantId, userId: req.userId, shipmentId },
+    "Existing shipment payment initiation requested",
+  );
+
+  const result = await initiateExistingShipmentPayment(
+    merchantId,
+    req.userId,
+    shipmentId,
+  );
   return res.status(201).json({ success: true, data: result });
 });
 
