@@ -18,11 +18,11 @@ export default function BulkUpload() {
   };
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
+    <div className="p-4 md:p-6 max-w-3xl mx-auto">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-white">Bulk upload</h1>
-        <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
+        <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
           Upload a CSV or Excel file with up to 500 shipments
         </p>
       </div>
@@ -33,7 +33,7 @@ export default function BulkUpload() {
       <div className="flex items-center gap-3 mb-4">
         <a
           href="#"
-          className="text-xs text-rose-400 hover:text-rose-300 border border-gray-200 dark:border-zinc-800 px-3 py-1.5 rounded-lg"
+          className="text-xs text-rose-400 hover:text-rose-300 border border-zinc-200 dark:border-zinc-800 px-3 py-1.5 rounded-lg"
         >
           Download template
         </a>

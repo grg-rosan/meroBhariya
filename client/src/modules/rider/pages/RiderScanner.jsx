@@ -98,16 +98,16 @@ export default function RiderScanner() {
   };
 
   return (
-    <div className="p-6 max-w-xl mx-auto">
+    <div className="p-4 md:p-6 max-w-xl mx-auto">
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-white">Scanner</h1>
-        <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
+        <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
           Scan to accept pickup or confirm delivery
         </p>
       </div>
 
       {/* Mode toggle */}
-      <div className="flex items-center gap-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-lg p-1 mb-4 w-fit">
+      <div className="flex items-center gap-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-1 mb-4 w-fit">
         {["PICKUP", "DELIVER"].map((m) => (
           <button
             key={m}
@@ -115,7 +115,7 @@ export default function RiderScanner() {
             className={`px-4 py-1.5 text-xs rounded-md font-medium transition-all ${
               mode === m
                 ? "bg-sky-500 text-white"
-                : "text-gray-500 hover:text-gray-800 dark:text-zinc-200"
+                : "text-zinc-500 hover:text-zinc-800 dark:text-zinc-200"
             }`}
           >
             {m === "PICKUP" ? "Scan pickup" : "Confirm delivery"}

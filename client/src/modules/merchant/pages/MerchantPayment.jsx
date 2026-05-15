@@ -14,7 +14,7 @@ const StatusBadge = ({ status }) => {
     DELIVERED:  { label: "Delivered",  cls: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20" },
     CANCELLED:  { label: "Cancelled",  cls: "bg-red-50 text-red-500 dark:bg-red-500/10 dark:text-red-400 border-red-200 dark:border-red-500/20" },
   };
-  const { label, cls } = map[status] ?? { label: status, cls: "bg-gray-100 text-gray-500 border-gray-200" };
+  const { label, cls } = map[status] ?? { label: status, cls: "bg-zinc-100 text-zinc-500 border-zinc-200" };
   return (
     <span className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-md border ${cls}`}>
       {label}
@@ -61,20 +61,20 @@ export default function MerchantPayment() {
 
   // ─────────────────────────────────────────────────────────
   return (
-    <div className="p-6 max-w-3xl mx-auto">
+    <div className="p-4 md:p-6 max-w-3xl mx-auto">
 
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Payments</h1>
-          <p className="text-sm text-gray-500 dark:text-zinc-500 mt-0.5">
+          <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">Payments</h1>
+          <p className="text-sm text-zinc-500 dark:text-zinc-500 mt-0.5">
             Pay for your shipments via Khalti
           </p>
         </div>
         <button
           onClick={fetchUnpaid}
           disabled={fetching}
-          className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-zinc-400 hover:text-gray-700 dark:hover:text-zinc-200 transition-colors"
+          className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
         >
           <RefreshCw size={13} className={fetching ? "animate-spin" : ""} />
           Refresh
@@ -92,7 +92,7 @@ export default function MerchantPayment() {
       {/* Loading */}
       {fetching && (
         <div className="flex items-center justify-center py-16">
-          <Loader2 size={20} className="animate-spin text-gray-300 dark:text-zinc-600" />
+          <Loader2 size={20} className="animate-spin text-zinc-300 dark:text-zinc-600" />
         </div>
       )}
 
@@ -100,7 +100,7 @@ export default function MerchantPayment() {
       {!fetching && fetchError && (
         <div className="flex flex-col items-center py-16 text-center gap-3">
           <AlertCircle size={20} className="text-red-400" />
-          <p className="text-sm text-gray-500 dark:text-zinc-500">{fetchError}</p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-500">{fetchError}</p>
           <button
             onClick={fetchUnpaid}
             className="text-xs text-rose-500 hover:underline"
@@ -113,11 +113,11 @@ export default function MerchantPayment() {
       {/* Empty state */}
       {!fetching && !fetchError && shipments.length === 0 && (
         <div className="flex flex-col items-center py-16 text-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center">
-            <CheckCircle size={20} className="text-gray-400 dark:text-zinc-500" />
+          <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+            <CheckCircle size={20} className="text-zinc-400 dark:text-zinc-500" />
           </div>
-          <p className="text-sm font-medium text-gray-700 dark:text-zinc-300">All caught up</p>
-          <p className="text-xs text-gray-400 dark:text-zinc-600">No unpaid shipments at the moment.</p>
+          <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">All caught up</p>
+          <p className="text-xs text-zinc-400 dark:text-zinc-600">No unpaid shipments at the moment.</p>
         </div>
       )}
 
@@ -127,26 +127,26 @@ export default function MerchantPayment() {
           {shipments.map((s) => (
             <div
               key={s.id}
-              className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl p-4 shadow-sm flex items-center gap-4"
+              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 shadow-sm flex items-center gap-4"
             >
               {/* Icon */}
-              <div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-zinc-800 flex items-center justify-center shrink-0">
-                <CreditCard size={15} className="text-gray-400 dark:text-zinc-500" />
+              <div className="w-9 h-9 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0">
+                <CreditCard size={15} className="text-zinc-400 dark:text-zinc-500" />
               </div>
 
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-sm font-medium text-gray-800 dark:text-zinc-100 font-mono">
+                  <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100 font-mono">
                     {s.trackingNumber}
                   </span>
                   <StatusBadge status={s.status} />
                 </div>
-                <p className="text-xs text-gray-500 dark:text-zinc-500 truncate">
+                <p className="text-xs text-zinc-500 dark:text-zinc-500 truncate">
                   {s.deliveryAddress}
                 </p>
                 <div className="flex items-center gap-3 mt-1">
-                  <span className="text-xs text-gray-400 dark:text-zinc-600 flex items-center gap-1">
+                  <span className="text-xs text-zinc-400 dark:text-zinc-600 flex items-center gap-1">
                     <Clock size={10} />
                     {new Date(s.createdAt).toLocaleDateString("en-NP", { day: "numeric", month: "short" })}
                   </span>
@@ -158,7 +158,7 @@ export default function MerchantPayment() {
 
               {/* Amount + Pay button */}
               <div className="text-right shrink-0">
-                <p className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                <p className="text-sm font-semibold text-zinc-900 dark:text-white mb-2">
                   रु {Number(s.totalFare).toLocaleString()}
                 </p>
                 {s.status === "UNPAID" && (

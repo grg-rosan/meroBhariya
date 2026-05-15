@@ -28,7 +28,7 @@ export default function UserCard({ user, type, onReviewDoc, loading }) {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden mb-3 last:mb-0">
+    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden mb-3 last:mb-0">
       <div className="p-4 flex items-start gap-4">
         <div className="w-10 h-10 rounded-full bg-violet-500/20 text-violet-400 text-sm font-semibold flex items-center justify-center shrink-0">
           {initials}
@@ -36,14 +36,14 @@ export default function UserCard({ user, type, onReviewDoc, loading }) {
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
-            <p className="text-sm font-medium text-gray-800 dark:text-zinc-200">
+            <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
               {user.user.fullName}
             </p>
-            <span className="text-xs bg-gray-100 dark:bg-blue-950 text-gray-500 dark:text-zinc-400 px-2 py-0.5 rounded">
+            <span className="text-xs bg-zinc-100 dark:bg-blue-950 text-zinc-500 dark:text-zinc-400 px-2 py-0.5 rounded">
               {type === "MERCHANT" ? user.businessName : user.vehicleType?.name}
             </span>
           </div>
-          <p className="text-xs text-gray-400 dark:text-zinc-500 mb-3">
+          <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-3">
             {user.user.email}
           </p>
 
@@ -71,7 +71,7 @@ export default function UserCard({ user, type, onReviewDoc, loading }) {
           href={user.documents[0]?.fileUrl}
           target="_blank"
           rel="noreferrer"
-          className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 dark:border-zinc-700 text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:bg-blue-950 text-xs rounded-lg transition-all"
+          className="flex items-center gap-1.5 px-3 py-1.5 border border-zinc-300 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:bg-blue-950 text-xs rounded-lg transition-all"
         >
           <FileText size={12} /> Docs
         </a>

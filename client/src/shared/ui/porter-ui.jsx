@@ -1,7 +1,7 @@
 /** Full-page shell */
 export function PageShell({ children, wide = false }) {
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-zinc-950 flex items-start justify-center px-4 py-12 relative overflow-x-hidden">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-start justify-center px-4 py-8 md:py-12 relative overflow-x-hidden">
       {/* Ambient glow — visible in dark mode only */}
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-150 h-75 bg-orange-500/5 rounded-full blur-3xl pointer-events-none" />
       <div
@@ -17,7 +17,7 @@ export function PageShell({ children, wide = false }) {
 export function Card({ children, className = "" }) {
   return (
     <div
-      className={`bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-8 shadow-md dark:shadow-2xl ${className}`}
+      className={`bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 md:p-8 shadow-md dark:shadow-2xl ${className}`}
     >
       {children}
     </div>
@@ -37,12 +37,12 @@ export function Brand({ subtitle }) {
             className="h-full w-auto object-contain transform scale-150" 
           />
         </div>
-        <span className="font-bold text-gray-900 dark:text-white text-xl tracking-tight">
+        <span className="font-bold text-zinc-900 dark:text-white text-xl tracking-tight">
           meroBhariya
         </span>
       </div>
       {subtitle && (
-        <p className="text-xs text-gray-500 dark:text-zinc-500 tracking-widest uppercase">
+        <p className="text-xs text-zinc-500 dark:text-zinc-500 tracking-widest uppercase">
           {subtitle}
         </p>
       )}
@@ -54,11 +54,11 @@ export function Brand({ subtitle }) {
 export function Heading({ title, sub }) {
   return (
     <div className="mb-7">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight leading-tight mb-1">
+      <h1 className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight leading-tight mb-1">
         {title}
       </h1>
       {sub && (
-        <p className="text-sm text-gray-500 dark:text-zinc-500">{sub}</p>
+        <p className="text-sm text-zinc-500 dark:text-zinc-500">{sub}</p>
       )}
     </div>
   );
@@ -68,7 +68,7 @@ export function Heading({ title, sub }) {
 export function Field({ label, error, children }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-semibold text-gray-600 dark:text-zinc-400 uppercase tracking-widest">
+      <label className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest">
         {label}
       </label>
       {children}
@@ -81,7 +81,7 @@ export function Field({ label, error, children }) {
 export function Input({ className = "", ...props }) {
   return (
     <input
-      className={`bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 rounded-lg px-3.5 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-zinc-500 outline-none focus:border-orange-500 dark:focus:border-orange-500 transition-colors w-full ${className}`}
+      className={`bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3.5 py-2.5 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 outline-none focus:border-orange-500 dark:focus:border-orange-500 transition-colors w-full ${className}`}
       {...props}
     />
   );
@@ -91,7 +91,7 @@ export function Input({ className = "", ...props }) {
 export function Select({ children, className = "", ...props }) {
   return (
     <select
-      className={`bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 rounded-lg px-3.5 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:border-orange-500 dark:focus:border-orange-500 transition-colors w-full cursor-pointer ${className}`}
+      className={`bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3.5 py-2.5 text-sm text-zinc-900 dark:text-white outline-none focus:border-orange-500 dark:focus:border-orange-500 transition-colors w-full cursor-pointer ${className}`}
       {...props}
     >
       {children}
@@ -103,7 +103,7 @@ export function Select({ children, className = "", ...props }) {
 export function Button({ loading, children, className = "", ...props }) {
   return (
     <button
-      className={`w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-200 dark:disabled:bg-zinc-700 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-lg py-3 transition-colors ${className}`}
+      className={`w-full bg-orange-500 hover:bg-orange-600 disabled:bg-zinc-200 dark:disabled:bg-zinc-700 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-lg py-3 transition-colors ${className}`}
       disabled={loading}
       {...props}
     >
@@ -116,7 +116,7 @@ export function Button({ loading, children, className = "", ...props }) {
 export function GhostButton({ children, className = "", ...props }) {
   return (
     <button
-      className={`w-full bg-transparent border border-gray-300 dark:border-zinc-700 hover:border-gray-400 dark:hover:border-zinc-500 text-gray-600 dark:text-zinc-300 hover:text-gray-900 dark:hover:text-white text-sm font-medium rounded-lg py-2.5 transition-colors ${className}`}
+      className={`w-full bg-transparent border border-zinc-300 dark:border-zinc-700 hover:border-gray-400 dark:hover:border-zinc-500 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white text-sm font-medium rounded-lg py-2.5 transition-colors ${className}`}
       {...props}
     >
       {children}
@@ -159,7 +159,7 @@ export function StepBar({ steps, current }) {
                   ? "bg-orange-400"
                   : active
                     ? "bg-orange-500"
-                    : "bg-gray-200 dark:bg-zinc-700"
+                    : "bg-zinc-200 dark:bg-zinc-700"
               }`}
             />
             <span
@@ -167,8 +167,8 @@ export function StepBar({ steps, current }) {
                 active
                   ? "text-orange-500"
                   : done
-                    ? "text-gray-500 dark:text-zinc-500"
-                    : "text-gray-400 dark:text-zinc-600"
+                    ? "text-zinc-500 dark:text-zinc-500"
+                    : "text-zinc-400 dark:text-zinc-600"
               }`}
             >
               {label}
@@ -184,13 +184,13 @@ export function StepBar({ steps, current }) {
 export function Divider({ label }) {
   return (
     <div className="flex items-center gap-3 my-5">
-      <div className="flex-1 h-px bg-gray-200 dark:bg-zinc-800" />
+      <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-800" />
       {label && (
-        <span className="text-xs text-gray-400 dark:text-zinc-600">
+        <span className="text-xs text-zinc-400 dark:text-zinc-600">
           {label}
         </span>
       )}
-      <div className="flex-1 h-px bg-gray-200 dark:bg-zinc-800" />
+      <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-800" />
     </div>
   );
 }
@@ -204,7 +204,7 @@ export function DropZone({ label, accept, file, onChange, hint }) {
       className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-xl px-4 py-6 cursor-pointer transition-all text-center ${
         file
           ? "border-orange-500 bg-orange-50 dark:bg-orange-500/5"
-          : "border-gray-300 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 hover:border-gray-400 dark:hover:border-zinc-500"
+          : "border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 hover:border-gray-400 dark:hover:border-zinc-500"
       }`}
     >
       <span className="text-2xl">{file ? "✓" : "⬆"}</span>
@@ -212,13 +212,13 @@ export function DropZone({ label, accept, file, onChange, hint }) {
         className={`text-sm font-medium ${
           file
             ? "text-orange-600 dark:text-orange-400"
-            : "text-gray-600 dark:text-zinc-400"
+            : "text-zinc-600 dark:text-zinc-400"
         }`}
       >
         {file ? file.name : label}
       </span>
       {hint && !file && (
-        <span className="text-xs text-gray-400 dark:text-zinc-600">{hint}</span>
+        <span className="text-xs text-zinc-400 dark:text-zinc-600">{hint}</span>
       )}
       <input
         id={id}
@@ -234,7 +234,7 @@ export function DropZone({ label, accept, file, onChange, hint }) {
 /** Info banner */
 export function InfoBanner({ children }) {
   return (
-    <div className="bg-orange-50 dark:bg-orange-500/5 border border-orange-200 dark:border-orange-500/20 rounded-xl px-4 py-3 text-sm text-gray-600 dark:text-zinc-400 leading-relaxed mb-6">
+    <div className="bg-orange-50 dark:bg-orange-500/5 border border-orange-200 dark:border-orange-500/20 rounded-xl px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed mb-6">
       {children}
     </div>
   );
@@ -245,12 +245,12 @@ export function Bar({ label, pct, color = "bg-violet-500" }) {
   return (
     <div className="mb-3 last:mb-0">
       <div className="flex justify-between text-xs mb-1.5">
-        <span className="text-gray-500 dark:text-zinc-400">{label}</span>
-        <span className="text-gray-700 dark:text-zinc-300 font-medium">
+        <span className="text-zinc-500 dark:text-zinc-400">{label}</span>
+        <span className="text-zinc-700 dark:text-zinc-300 font-medium">
           {safePct}%
         </span>
       </div>
-      <div className="h-1.5 bg-gray-100 dark:bg-blue-950 rounded-full overflow-hidden">
+      <div className="h-1.5 bg-zinc-100 dark:bg-blue-950 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-700 ${color}`}
           style={{ width: `${safePct}%` }}

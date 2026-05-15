@@ -1,6 +1,7 @@
 // src/shared/hooks/useDocUpload.js
 import { useState, useEffect } from "react";
 import { apiGet, apiPostForm } from "./useApi.js";
+import { useToast } from "../../context/ToastContext";
 import { ALLOWED_TYPES } from "../constants/doc.constants.js";
 
 // ── Pure helpers (no React) ───────────────────────────────────
@@ -43,6 +44,7 @@ export function useDocStatus(docs = []) {
  *   const { docs, uploadDocs, uploading } = useDocUpload({ apiBase: "/api/rider" });
  */
 export function useDocUpload({ apiBase }) {
+  const toast = useToast();
   const [docs,        setDocs]        = useState([]);
   const [docsLoading, setDocsLoading] = useState(true);
   const [docsError,   setDocsError]   = useState(null);
@@ -54,7 +56,10 @@ export function useDocUpload({ apiBase }) {
     setDocsError(null);
     apiGet(`${apiBase}/documents`)
       .then((res) => setDocs(res.data ?? []))
-      .catch((e)  => setDocsError(e.message))
+      .catch((e) => {
+        setDocsError(e.message);
+        toast({ message: e.message, type: "error" });
+      })
       .finally(()  => setDocsLoading(false));
   };
 
@@ -73,9 +78,11 @@ export function useDocUpload({ apiBase }) {
     try {
       const result = await apiPostForm(`${apiBase}/documents`, fd);
       await fetchDocs();
+      toast({ message: "Documents uploaded successfully.", type: "success" });
       return result;
     } catch (e) {
       setUploadError(e.message);
+      toast({ message: e.message, type: "error" });
       throw e;
     } finally {
       setUploading(false);

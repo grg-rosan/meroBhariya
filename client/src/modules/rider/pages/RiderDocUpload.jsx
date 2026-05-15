@@ -70,7 +70,7 @@ export default function RiderDocumentUpload() {
 
   if (docsLoading)
     return (
-      <div className="p-6 text-gray-500 dark:text-zinc-400">Loading...</div>
+      <div className="p-4 md:p-6 text-zinc-500 dark:text-zinc-400">Loading...</div>
     );
 
   if (hasDocs && !reupload) {

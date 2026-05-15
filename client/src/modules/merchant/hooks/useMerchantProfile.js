@@ -1,6 +1,7 @@
 // src/modules/merchant/hooks/useMerchantProfile.js
 import { useState, useEffect } from "react";
 import { apiGet, apiPostForm } from "../../../shared/hooks/useApi.js";
+import { useToast } from "../../../context/ToastContext";
 
 // Matches pickupAddress string against districts list.
 // e.g. "New Road, Kathmandu" → finds district with name "Kathmandu".
@@ -14,6 +15,7 @@ function resolveFromDistrict(pickupAddress, districts) {
 }
 
 export function useMerchantProfile(districts = []) {
+  const toast = useToast();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState(null);
@@ -29,7 +31,10 @@ export function useMerchantProfile(districts = []) {
   useEffect(() => {
     apiGet("/api/merchant/me")
       .then((res) => setProfile(res.data))
-      .catch((e)  => setError(e.message))
+      .catch((e) => {
+        setError(e.message);
+        toast({ message: e.message, type: "error" });
+      })
       .finally(()  => setLoading(false));
   }, []);
 
@@ -59,11 +64,13 @@ export function useMerchantProfile(districts = []) {
     setUploadError(null);
     try {
       const result = await apiPostForm("/api/merchant/documents", fd);
-      await fetchDocs(); // refresh doc list after upload
+      await fetchDocs();
+      toast({ message: "Documents uploaded successfully.", type: "success" });
       return result;
     } catch (e) {
       setUploadError(e.message);
-      throw e;           // let the caller handle navigation / step change
+      toast({ message: e.message, type: "error" });
+      throw e;
     } finally {
       setUploading(false);
     }

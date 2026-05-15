@@ -38,16 +38,16 @@ export default function Verify() {
   if (isInvalid) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center p-6">
-        <div className="w-full max-w-sm bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-2xl p-8 shadow-md text-center">
+        <div className="w-full max-w-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-8 shadow-md text-center">
           <div className="flex justify-center mb-4">
             <div className="w-14 h-14 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center">
               <XCircle size={28} className="text-red-500" />
             </div>
           </div>
-          <h2 className="text-base font-semibold text-gray-800 dark:text-zinc-100 mb-1">
+          <h2 className="text-base font-semibold text-zinc-800 dark:text-zinc-100 mb-1">
             Invalid payment link
           </h2>
-          <p className="text-sm text-gray-500 dark:text-zinc-500 mb-6">
+          <p className="text-sm text-zinc-500 dark:text-zinc-500 mb-6">
             This payment link is missing required parameters.
           </p>
           <button
@@ -67,16 +67,16 @@ export default function Verify() {
 
         {/* ── Verifying ───────────────────────────────────── */}
         {status === "verifying" && (
-          <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-2xl p-8 shadow-md text-center">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-8 shadow-md text-center">
             <div className="flex justify-center mb-4">
-              <div className="w-14 h-14 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center">
-                <Loader2 size={24} className="animate-spin text-gray-400 dark:text-zinc-500" />
+              <div className="w-14 h-14 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                <Loader2 size={24} className="animate-spin text-zinc-400 dark:text-zinc-500" />
               </div>
             </div>
-            <h2 className="text-base font-semibold text-gray-800 dark:text-zinc-100 mb-1">
+            <h2 className="text-base font-semibold text-zinc-800 dark:text-zinc-100 mb-1">
               Verifying payment
             </h2>
-            <p className="text-sm text-gray-500 dark:text-zinc-500">
+            <p className="text-sm text-zinc-500 dark:text-zinc-500">
               Please wait while we confirm your payment with Khalti…
             </p>
           </div>
@@ -84,17 +84,17 @@ export default function Verify() {
 
         {/* ── Success ─────────────────────────────────────── */}
         {status === "success" && (
-          <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-2xl p-8 shadow-md text-center">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-8 shadow-md text-center">
             <div className="flex justify-center mb-4">
               <div className="w-14 h-14 rounded-full bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center">
                 <CheckCircle size={28} className="text-emerald-500" />
               </div>
             </div>
 
-            <h2 className="text-base font-semibold text-gray-800 dark:text-zinc-100 mb-1">
+            <h2 className="text-base font-semibold text-zinc-800 dark:text-zinc-100 mb-1">
               Payment successful!
             </h2>
-            <p className="text-sm text-gray-500 dark:text-zinc-500 mb-4">
+            <p className="text-sm text-zinc-500 dark:text-zinc-500 mb-4">
               Your shipment has been created and is now active.
             </p>
 
@@ -104,9 +104,9 @@ export default function Verify() {
                 <img
                   src={result.qrCode}
                   alt="Shipment QR Code"
-                  className="w-44 h-44 rounded-xl border border-gray-100 dark:border-zinc-700"
+                  className="w-44 h-44 rounded-xl border border-zinc-100 dark:border-zinc-700"
                 />
-                <p className="text-xs text-gray-400 dark:text-zinc-500 mt-2">
+                <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-2">
                   Scan to track shipment
                 </p>
               </div>
@@ -114,10 +114,10 @@ export default function Verify() {
 
             {/* Tracking number */}
             {result?.trackingNumber && (
-              <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl px-4 py-3 mb-2 flex items-center justify-between">
+              <div className="bg-zinc-50 dark:bg-zinc-800 rounded-xl px-4 py-3 mb-2 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Package size={14} className="text-gray-400" />
-                  <span className="text-xs text-gray-500 dark:text-zinc-400">Tracking</span>
+                  <Package size={14} className="text-zinc-400" />
+                  <span className="text-xs text-zinc-500 dark:text-zinc-400">Tracking</span>
                 </div>
                 <span className="font-mono text-sm font-semibold text-rose-500">
                   #{result.trackingNumber}
@@ -127,9 +127,9 @@ export default function Verify() {
 
             {/* Total paid */}
             {result?.totalFare != null && (
-              <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl px-4 py-3 mb-6 flex items-center justify-between">
-                <span className="text-xs text-gray-500 dark:text-zinc-400">Amount paid</span>
-                <span className="text-sm font-semibold text-gray-800 dark:text-zinc-200">
+              <div className="bg-zinc-50 dark:bg-zinc-800 rounded-xl px-4 py-3 mb-6 flex items-center justify-between">
+                <span className="text-xs text-zinc-500 dark:text-zinc-400">Amount paid</span>
+                <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
                   रु {Number(result.totalFare).toLocaleString()}
                 </span>
               </div>
@@ -146,16 +146,16 @@ export default function Verify() {
 
         {/* ── Failed ──────────────────────────────────────── */}
         {status === "failed" && (
-          <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-2xl p-8 shadow-md text-center">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-2xl p-8 shadow-md text-center">
             <div className="flex justify-center mb-4">
               <div className="w-14 h-14 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center">
                 <XCircle size={28} className="text-red-500" />
               </div>
             </div>
-            <h2 className="text-base font-semibold text-gray-800 dark:text-zinc-100 mb-1">
+            <h2 className="text-base font-semibold text-zinc-800 dark:text-zinc-100 mb-1">
               Payment failed
             </h2>
-            <p className="text-sm text-gray-500 dark:text-zinc-500 mb-6">
+            <p className="text-sm text-zinc-500 dark:text-zinc-500 mb-6">
               {error ?? "Your payment could not be completed. Please try again."}
             </p>
             <div className="space-y-2">
@@ -167,7 +167,7 @@ export default function Verify() {
               </button>
               <button
                 onClick={() => navigate("/merchant/shipments")}
-                className="w-full py-2.5 border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-400 text-sm font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors flex items-center justify-center gap-2"
+                className="w-full py-2.5 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 text-sm font-medium rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors flex items-center justify-center gap-2"
               >
                 Go to shipments <ArrowRight size={14} />
               </button>

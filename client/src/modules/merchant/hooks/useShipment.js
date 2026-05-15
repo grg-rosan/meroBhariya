@@ -1,7 +1,8 @@
 // src/modules/merchant/hooks/useShipment.js
 
-import { useState, } from "react";
+import { useState } from "react";
 import { useAPI, apiPost, apiDelete, API, authHeaders } from "../../../shared/hooks/useApi";
+import { useToast } from "../../../context/ToastContext";
 
 // ── Read hooks ────────────────────────────────────────────────────────────────
 
@@ -32,6 +33,7 @@ export const useCODLedger = () => {
 // ── Create shipment ───────────────────────────────────────────────────────────
 
 export function useCreateShipment() {
+  const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState(null);
 
@@ -39,9 +41,12 @@ export function useCreateShipment() {
     setLoading(true);
     setError(null);
     try {
-      return await apiPost("/api/merchant/shipments", payload);
+      const res = await apiPost("/api/merchant/shipments", payload);
+      toast({ message: "Shipment created successfully.", type: "success" });
+      return res;
     } catch (e) {
       setError(e.message);
+      toast({ message: e.message, type: "error" });
       throw e;
     } finally {
       setLoading(false);
@@ -54,6 +59,7 @@ export function useCreateShipment() {
 // ── Cancel shipment ───────────────────────────────────────────────────────────
 
 export function useCancelShipment() {
+  const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState(null);
 
@@ -61,9 +67,12 @@ export function useCancelShipment() {
     setLoading(true);
     setError(null);
     try {
-      return await apiDelete(`/api/merchant/shipments/${id}`); // ✅ replaces raw fetch
+      const res = await apiDelete(`/api/merchant/shipments/${id}`);
+      toast({ message: "Shipment cancelled.", type: "success" });
+      return res;
     } catch (e) {
       setError(e.message);
+      toast({ message: e.message, type: "error" });
       throw e;
     } finally {
       setLoading(false);
@@ -76,6 +85,7 @@ export function useCancelShipment() {
 // ── Bulk upload ───────────────────────────────────────────────────────────────
 
 export function useBulkUpload() {
+  const toast = useToast();
   const [progress, setProgress]          = useState(0);
   const [loading, setLoading]            = useState(false);
   const [result, setResult]              = useState(null);
@@ -117,9 +127,17 @@ export function useBulkUpload() {
       });
 
       setResult(data);
+      const count = data?.data?.created ?? data?.created ?? 0;
+      toast({
+        message: count
+          ? `${count} shipment(s) uploaded successfully.`
+          : "Bulk upload completed.",
+        type: "success",
+      });
       return data;
     } catch (e) {
       setError(e.message);
+      toast({ message: e.message, type: "error" });
       throw e;
     } finally {
       setLoading(false);

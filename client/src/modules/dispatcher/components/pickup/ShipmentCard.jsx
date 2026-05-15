@@ -1,5 +1,5 @@
 import Badge from "../shared/Badge";
-import { useThemeTokens } from "../../../../shared/hooks/useTheme.js";
+import { useAppTheme } from "../../../../context/ThemeContext";
 
 /**
  * ShipmentCard
@@ -15,12 +15,11 @@ import { useThemeTokens } from "../../../../shared/hooks/useTheme.js";
  */
 export default function ShipmentCard({
   shipment,
-  dark,
   checked,
   onCheck,
   onAssign,
 }) {
-  const tk = useThemeTokens(dark);
+  const { dark, tokens: tk } = useAppTheme();
 
   const time = new Date(shipment.createdAt).toLocaleTimeString("en-NP", {
     hour: "2-digit",

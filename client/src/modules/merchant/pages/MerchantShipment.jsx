@@ -49,20 +49,20 @@ export default function MerchantShipments() {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
 
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Shipments</h1>
-          <p className="text-sm text-gray-500 dark:text-zinc-400">
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Shipments</h1>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
             Manage your outbound deliveries and track real-time status.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={refetch}
-            className="p-2.5 text-gray-500 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all"
+            className="p-2.5 text-zinc-500 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all"
             title="Refresh"
           >
             <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
@@ -79,7 +79,7 @@ export default function MerchantShipments() {
 
       {/* Tabs + Search */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div className="flex items-center gap-1 bg-gray-100 dark:bg-zinc-900/50 p-1 rounded-xl overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-900/50 p-1 rounded-xl overflow-x-auto no-scrollbar">
           {ALL_TABS.map((t) => (
             <button
               key={t.value}
@@ -87,7 +87,7 @@ export default function MerchantShipments() {
               className={`px-4 py-2 text-xs font-semibold whitespace-nowrap rounded-lg transition-all ${
                 activeStatus === t.value
                   ? "bg-white dark:bg-zinc-800 text-rose-500 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                  : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
               }`}
             >
               {t.label}
@@ -95,41 +95,41 @@ export default function MerchantShipments() {
           ))}
         </div>
         <div className="relative">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search tracking or name..."
-            className="w-full lg:w-72 pl-10 pr-4 py-2 text-sm bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 outline-none transition-all"
+            className="w-full lg:w-72 pl-10 pr-4 py-2 text-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 outline-none transition-all"
           />
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gray-50 dark:bg-zinc-800/50 border-b border-gray-200 dark:border-zinc-800">
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Shipment</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Receiver</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Location</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Fare / COD</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider"></th>
+              <tr className="bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-800">
+                <th className="px-6 py-4 text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Shipment</th>
+                <th className="px-6 py-4 text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Receiver</th>
+                <th className="px-6 py-4 text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Location</th>
+                <th className="px-6 py-4 text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Fare / COD</th>
+                <th className="px-6 py-4 text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
+            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
               {loading ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center">
-                    <RefreshCw className="w-6 h-6 animate-spin mx-auto text-gray-400" />
-                    <p className="text-sm text-gray-400 mt-2">Loading shipments…</p>
+                    <RefreshCw className="w-6 h-6 animate-spin mx-auto text-zinc-400" />
+                    <p className="text-sm text-zinc-400 mt-2">Loading shipments…</p>
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-12 text-center text-zinc-500">
                     <Package className="w-10 h-10 mx-auto mb-3 opacity-20" />
                     <p>No shipments found.</p>
                   </td>
@@ -145,7 +145,7 @@ export default function MerchantShipments() {
                       className={`transition-colors group ${
                         isUnpaid
                           ? "bg-amber-50/40 dark:bg-amber-500/5 hover:bg-amber-50 dark:hover:bg-amber-500/10"
-                          : "hover:bg-gray-50 dark:hover:bg-zinc-800/50"
+                          : "hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
                       }`}
                     >
                       {/* Shipment */}
@@ -153,7 +153,7 @@ export default function MerchantShipments() {
                         <span className="font-mono text-sm font-bold text-rose-500">
                           #{s.trackingNumber}
                         </span>
-                        <span className="text-[10px] text-gray-400 flex items-center gap-1 mt-1">
+                        <span className="text-[10px] text-zinc-400 flex items-center gap-1 mt-1">
                           <Calendar size={10} />
                           {new Date(s.createdAt).toLocaleDateString()}
                         </span>
@@ -161,15 +161,15 @@ export default function MerchantShipments() {
 
                       {/* Receiver */}
                       <td className="px-6 py-4">
-                        <span className="text-sm font-medium text-gray-900 dark:text-zinc-200 block">
+                        <span className="text-sm font-medium text-zinc-900 dark:text-zinc-200 block">
                           {s.receiverName}
                         </span>
-                        <span className="text-xs text-gray-500">{s.receiverPhone}</span>
+                        <span className="text-xs text-zinc-500">{s.receiverPhone}</span>
                       </td>
 
                       {/* Location */}
                       <td className="px-6 py-4">
-                        <p className="text-sm text-gray-600 dark:text-zinc-400 max-w-180px truncate">
+                        <p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-180px truncate">
                           {s.deliveryAddress}
                         </p>
                       </td>
@@ -178,13 +178,13 @@ export default function MerchantShipments() {
                       <td className="px-6 py-4">
                         {isUnpaid ? (
                           <div className="flex flex-col">
-                            <span className="text-xs text-gray-400">Shipping fare</span>
-                            <span className="text-sm font-semibold text-gray-900 dark:text-zinc-200">
+                            <span className="text-xs text-zinc-400">Shipping fare</span>
+                            <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-200">
                               रु {Number(s.totalFare).toLocaleString()}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-sm font-semibold text-gray-900 dark:text-zinc-200">
+                          <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-200">
                             {s.codAmount > 0 ? `Rs. ${s.codAmount.toLocaleString()}` : "—"}
                           </span>
                         )}
@@ -214,7 +214,7 @@ export default function MerchantShipments() {
                           )}
                           <button
                             onClick={() => navigate(`/merchant/shipments/${s.id}`)}
-                            className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all"
+                            className="p-2 text-zinc-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all"
                           >
                             <Eye size={16} />
                           </button>
@@ -229,22 +229,22 @@ export default function MerchantShipments() {
         </div>
 
         {/* Pagination */}
-        <div className="px-6 py-4 bg-gray-50 dark:bg-zinc-800/30 border-t border-gray-200 dark:border-zinc-800 flex items-center justify-between">
-          <p className="text-xs text-gray-500">
-            Showing <span className="font-semibold text-gray-700 dark:text-zinc-300">{filtered.length}</span> of {totalCount} shipments
+        <div className="px-6 py-4 bg-zinc-50 dark:bg-zinc-800/30 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+          <p className="text-xs text-zinc-500">
+            Showing <span className="font-semibold text-zinc-700 dark:text-zinc-300">{filtered.length}</span> of {totalCount} shipments
           </p>
           <div className="flex gap-2">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-4 py-1.5 text-xs font-medium border border-gray-200 dark:border-zinc-700 rounded-lg text-gray-600 dark:text-zinc-400 hover:bg-white dark:hover:bg-zinc-800 disabled:opacity-30 transition-all"
+              className="px-4 py-1.5 text-xs font-medium border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-white dark:hover:bg-zinc-800 disabled:opacity-30 transition-all"
             >
               Previous
             </button>
             <button
               onClick={() => setPage((p) => p + 1)}
               disabled={shipments.length < 20}
-              className="px-4 py-1.5 text-xs font-medium border border-gray-200 dark:border-zinc-700 rounded-lg text-gray-600 dark:text-zinc-400 hover:bg-white dark:hover:bg-zinc-800 disabled:opacity-30 transition-all"
+              className="px-4 py-1.5 text-xs font-medium border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-white dark:hover:bg-zinc-800 disabled:opacity-30 transition-all"
             >
               Next
             </button>

@@ -4,16 +4,16 @@ import { MapPin } from "lucide-react";
 
 const inputCls = (hasError) =>
   `w-full px-3 py-2.5 text-sm rounded-lg border focus:outline-none transition-colors
-   bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100
-   placeholder-gray-400 dark:placeholder-zinc-500
+   bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100
+   placeholder-zinc-400 dark:placeholder-zinc-500
    ${
      hasError
        ? "border-red-400 dark:border-red-500"
-       : "border-gray-300 dark:border-zinc-600 focus:border-gray-500 dark:focus:border-zinc-400"
+       : "border-zinc-300 dark:border-zinc-600 focus:border-gray-500 dark:focus:border-zinc-400"
    }`;
 
 const FieldLabel = ({ children, required }) => (
-  <label className="block text-xs font-medium text-gray-600 dark:text-zinc-400 mb-1.5">
+  <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">
     {children}
     {required && <span className="text-rose-400 ml-0.5">*</span>}
   </label>
@@ -78,7 +78,7 @@ export default function ReceiverSection({
       />
 
       {toDistrictName && (
-        <p className="text-xs text-gray-400 dark:text-zinc-600 flex items-center gap-1 -mt-1">
+        <p className="text-xs text-zinc-400 dark:text-zinc-600 flex items-center gap-1 -mt-1">
           <MapPin size={10} /> Delivery district: {toDistrictName}
         </p>
       )}

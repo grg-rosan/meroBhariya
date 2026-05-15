@@ -60,17 +60,17 @@ export default function RiderDashboard() {
 
   if (loading)
     return (
-      <div className="p-6 text-gray-500 dark:text-zinc-400">Loading...</div>
+      <div className="p-4 md:p-6 text-zinc-500 dark:text-zinc-400">Loading...</div>
     );
   if (error)
-    return <div className="p-6 text-red-400">Failed to load dashboard.</div>;
+    return <div className="p-4 md:p-6 text-red-400">Failed to load dashboard.</div>;
 
   const rider = data?.rider ?? {};
   const stats = data?.stats ?? {};
   const activity = data?.activity ?? [];
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-4 md:p-6 max-w-4xl mx-auto">
       {banner && (
         <div className="mb-4 p-4 bg-green-500/10 border border-green-700 rounded-xl text-green-400 text-sm flex items-center justify-between">
           <span>🎉 {banner.message}</span>
@@ -93,7 +93,7 @@ export default function RiderDashboard() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-semibold text-white">My shift</h1>
-          <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
+          <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
             {rider.fullName} · {rider.vehicleType} · {rider.vehicleNumber}
           </p>
         </div>
@@ -101,17 +101,17 @@ export default function RiderDashboard() {
         <button
           onClick={handleToggle}
           disabled={tl || !isVerified}
-          className={`flex items-center gap-3 px-4 py-2 rounded-xl border transition-all ${online ? "border-green-600 bg-green-500/10" : "border-gray-300 dark:border-zinc-700 bg-white dark:bg-gray-900"} ${!isVerified ? "opacity-40 cursor-not-allowed" : ""}`}
+          className={`flex items-center gap-3 px-4 py-2 rounded-xl border transition-all ${online ? "border-green-600 bg-green-500/10" : "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900"} ${!isVerified ? "opacity-40 cursor-not-allowed" : ""}`}
         >
           <div
-            className={`relative w-9 h-5 rounded-full transition-colors ${online ? "bg-green-500" : "bg-gray-200 dark:bg-blue-900"}`}
+            className={`relative w-9 h-5 rounded-full transition-colors ${online ? "bg-green-500" : "bg-zinc-200 dark:bg-blue-900"}`}
           >
             <div
               className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${online ? "left-[18px]" : "left-0.5"}`}
             />
           </div>
           <span
-            className={`text-sm font-medium ${online ? "text-green-400" : "text-gray-400 dark:text-zinc-500"}`}
+            className={`text-sm font-medium ${online ? "text-green-400" : "text-zinc-400 dark:text-zinc-500"}`}
           >
             {online ? "On duty" : "Off duty"}
           </span>
@@ -145,26 +145,26 @@ export default function RiderDashboard() {
         />
       </div>
 
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5">
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5">
         <h2 className="text-sm font-medium text-white mb-4">
           Today's activity
         </h2>
         {activity.length === 0 ? (
-          <p className="text-sm text-gray-300 dark:text-zinc-600">
+          <p className="text-sm text-zinc-300 dark:text-zinc-600">
             No activity yet today.
           </p>
         ) : (
           <div className="relative pl-5">
             {activity.map((item, i) => (
               <div key={item.id} className="relative pb-4 last:pb-0">
-                <div className="absolute -left-5 top-1 w-2.5 h-2.5 rounded-full bg-sky-500 border-2 border-gray-200 dark:border-zinc-900 z-10" />
+                <div className="absolute -left-5 top-1 w-2.5 h-2.5 rounded-full bg-sky-500 border-2 border-zinc-200 dark:border-zinc-900 z-10" />
                 {i < activity.length - 1 && (
-                  <div className="absolute -left-[15px] top-3 w-px h-full bg-gray-100 dark:bg-blue-950" />
+                  <div className="absolute -left-[15px] top-3 w-px h-full bg-zinc-100 dark:bg-blue-950" />
                 )}
-                <p className="text-sm text-gray-700 dark:text-zinc-300">
+                <p className="text-sm text-zinc-700 dark:text-zinc-300">
                   {item.status} — {item.receiverName} · {item.deliveryAddress}
                 </p>
-                <p className="text-xs text-gray-300 dark:text-zinc-600 mt-0.5">
+                <p className="text-xs text-zinc-300 dark:text-zinc-600 mt-0.5">
                   {new Date(item.time).toLocaleTimeString()}
                 </p>
               </div>

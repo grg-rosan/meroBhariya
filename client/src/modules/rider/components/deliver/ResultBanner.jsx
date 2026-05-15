@@ -14,7 +14,7 @@ export function ResultBanner({ result, geofenceError }) {
           <p className="text-sm font-medium text-green-300">
             Delivery confirmed!
           </p>
-          <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
+          <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
             GPS verified. Redirecting to manifest…
           </p>
         </div>
@@ -30,14 +30,14 @@ export function ResultBanner({ result, geofenceError }) {
             Too far from delivery address
           </p>
         </div>
-        <p className="text-xs text-gray-500 dark:text-zinc-400 mb-1">
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">
           You are{" "}
           <span className="text-red-400 font-semibold">
             {geofenceError.distanceMeters}m
           </span>{" "}
           away. Must be within {GEOFENCE_RADIUS}m.
         </p>
-        <p className="text-xs text-gray-400 dark:text-zinc-500">
+        <p className="text-xs text-zinc-400 dark:text-zinc-500">
           Navigate to the correct address and try again.
         </p>
       </div>

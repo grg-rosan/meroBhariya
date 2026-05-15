@@ -23,13 +23,13 @@ export default function VehicleSection({ vehicleTypeId, onChange }) {
           className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-all
             ${vehicleTypeId === v.id
               ? "border-rose-500 bg-rose-500/8 dark:bg-rose-500/10"
-              : "border-gray-200 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-600 hover:bg-gray-50 dark:hover:bg-zinc-800"
+              : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-800"
             }`}
         >
           <span className="text-lg">{v.icon}</span>
           <div className="flex-1">
-            <span className="text-sm font-medium text-gray-700 dark:text-zinc-300">{v.label}</span>
-            <span className="text-xs text-gray-400 dark:text-zinc-500 ml-2">{v.sub}</span>
+            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{v.label}</span>
+            <span className="text-xs text-zinc-400 dark:text-zinc-500 ml-2">{v.sub}</span>
           </div>
           {vehicleTypeId === v.id && <ChevronRight size={14} className="text-rose-400" />}
         </button>

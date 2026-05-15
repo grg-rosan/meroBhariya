@@ -83,7 +83,7 @@ export const SHIPMENT_STATUS = {
 export const UNKNOWN_STATUS = {
   label:  "Unknown",
   icon:   "❓",
-  badge:  "bg-gray-100 text-gray-500 border-gray-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700",
+  badge:  "bg-zinc-100 text-zinc-500 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700",
   chip:   "bg-zinc-800 text-zinc-400 border-zinc-700",
   action: null,
 };

@@ -20,18 +20,18 @@ export default function Timeline({ logs }) {
               }
             />
             {i < logs.length - 1 && (
-              <div className="w-px h-4 bg-gray-200 dark:bg-zinc-700" />
+              <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700" />
             )}
           </div>
           <div>
-            <span className="text-xs font-medium text-gray-700 dark:text-zinc-300">
+            <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
               {log.status.replace(/_/g, " ")}
             </span>
-            <span className="text-xs text-gray-400 dark:text-zinc-500 ml-2">
+            <span className="text-xs text-zinc-400 dark:text-zinc-500 ml-2">
               {new Date(log.createdAt).toLocaleString()}
             </span>
             {log.note && (
-              <p className="text-xs text-gray-400 dark:text-zinc-500">{log.note}</p>
+              <p className="text-xs text-zinc-400 dark:text-zinc-500">{log.note}</p>
             )}
           </div>
         </div>

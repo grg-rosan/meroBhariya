@@ -8,9 +8,9 @@ import { Link } from "react-router-dom";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white text-gray-900 font-sans antialiased">
+    <div className="min-h-screen bg-white text-zinc-900 font-sans antialiased">
       {/* ── NAV ─────────────────────────────────────────────────────────── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm border-b border-gray-100">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm border-b border-zinc-100">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center">
             <img
@@ -19,27 +19,27 @@ export default function LandingPage() {
               className="h-32 w-auto object-contain mix-blend-multiply -my-8"
             />
           </div>
-          <div className="hidden md:flex items-center gap-8 text-sm text-gray-500">
+          <div className="hidden md:flex items-center gap-8 text-sm text-zinc-500">
             <a
               href="#how-it-works"
-              className="hover:text-gray-900 transition-colors"
+              className="hover:text-zinc-900 transition-colors"
             >
               How it works
             </a>
             <a
               href="#features"
-              className="hover:text-gray-900 transition-colors"
+              className="hover:text-zinc-900 transition-colors"
             >
               Features
             </a>
-            <a href="#faq" className="hover:text-gray-900 transition-colors">
+            <a href="#faq" className="hover:text-zinc-900 transition-colors">
               FAQ
             </a>
           </div>
           <div className="flex items-center gap-3">
             <Link
               to="/login"
-              className="text-sm text-gray-600 hover:text-gray-900 transition-colors px-4 py-2"
+              className="text-sm text-zinc-600 hover:text-zinc-900 transition-colors px-4 py-2"
             >
               Sign in
             </Link>
@@ -63,13 +63,13 @@ export default function LandingPage() {
           </div>
 
           {/* H1 */}
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 leading-[1.1] tracking-tight mb-6">
+          <h1 className="text-5xl md:text-6xl font-bold text-zinc-900 leading-[1.1] tracking-tight mb-6">
             Every package. <span className="text-blue-800">Delivered.</span>{" "}
             <span className="text-orange-500">Insured.</span>
           </h1>
 
           {/* H2 */}
-          <p className="text-xl text-gray-500 leading-relaxed mb-10 max-w-xl">
+          <p className="text-xl text-zinc-500 leading-relaxed mb-10 max-w-xl">
             We don't do everything — we master one thing. Fast, reliable
             last-mile delivery with full insurance coverage for every shipment.
           </p>
@@ -84,7 +84,7 @@ export default function LandingPage() {
             </Link>
             <Link
               to="/register/rider"
-              className="border border-gray-200 hover:border-gray-400 text-gray-700 font-medium px-6 py-3 rounded-xl transition-colors text-sm"
+              className="border border-zinc-200 hover:border-gray-400 text-zinc-700 font-medium px-6 py-3 rounded-xl transition-colors text-sm"
             >
               Become a rider
             </Link>
@@ -99,8 +99,8 @@ export default function LandingPage() {
               { value: "50+", label: "Businesses served" },
             ].map((s) => (
               <div key={s.label}>
-                <p className="text-2xl font-bold text-gray-900">{s.value}</p>
-                <p className="text-sm text-gray-400 mt-0.5">{s.label}</p>
+                <p className="text-2xl font-bold text-zinc-900">{s.value}</p>
+                <p className="text-sm text-zinc-400 mt-0.5">{s.label}</p>
               </div>
             ))}
           </div>
@@ -116,9 +116,9 @@ export default function LandingPage() {
             </p>
             <h2 className="text-3xl font-bold text-white leading-snug mb-6">
               Most couriers promise everything. <br />
-              <span className="text-gray-400">Then deliver nothing.</span>
+              <span className="text-zinc-400">Then deliver nothing.</span>
             </h2>
-            <p className="text-gray-400 leading-relaxed">
+            <p className="text-zinc-400 leading-relaxed">
               Missed pickups. Lost packages. Zero accountability. Your local
               business suffers when your delivery partner treats your orders as
               just another number in a pile.
@@ -132,7 +132,7 @@ export default function LandingPage() {
               One service. <br />
               <span className="text-orange-400">Done perfectly.</span>
             </h2>
-            <p className="text-gray-400 leading-relaxed">
+            <p className="text-zinc-400 leading-relaxed">
               meroBhariya is built for Nepal's local businesses and
               logistics centres. We handle last-mile delivery — and only that —
               so every package gets our full attention, backed by real
@@ -148,7 +148,7 @@ export default function LandingPage() {
           <p className="text-orange-500 text-xs font-bold uppercase tracking-widest mb-3">
             Features
           </p>
-          <h2 className="text-3xl font-bold text-gray-900">
+          <h2 className="text-3xl font-bold text-zinc-900">
             Built for reliability
           </h2>
         </div>
@@ -177,24 +177,24 @@ export default function LandingPage() {
               feature: "We commit to same-day or next-day slots and keep them.",
               benefit:
                 "So what? Your customers get a delivery promise they can trust — and so do you.",
-              color: "bg-gray-100 text-gray-700",
+              color: "bg-zinc-100 text-zinc-700",
             },
           ].map((f) => (
             <div
               key={f.title}
-              className="border border-gray-100 rounded-2xl p-7 hover:border-gray-200 hover:shadow-sm transition-all"
+              className="border border-zinc-100 rounded-2xl p-7 hover:border-zinc-200 hover:shadow-sm transition-all"
             >
               <div
                 className={`w-10 h-10 rounded-xl flex items-center justify-center text-base mb-5 ${f.color}`}
               >
                 {f.icon}
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">{f.title}</h3>
-              <p className="text-sm text-gray-500 mb-4 leading-relaxed">
+              <h3 className="font-semibold text-zinc-900 mb-2">{f.title}</h3>
+              <p className="text-sm text-zinc-500 mb-4 leading-relaxed">
                 {f.feature}
               </p>
-              <div className="border-t border-dashed border-gray-100 pt-4">
-                <p className="text-xs text-gray-400 leading-relaxed">
+              <div className="border-t border-dashed border-zinc-100 pt-4">
+                <p className="text-xs text-zinc-400 leading-relaxed">
                   {f.benefit}
                 </p>
               </div>
@@ -204,13 +204,13 @@ export default function LandingPage() {
       </section>
 
       {/* ── HOW IT WORKS ────────────────────────────────────────────────── */}
-      <section id="how-it-works" className="bg-gray-50 py-24 px-6">
+      <section id="how-it-works" className="bg-zinc-50 py-24 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="mb-14">
             <p className="text-orange-500 text-xs font-bold uppercase tracking-widest mb-3">
               Process
             </p>
-            <h2 className="text-3xl font-bold text-gray-900">
+            <h2 className="text-3xl font-bold text-zinc-900">
               Up and running in minutes
             </h2>
           </div>
@@ -235,13 +235,13 @@ export default function LandingPage() {
             ].map((s) => (
               <div
                 key={s.step}
-                className="bg-white rounded-2xl p-8 border border-gray-100"
+                className="bg-white rounded-2xl p-8 border border-zinc-100"
               >
                 <div className="text-4xl font-bold text-orange-500 mb-5 leading-none">
                   {s.step}
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-2">{s.title}</h3>
-                <p className="text-sm text-gray-400 leading-relaxed">
+                <h3 className="font-semibold text-zinc-900 mb-2">{s.title}</h3>
+                <p className="text-sm text-zinc-400 leading-relaxed">
                   {s.desc}
                 </p>
               </div>
@@ -256,7 +256,7 @@ export default function LandingPage() {
           <p className="text-orange-500 text-xs font-bold uppercase tracking-widest mb-3">
             Trust
           </p>
-          <h2 className="text-3xl font-bold text-gray-900">
+          <h2 className="text-3xl font-bold text-zinc-900">
             Businesses that rely on us
           </h2>
         </div>
@@ -284,7 +284,7 @@ export default function LandingPage() {
           ].map((t) => (
             <div
               key={t.name}
-              className="border border-gray-100 rounded-2xl p-7"
+              className="border border-zinc-100 rounded-2xl p-7"
             >
               <div className="flex gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
@@ -293,12 +293,12 @@ export default function LandingPage() {
                   </span>
                 ))}
               </div>
-              <p className="text-sm text-gray-600 leading-relaxed mb-6">
+              <p className="text-sm text-zinc-600 leading-relaxed mb-6">
                 "{t.quote}"
               </p>
               <div className="border-t border-gray-50 pt-4">
-                <p className="text-sm font-semibold text-gray-900">{t.name}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{t.biz}</p>
+                <p className="text-sm font-semibold text-zinc-900">{t.name}</p>
+                <p className="text-xs text-zinc-400 mt-0.5">{t.biz}</p>
               </div>
             </div>
           ))}
@@ -306,18 +306,18 @@ export default function LandingPage() {
       </section>
 
       {/* ── FAQ ─────────────────────────────────────────────────────────── */}
-      <section id="faq" className="bg-gray-50 py-24 px-6">
+      <section id="faq" className="bg-zinc-50 py-24 px-6">
         <div className="max-w-3xl mx-auto">
           <div className="mb-14">
             <p className="text-orange-500 text-xs font-bold uppercase tracking-widest mb-3">
               FAQ
             </p>
-            <h2 className="text-3xl font-bold text-gray-900">
+            <h2 className="text-3xl font-bold text-zinc-900">
               Common questions
             </h2>
           </div>
 
-          <div className="flex flex-col divide-y divide-gray-100">
+          <div className="flex flex-col divide-y divide-zinc-100">
             {[
               {
                 q: "How does the insurance work?",
@@ -340,13 +340,13 @@ export default function LandingPage() {
                 key={f.q}
                 className="group py-5 cursor-pointer list-none"
               >
-                <summary className="flex justify-between items-center text-sm font-semibold text-gray-900 select-none list-none">
+                <summary className="flex justify-between items-center text-sm font-semibold text-zinc-900 select-none list-none">
                   {f.q}
-                  <span className="text-gray-300 group-open:text-orange-500 text-lg transition-colors ml-4 flex-shrink-0">
+                  <span className="text-zinc-300 group-open:text-orange-500 text-lg transition-colors ml-4 flex-shrink-0">
                     +
                   </span>
                 </summary>
-                <p className="mt-3 text-sm text-gray-400 leading-relaxed">
+                <p className="mt-3 text-sm text-zinc-400 leading-relaxed">
                   {f.a}
                 </p>
               </details>
@@ -400,17 +400,17 @@ export default function LandingPage() {
   </span>
 </div>
           </div>
-          <p className="text-xs text-gray-600">
+          <p className="text-xs text-zinc-600">
             © {new Date().getFullYear()} meroBhariya. Nepal, Nepal.
           </p>
-          <div className="flex gap-6 text-xs text-gray-600">
-            <a href="#" className="hover:text-gray-400 transition-colors">
+          <div className="flex gap-6 text-xs text-zinc-600">
+            <a href="#" className="hover:text-zinc-400 transition-colors">
               Privacy
             </a>
-            <a href="#" className="hover:text-gray-400 transition-colors">
+            <a href="#" className="hover:text-zinc-400 transition-colors">
               Terms
             </a>
-            <a href="#" className="hover:text-gray-400 transition-colors">
+            <a href="#" className="hover:text-zinc-400 transition-colors">
               Contact
             </a>
           </div>

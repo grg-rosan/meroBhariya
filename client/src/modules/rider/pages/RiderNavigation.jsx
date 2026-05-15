@@ -56,7 +56,7 @@ export default function RiderNavigation() {
   const dest = getShipmentDestination(mergedStop);
 
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-4">
+    <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-4">
 
       {/* Header */}
       <div className="flex items-center gap-3">

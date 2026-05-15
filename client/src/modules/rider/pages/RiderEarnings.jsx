@@ -14,14 +14,14 @@ const STATUS_STYLE = {
 // ── Presentational sub-components ─────────────────────────────
 function PayoutRow({ date, amount, method, status }) {
   return (
-    <tr className="border-b border-gray-200/50 dark:border-zinc-800/50 hover:bg-gray-100 dark:hover:bg-blue-950/30">
-      <td className="px-4 py-3 text-xs text-gray-500 dark:text-zinc-400">{date}</td>
-      <td className="px-4 py-3 text-xs text-gray-500 dark:text-zinc-400">{method}</td>
-      <td className="px-4 py-3 text-sm font-medium text-gray-800 dark:text-zinc-200">
+    <tr className="border-b border-zinc-200/50 dark:border-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-blue-950/30">
+      <td className="px-4 py-3 text-xs text-zinc-500 dark:text-zinc-400">{date}</td>
+      <td className="px-4 py-3 text-xs text-zinc-500 dark:text-zinc-400">{method}</td>
+      <td className="px-4 py-3 text-sm font-medium text-zinc-800 dark:text-zinc-200">
         रु {Number(amount).toLocaleString()}
       </td>
       <td className="px-4 py-3">
-        <span className={`text-xs px-2 py-0.5 rounded ${STATUS_STYLE[status] ?? "bg-gray-500/10 text-gray-400"}`}>
+        <span className={`text-xs px-2 py-0.5 rounded ${STATUS_STYLE[status] ?? "bg-zinc-500/10 text-zinc-400"}`}>
           {status.charAt(0) + status.slice(1).toLowerCase()}
         </span>
       </td>
@@ -32,9 +32,9 @@ function PayoutRow({ date, amount, method, status }) {
 function BreakdownRow({ label, amount }) {
   const negative = amount < 0;
   return (
-    <div className="flex justify-between items-center py-2.5 border-b border-gray-200/50 dark:border-zinc-800/50 last:border-none">
-      <span className="text-sm text-gray-500 dark:text-zinc-400">{label}</span>
-      <span className={`text-sm font-medium ${negative ? "text-red-400" : "text-gray-800 dark:text-zinc-200"}`}>
+    <div className="flex justify-between items-center py-2.5 border-b border-zinc-200/50 dark:border-zinc-800/50 last:border-none">
+      <span className="text-sm text-zinc-500 dark:text-zinc-400">{label}</span>
+      <span className={`text-sm font-medium ${negative ? "text-red-400" : "text-zinc-800 dark:text-zinc-200"}`}>
         {negative ? "-" : "+"}रु {Math.abs(amount).toLocaleString()}
       </span>
     </div>
@@ -43,7 +43,7 @@ function BreakdownRow({ label, amount }) {
 
 function EmptyState({ message }) {
   return (
-    <div className="py-8 text-sm text-center text-gray-400 dark:text-zinc-500">
+    <div className="py-8 text-sm text-center text-zinc-400 dark:text-zinc-500">
       {message}
     </div>
   );
@@ -55,7 +55,7 @@ export default function RiderEarnings() {
 
   if (error) {
     return (
-      <div className="p-6 text-sm text-red-400">
+      <div className="p-4 md:p-6 text-sm text-red-400">
         Failed to load earnings. Please try again.
       </div>
     );
@@ -66,10 +66,10 @@ export default function RiderEarnings() {
   const todayTotal = breakdown.reduce((sum, b) => sum + b.amount, 0);
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-4 md:p-6 max-w-4xl mx-auto">
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-white">Earnings</h1>
-        <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
+        <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
           Your income and payout history
         </p>
       </div>
@@ -84,8 +84,8 @@ export default function RiderEarnings() {
 
       <div className="grid lg:grid-cols-2 gap-4">
         {/* ── Payout history ── */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden">
-          <div className="px-5 py-3 border-b border-gray-200 dark:border-zinc-800">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden">
+          <div className="px-5 py-3 border-b border-zinc-200 dark:border-zinc-800">
             <h2 className="text-sm font-medium text-white">Payout history</h2>
           </div>
 
@@ -96,9 +96,9 @@ export default function RiderEarnings() {
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200 dark:border-zinc-800">
+                <tr className="border-b border-zinc-200 dark:border-zinc-800">
                   {["Date", "Method", "Amount", "Status"].map((h) => (
-                    <th key={h} className="text-left px-4 py-2.5 text-xs text-gray-400 dark:text-zinc-500 font-medium">
+                    <th key={h} className="text-left px-4 py-2.5 text-xs text-zinc-400 dark:text-zinc-500 font-medium">
                       {h}
                     </th>
                   ))}
@@ -112,7 +112,7 @@ export default function RiderEarnings() {
         </div>
 
         {/* ── Today's breakdown ── */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5">
           <h2 className="text-sm font-medium text-white mb-4">Today's breakdown</h2>
 
           {loading ? (
@@ -122,8 +122,8 @@ export default function RiderEarnings() {
           ) : (
             <>
               {breakdown.map((b) => <BreakdownRow key={b.label} {...b} />)}
-              <div className="mt-3 pt-3 border-t border-gray-300 dark:border-zinc-700 flex justify-between">
-                <span className="text-sm font-medium text-gray-700 dark:text-zinc-300">Total today</span>
+              <div className="mt-3 pt-3 border-t border-zinc-300 dark:border-zinc-700 flex justify-between">
+                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Total today</span>
                 <span className="text-lg font-semibold text-green-400">
                   रु {todayTotal.toLocaleString()}
                 </span>

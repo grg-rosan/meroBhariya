@@ -51,7 +51,7 @@ export function StatusView({
       )}
       <button
         onClick={onBack}
-        className="w-full mt-3 bg-transparent border-none text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200 text-sm cursor-pointer py-2 transition-colors"
+        className="w-full mt-3 bg-transparent border-none text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 text-sm cursor-pointer py-2 transition-colors"
       >
         ← Back to dashboard
       </button>
@@ -94,13 +94,13 @@ export function UploadStep({
         <InfoBanner>
           📋 All documents are stored securely and only used for verification.
           Review typically takes{" "}
-          <strong className="text-gray-900 dark:text-white">1–2 business days</strong>.
+          <strong className="text-zinc-900 dark:text-white">1–2 business days</strong>.
         </InfoBanner>
       )}
       <div className="flex flex-col gap-4">
         {visibleDocs.map((doc) => (
           <div key={doc.key}>
-            <p className="text-[11px] font-semibold text-gray-500 dark:text-zinc-500 uppercase tracking-widest mb-2">
+            <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-500 uppercase tracking-widest mb-2">
               {doc.emoji} {doc.label}
             </p>
             <DropZone
@@ -120,14 +120,14 @@ export function UploadStep({
           : `${uploadedCount} / ${visibleDocs.length} files selected`}
       </Button>
       {!allReady && (
-        <p className="text-center text-xs text-gray-500 dark:text-zinc-600 mt-2">
+        <p className="text-center text-xs text-zinc-500 dark:text-zinc-600 mt-2">
           Upload all documents to continue.
         </p>
       )}
       {reupload && (
         <button
           onClick={onCancelReupload}
-          className="w-full mt-3 bg-transparent border-none text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200 text-sm cursor-pointer py-1.5 transition-colors"
+          className="w-full mt-3 bg-transparent border-none text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 text-sm cursor-pointer py-1.5 transition-colors"
         >
           ← Cancel re-upload
         </button>
@@ -175,7 +175,7 @@ export function ReviewStep({
       </Button>
       <button
         onClick={onBack}
-        className="w-full mt-3 bg-transparent border-none text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200 text-sm cursor-pointer py-1.5 transition-colors"
+        className="w-full mt-3 bg-transparent border-none text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 text-sm cursor-pointer py-1.5 transition-colors"
       >
         ← Go back
       </button>

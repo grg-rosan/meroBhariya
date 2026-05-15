@@ -1,7 +1,12 @@
-// src/shared/context/ToastContext.jsx
 import { createContext, useContext, useState, useCallback } from "react";
 
 const ToastContext = createContext(null);
+
+const TYPE_STYLES = {
+  error: "bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400",
+  success: "bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400",
+  info: "bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200",
+};
 
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
@@ -18,16 +23,14 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      {/* Toast UI */}
-      <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
+      <div
+        className="fixed top-4 right-4 z-[100] flex flex-col gap-2 max-w-[min(100vw-2rem,24rem)] pointer-events-none"
+        aria-live="polite"
+      >
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`px-4 py-3 rounded-xl text-base font-medium shadow-lg transition-all
-              ${t.type === "error" ? "bg-red-500/10 border border-red-500/20 text-red-400" : ""}
-              ${t.type === "success" ? "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" : ""}
-              ${t.type === "info" ? "bg-gray-100 dark:bg-blue-950 border border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-zinc-300" : ""}
-            `}
+            className={`px-4 py-3 rounded-xl text-sm font-medium shadow-lg border pointer-events-auto ${TYPE_STYLES[t.type] ?? TYPE_STYLES.error}`}
           >
             {t.message}
           </div>

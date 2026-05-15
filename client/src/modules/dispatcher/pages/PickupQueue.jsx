@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Sun, Moon } from "lucide-react";
 import { usePickupQueue } from "../hooks/useDispatcher";
 import { useSocket } from "../../../shared/hooks/useSocket";
 import { useAuth } from "../../auth/AuthContext";
-import { useThemeTokens } from "../../../shared/hooks/useTheme.js";
+import { useAppTheme } from "../../../context/ThemeContext";
+import PageContainer from "../../../components/layout/PageContainer";
 import ShipmentCard from "../components/pickup/ShipmentCard";
 import FilterBar from "../components/pickup/FilterBar";
 import BulkActionBar from "../components/pickup/BulkActionBar";
@@ -11,19 +11,16 @@ import SingleAssignModal from "../components/pickup/SingleAssignModal";
 import BulkAssignModal from "../components/pickup/BulkAssignModal";
 
 export default function PickupQueue() {
-  const [dark, setDark] = useState(true);
+  const { tokens: t } = useAppTheme();
   const [filters, setFilters] = useState({});
   const [selected, setSelected] = useState(new Set());
-  const [singleTarget, setSingle] = useState(null); // shipment for single modal
+  const [singleTarget, setSingle] = useState(null);
   const [bulkOpen, setBulkOpen] = useState(false);
 
   const { user } = useAuth();
   const socket = useSocket(user?.id);
-  const t = useThemeTokens(dark);
-
   const { shipments, loading, error, refresh } = usePickupQueue(filters);
 
-  // Derive filter options from loaded shipments
   const zones = [
     ...new Map(shipments.map((s) => [s.zone?.id, s.zone])).values(),
   ].filter(Boolean);
@@ -37,14 +34,12 @@ export default function PickupQueue() {
   const allSelected =
     shipments.length > 0 && selected.size === shipments.length;
 
-  // ── socket ──────────────────────────────────────────────────
   useEffect(() => {
     if (!socket) return;
     socket.on("shipment:new", refresh);
     return () => socket.off("shipment:new", refresh);
   }, [socket, refresh]);
 
-  // ── handlers ────────────────────────────────────────────────
   function handleCheck(id, checked) {
     setSelected((prev) => {
       const next = new Set(prev);
@@ -68,40 +63,29 @@ export default function PickupQueue() {
     refresh();
   }
 
-  // ── render ───────────────────────────────────────────────────
   return (
-    <div
-      className={`min-h-screen ${t.bg} ${t.text} p-6 transition-colors duration-200`}
-    >
-      {/* Page header */}
-      <div className="flex items-center justify-between mb-6">
+    <PageContainer wide className="transition-colors duration-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold">Pickup Queue</h1>
           <p className={`${t.sub} text-sm mt-0.5`}>
             Shipments waiting for rider assignment
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <span className="bg-violet-500/20 text-violet-400 border border-violet-500/30 px-3 py-1 rounded-full text-sm font-medium">
             {shipments.length} pending
           </span>
           <button
-            onClick={() => setDark((d) => !d)}
-            className={`p-2 rounded-lg border ${t.border} ${t.sub} hover:${t.text} transition-colors`}
-            title="Toggle theme"
-          >
-            {dark ? <Sun size={16} /> : <Moon size={16} />}
-          </button>
-          <button
+            type="button"
             onClick={refresh}
-            className={`px-3 py-1.5 rounded-lg border ${t.border} ${t.sub} hover:${t.text} text-sm`}
+            className={`px-3 py-1.5 rounded-lg border ${t.border} ${t.sub} text-sm ${t.hover}`}
           >
             ↻ Refresh
           </button>
         </div>
       </div>
 
-      {/* Filters */}
       <FilterBar
         zones={zones}
         districts={districts}
@@ -114,7 +98,6 @@ export default function PickupQueue() {
         subClass={t.sub}
       />
 
-      {/* Bulk action bar */}
       <BulkActionBar
         count={selected.size}
         onClear={() => setSelected(new Set())}
@@ -125,7 +108,6 @@ export default function PickupQueue() {
         subClass={t.sub}
       />
 
-      {/* Loading / error / empty states */}
       {loading && (
         <div className={`flex justify-center py-20 ${t.sub} text-sm`}>
           Loading…
@@ -145,13 +127,11 @@ export default function PickupQueue() {
         </div>
       )}
 
-      {/* Card grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {shipments.map((s) => (
           <ShipmentCard
             key={s.id}
             shipment={s}
-            dark={dark}
             checked={selected.has(s.id)}
             onCheck={handleCheck}
             onAssign={setSingle}
@@ -159,11 +139,9 @@ export default function PickupQueue() {
         ))}
       </div>
 
-      {/* Modals */}
       {singleTarget && (
         <SingleAssignModal
           shipment={singleTarget}
-          dark={dark}
           onClose={() => setSingle(null)}
           onAssigned={handleAssigned}
         />
@@ -171,11 +149,10 @@ export default function PickupQueue() {
       {bulkOpen && (
         <BulkAssignModal
           shipments={selectedShipments}
-          dark={dark}
           onClose={() => setBulkOpen(false)}
           onAssigned={handleAssigned}
         />
       )}
-    </div>
+    </PageContainer>
   );
 }

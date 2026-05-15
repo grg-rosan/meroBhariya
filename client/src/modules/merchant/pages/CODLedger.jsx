@@ -20,20 +20,20 @@ export default function CODLedger() {
   const remitted = data?.remitted ?? 0;
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-4 md:p-6 max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-gray-800 dark:text-zinc-100">
+          <h1 className="text-xl font-semibold text-zinc-800 dark:text-zinc-100">
             COD Ledger
           </h1>
-          <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
+          <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
             Track every COD shipment and its payment status
           </p>
         </div>
         <button
           onClick={refetch}
-          className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-500 dark:text-zinc-400 border border-gray-200 dark:border-zinc-800 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
         >
           <RefreshCw size={12} className={loading ? "animate-spin" : ""} />
           Refresh
@@ -70,11 +70,11 @@ export default function CODLedger() {
 
       {/* List */}
       {loading ? (
-        <div className="py-10 text-center text-gray-400 dark:text-zinc-500 text-sm">
+        <div className="py-10 text-center text-zinc-400 dark:text-zinc-500 text-sm">
           Loading...
         </div>
       ) : shipments.length === 0 ? (
-        <div className="py-10 text-center text-gray-400 dark:text-zinc-500 text-sm">
+        <div className="py-10 text-center text-zinc-400 dark:text-zinc-500 text-sm">
           No COD shipments found
         </div>
       ) : (

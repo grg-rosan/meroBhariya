@@ -20,10 +20,10 @@ export default function AdminOverview() {
     stats?.codHeld != null ? `रु ${(stats.codHeld / 100000).toFixed(1)}L` : "—";
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-4 md:p-6 max-w-6xl mx-auto">
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-white">Platform overview</h1>
-        <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
+        <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
           meroBhariya logistics — live health dashboard
         </p>
       </div>

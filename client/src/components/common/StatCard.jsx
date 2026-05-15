@@ -16,9 +16,9 @@ export default function StatCard({
   color = "rose",
 }) {
   return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-4">
+    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-xs text-gray-400 dark:text-zinc-500 font-medium uppercase tracking-wider">
+        <span className="text-xs text-zinc-400 dark:text-zinc-500 font-medium uppercase tracking-wider">
           {label}
         </span>
         {Icon && (
@@ -31,7 +31,7 @@ export default function StatCard({
       </div>
       <div className="text-2xl font-semibold text-white">{value ?? "—"}</div>
       {sub && (
-        <div className="text-xs text-gray-400 dark:text-zinc-500 mt-1">
+        <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
           {sub}
         </div>
       )}

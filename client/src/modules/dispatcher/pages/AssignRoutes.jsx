@@ -89,12 +89,12 @@ export default function AssignRoutes() {
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-4 md:p-6 max-w-5xl mx-auto">
       {/* Page header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-white">Assign routes</h1>
-          <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
+          <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">Assign routes</h1>
+          <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
             {shipments.length} pending shipment
             {shipments.length !== 1 ? "s" : ""} waiting for assignment
           </p>
@@ -102,7 +102,7 @@ export default function AssignRoutes() {
         <div className="flex items-center gap-2">
           <button
             onClick={refetch}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 dark:text-zinc-400 border border-gray-200 dark:border-zinc-800 rounded-lg hover:bg-gray-100 dark:bg-blue-950 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800 rounded-lg hover:bg-zinc-100 dark:bg-blue-950 transition-all"
           >
             <RefreshCw
               size={12}

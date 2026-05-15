@@ -26,16 +26,16 @@ export default function StatusStepper({ status }) {
                 "w-3 h-3 rounded-full " +
                 (i <= statusIdx
                   ? "bg-rose-500"
-                  : "bg-gray-200 dark:bg-zinc-700")
+                  : "bg-zinc-200 dark:bg-zinc-700")
               }
             />
-            <p className="text-[9px] text-gray-400 dark:text-zinc-500 mt-1 text-center">
+            <p className="text-[9px] text-zinc-400 dark:text-zinc-500 mt-1 text-center">
               {step.replace(/_/g, " ")}
             </p>
           </div>
         ))}
       </div>
-      <div className="h-1 bg-gray-200 dark:bg-zinc-700 rounded-full mt-1">
+      <div className="h-1 bg-zinc-200 dark:bg-zinc-700 rounded-full mt-1">
         <div
           className="h-full bg-rose-500 rounded-full transition-all"
           style={{ width: `${((statusIdx + 1) / STATUS_STEPS.length) * 100}%` }}

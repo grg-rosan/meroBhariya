@@ -40,16 +40,16 @@ export default function VerifyUsers() {
   };
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
+    <div className="p-4 md:p-6 max-w-3xl mx-auto">
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-white">User verification</h1>
-        <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
+        <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
           Review KYC documents and approve accounts
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-lg p-1 mb-5 w-fit">
+      <div className="flex items-center gap-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-1 mb-5 w-fit">
         {TABS.map((t) => (
           <button
             key={t.key}
@@ -57,7 +57,7 @@ export default function VerifyUsers() {
             className={`px-4 py-1.5 text-xs rounded-md font-medium transition-all ${
               tab === t.key
                 ? "bg-violet-500 text-white"
-                : "text-gray-500 hover:text-gray-800 dark:text-zinc-200"
+                : "text-zinc-500 hover:text-zinc-800 dark:text-zinc-200"
             }`}
           >
             {t.label}
@@ -67,9 +67,9 @@ export default function VerifyUsers() {
 
       {/* List */}
       {loading ? (
-        <p className="text-gray-400 dark:text-zinc-500 text-sm">Loading...</p>
+        <p className="text-zinc-400 dark:text-zinc-500 text-sm">Loading...</p>
       ) : list.length === 0 ? (
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-10 text-center text-gray-300 dark:text-zinc-600 text-sm">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-10 text-center text-zinc-300 dark:text-zinc-600 text-sm">
           No pending {tab} — all caught up!
         </div>
       ) : (

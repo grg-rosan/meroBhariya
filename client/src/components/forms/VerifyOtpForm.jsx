@@ -107,7 +107,7 @@ export default function VerifyOtpForm({ email, onVerify, onResend }) {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="mb-10">
-          <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-blue-950 border border-gray-300 dark:border-zinc-700 flex items-center justify-center mb-6">
+          <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-blue-950 border border-zinc-300 dark:border-zinc-700 flex items-center justify-center mb-6">
             <svg
               width="22"
               height="22"
@@ -124,9 +124,9 @@ export default function VerifyOtpForm({ email, onVerify, onResend }) {
           <h1 className="text-2xl font-semibold text-white tracking-tight">
             Enter your code
           </h1>
-          <p className="mt-2 text-sm text-gray-500 dark:text-zinc-400 leading-relaxed">
+          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
             We sent a {OTP_LENGTH}-digit code to{" "}
-            <span className="text-gray-700 dark:text-zinc-300 font-medium">
+            <span className="text-zinc-700 dark:text-zinc-300 font-medium">
               {target}
             </span>
             . It expires in 10 minutes.
@@ -134,7 +134,7 @@ export default function VerifyOtpForm({ email, onVerify, onResend }) {
         </div>
 
         {/* Card */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 sm:p-8">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 sm:p-8">
           {verified ? (
             <div className="text-center py-4">
               <div className="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4">
@@ -152,7 +152,7 @@ export default function VerifyOtpForm({ email, onVerify, onResend }) {
                 </svg>
               </div>
               <p className="text-white font-medium">Verified!</p>
-              <p className="mt-1 text-sm text-gray-500 dark:text-zinc-400">
+              <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
                 Redirecting you now...
               </p>
             </div>
@@ -160,7 +160,7 @@ export default function VerifyOtpForm({ email, onVerify, onResend }) {
             <>
               {/* OTP boxes */}
               <div className="mb-6">
-                <label className="block text-xs font-medium text-gray-500 dark:text-zinc-400 mb-4 tracking-wide uppercase">
+                <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-4 tracking-wide uppercase">
                   Verification code
                 </label>
                 <div
@@ -180,7 +180,7 @@ export default function VerifyOtpForm({ email, onVerify, onResend }) {
                       onFocus={(e) => e.target.select()}
                       className={`
                         w-full aspect-square max-w-52px sm:max-w-56px text-center text-lg font-semibold
-                        bg-gray-100 dark:bg-blue-950 border rounded-xl text-white outline-none
+                        bg-zinc-100 dark:bg-blue-950 border rounded-xl text-white outline-none
                         transition-all duration-150 caret-transparent
                         focus:ring-2 focus:ring-offset-0 focus:scale-105
                         ${
@@ -188,7 +188,7 @@ export default function VerifyOtpForm({ email, onVerify, onResend }) {
                             ? "border-red-500/60 focus:ring-red-500/20 text-red-400"
                             : d
                               ? "border-zinc-500 focus:border-zinc-400 focus:ring-zinc-400/20"
-                              : "border-gray-300 dark:border-zinc-700 focus:border-zinc-500 focus:ring-zinc-500/20"
+                              : "border-zinc-300 dark:border-zinc-700 focus:border-zinc-500 focus:ring-zinc-500/20"
                         }
                       `}
                     />
@@ -226,7 +226,7 @@ export default function VerifyOtpForm({ email, onVerify, onResend }) {
                   ${
                     isComplete && !loading
                       ? "bg-white text-zinc-900 hover:bg-zinc-100 active:scale-[0.98]"
-                      : "bg-gray-100 dark:bg-blue-950 text-gray-300 dark:text-zinc-600 cursor-not-allowed"
+                      : "bg-zinc-100 dark:bg-blue-950 text-zinc-300 dark:text-zinc-600 cursor-not-allowed"
                   }
                 `}
               >
@@ -252,19 +252,19 @@ export default function VerifyOtpForm({ email, onVerify, onResend }) {
 
               {/* Resend */}
               <div className="mt-5 text-center">
-                <p className="text-xs text-gray-400 dark:text-zinc-500">
+                <p className="text-xs text-zinc-400 dark:text-zinc-500">
                   Didn't receive it?{" "}
                   {resendCooldown > 0 ? (
-                    <span className="text-gray-300 dark:text-zinc-600">
+                    <span className="text-zinc-300 dark:text-zinc-600">
                       Resend in{" "}
-                      <span className="tabular-nums text-gray-400 dark:text-zinc-500">
+                      <span className="tabular-nums text-zinc-400 dark:text-zinc-500">
                         {resendCooldown}s
                       </span>
                     </span>
                   ) : (
                     <button
                       onClick={handleResend}
-                      className="text-gray-500 dark:text-zinc-400 hover:text-white transition-colors underline underline-offset-2"
+                      className="text-zinc-500 dark:text-zinc-400 hover:text-white transition-colors underline underline-offset-2"
                     >
                       Resend code
                     </button>
@@ -275,11 +275,11 @@ export default function VerifyOtpForm({ email, onVerify, onResend }) {
           )}
         </div>
 
-        <p className="mt-6 text-center text-xs text-gray-300 dark:text-zinc-600">
+        <p className="mt-6 text-center text-xs text-zinc-300 dark:text-zinc-600">
           Wrong contact?{" "}
           <a
             href="/forgot-password"
-            className="text-gray-500 dark:text-zinc-400 hover:text-white transition-colors"
+            className="text-zinc-500 dark:text-zinc-400 hover:text-white transition-colors"
           >
             Try a different one
           </a>

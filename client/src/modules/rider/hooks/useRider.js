@@ -35,6 +35,7 @@ export function useScanPackage() {
       });
       const payload = data?.data ?? data;
       setResult(payload);
+      toast({ message: "Package scanned successfully.", type: "success" });
       return payload;
     } catch (e) {
       const msg = e.message ?? "Scan failed";

@@ -65,20 +65,20 @@ export default function LiveTrackingMap({ shipment }) {
     : null;
 
   return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden">
+    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-200 dark:border-zinc-800 flex items-center justify-between">
+      <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Radio
             size={13}
-            className={`${riderLoc ? "text-green-400" : "text-gray-400 dark:text-zinc-500"} ${riderLoc ? "animate-pulse" : ""}`}
+            className={`${riderLoc ? "text-green-400" : "text-zinc-400 dark:text-zinc-500"} ${riderLoc ? "animate-pulse" : ""}`}
           />
-          <span className="text-xs font-medium text-gray-700 dark:text-zinc-300">
+          <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
             Live tracking — {shipment.trackingNumber}
           </span>
         </div>
         {timeSince && (
-          <span className="text-xs text-gray-400 dark:text-zinc-500">
+          <span className="text-xs text-zinc-400 dark:text-zinc-500">
             Updated {timeSince}
           </span>
         )}
@@ -88,14 +88,14 @@ export default function LiveTrackingMap({ shipment }) {
       <div ref={mapContainerRef} className="h-64 w-full" />
 
       {/* Footer */}
-      <div className="px-4 py-3 border-t border-gray-200 dark:border-zinc-800 flex items-center gap-4 text-xs">
+      <div className="px-4 py-3 border-t border-zinc-200 dark:border-zinc-800 flex items-center gap-4 text-xs">
         <div className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-          <span className="text-gray-400 dark:text-zinc-500">Rider</span>
+          <span className="text-zinc-400 dark:text-zinc-500">Rider</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-          <span className="text-gray-400 dark:text-zinc-500">
+          <span className="text-zinc-400 dark:text-zinc-500">
             {shipment.receiverName}
           </span>
         </div>
@@ -103,7 +103,7 @@ export default function LiveTrackingMap({ shipment }) {
         {error && <span className="text-red-400 ml-auto">GPS signal lost</span>}
 
         {shipment.status === "OUT_FOR_DELIVERY" && !riderLoc && !error && (
-          <span className="text-gray-300 dark:text-zinc-600 ml-auto">
+          <span className="text-zinc-300 dark:text-zinc-600 ml-auto">
             Waiting for rider signal…
           </span>
         )}
@@ -111,7 +111,7 @@ export default function LiveTrackingMap({ shipment }) {
         {riderLoc && (
           <button
             onClick={() => flyTo([riderLoc.lng, riderLoc.lat], 15)}
-            className="ml-auto flex items-center gap-1.5 text-gray-500  hover:text-gray-800 dark:text-zinc-200 transition-colors"
+            className="ml-auto flex items-center gap-1.5 text-zinc-500  hover:text-zinc-800 dark:text-zinc-200 transition-colors"
           >
             <Navigation2 size={11} /> Center on rider
           </button>

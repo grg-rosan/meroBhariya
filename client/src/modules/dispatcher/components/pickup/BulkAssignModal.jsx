@@ -1,17 +1,16 @@
 import { useState } from "react";
 import { useAssignRiderForPickup } from "../../hooks/useDispatcher";
 import { useRiderAssignment } from "../../hooks/useRiderAssignment";
-import { useThemeTokens } from "../../../../shared/hooks/useTheme.js";
+import { useAppTheme } from "../../../../context/ThemeContext";
 import RiderSelectField from "../shared/RiderSelectField";
 import ModalActions from "./AssignModalShared.jsx";
 
 export default function BulkAssignModal({
   shipments,
-  dark,
   onClose,
   onAssigned,
 }) {
-  const tk = useThemeTokens(dark);
+  const { tokens: tk } = useAppTheme();
   const vehicleTypeId = shipments[0]?.vehicleType?.id ?? null;
   const {
     riders,

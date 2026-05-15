@@ -43,5 +43,13 @@ export function useThemeTokens(dark) {
     cancelBtn: dark
       ? "border-zinc-600 text-zinc-300 hover:bg-zinc-800"
       : "border-zinc-300 text-zinc-600 hover:bg-zinc-50",
+    sidebar:   dark ? "bg-zinc-900 border-zinc-800" : "bg-white border-zinc-200",
+    navActive: dark ? "bg-zinc-800 text-white font-medium" : "bg-zinc-100 text-zinc-900 font-medium",
+    navIdle:   dark
+      ? "text-zinc-400 hover:text-white hover:bg-zinc-800"
+      : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100",
+    hover:     dark ? "hover:bg-zinc-800" : "hover:bg-zinc-50",
+    tableHead: dark ? "bg-zinc-800/50 border-zinc-800" : "bg-zinc-50 border-zinc-200",
+    divide:    dark ? "divide-zinc-800" : "divide-zinc-100",
   };
 }

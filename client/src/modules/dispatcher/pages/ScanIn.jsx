@@ -128,10 +128,10 @@ export default function ScanIn() {
   }, [result, error, reset]);
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
+    <div className="p-4 md:p-6 max-w-2xl mx-auto">
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-white">Scan into hub</h1>
-        <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
+        <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
           Scan the QR code on the package label — marks shipment as IN HUB
           instantly.
         </p>
@@ -143,8 +143,8 @@ export default function ScanIn() {
           onClick={() => setMode("manual")}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
             mode === "manual"
-              ? "bg-gray-200 dark:bg-blue-900 text-white"
-              : "text-gray-400  hover:text-gray-700 dark:text-zinc-300"
+              ? "bg-zinc-200 dark:bg-blue-900 text-white"
+              : "text-zinc-400  hover:text-zinc-700 dark:text-zinc-300"
           }`}
         >
           <Keyboard size={12} /> Manual
@@ -153,15 +153,15 @@ export default function ScanIn() {
           onClick={() => setMode("camera")}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
             mode === "camera"
-              ? "bg-gray-200 dark:bg-blue-900 text-white"
-              : "text-gray-400  hover:text-gray-700 dark:text-zinc-300"
+              ? "bg-zinc-200 dark:bg-blue-900 text-white"
+              : "text-zinc-400  hover:text-zinc-700 dark:text-zinc-300"
           }`}
         >
           <Camera size={12} /> Camera
         </button>
       </div>
 
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-6 mb-4">
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 mb-4">
         {/* Camera view */}
         {mode === "camera" && (
           <div className="mb-4 rounded-xl overflow-hidden relative">
@@ -174,7 +174,7 @@ export default function ScanIn() {
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="w-40 h-40 border-2 border-emerald-400 rounded-xl opacity-70" />
             </div>
-            <p className="text-xs text-gray-400 dark:text-zinc-500 text-center py-2">
+            <p className="text-xs text-zinc-400 dark:text-zinc-500 text-center py-2">
               Point at QR code on package
             </p>
           </div>
@@ -187,7 +187,7 @@ export default function ScanIn() {
               ? "border-emerald-600 bg-emerald-500/5"
               : error
                 ? "border-red-600 bg-red-500/5"
-                : "border-gray-300 dark:border-zinc-700"
+                : "border-zinc-300 dark:border-zinc-700"
           }`}
         >
           <div className="w-14 h-14 border-2 border-emerald-500/50 rounded-xl mx-auto mb-3 flex items-center justify-center">
@@ -203,7 +203,7 @@ export default function ScanIn() {
             <p className="text-sm text-red-400 mb-3 font-medium">✗ {error}</p>
           )}
           {!result && !error && (
-            <p className="text-sm text-gray-400 dark:text-zinc-500 mb-4">
+            <p className="text-sm text-zinc-400 dark:text-zinc-500 mb-4">
               Scan QR or enter tracking number
             </p>
           )}
@@ -215,7 +215,7 @@ export default function ScanIn() {
                 onChange={(e) => setInput(e.target.value.toUpperCase())}
                 onKeyDown={(e) => e.key === "Enter" && handleScan()}
                 placeholder="PTR-XXXXXXXX"
-                className="w-48 px-3 py-2 text-sm bg-gray-100 dark:bg-blue-950 border border-gray-300 dark:border-zinc-700 rounded-lg text-gray-800 dark:text-zinc-200 placeholder-gray-400 dark:placeholder-zinc-600 font-mono focus:outline-none focus:border-emerald-500"
+                className="w-48 px-3 py-2 text-sm bg-zinc-100 dark:bg-blue-950 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-600 font-mono focus:outline-none focus:border-emerald-500"
               />
               <button
                 onClick={() => handleScan()}
@@ -230,31 +230,31 @@ export default function ScanIn() {
       </div>
 
       {/* Scan log */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden">
-        <div className="px-5 py-3 border-b border-gray-200 dark:border-zinc-800 flex items-center justify-between">
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden">
+        <div className="px-5 py-3 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
           <h2 className="text-sm font-medium text-white">Scanned today</h2>
-          <span className="text-xs text-gray-400 dark:text-zinc-500">
+          <span className="text-xs text-zinc-400 dark:text-zinc-500">
             {log.length} scans
           </span>
         </div>
 
         {log.length === 0 ? (
-          <div className="px-5 py-8 text-center text-gray-300 dark:text-zinc-600 text-sm">
+          <div className="px-5 py-8 text-center text-zinc-300 dark:text-zinc-600 text-sm">
             No scans yet
           </div>
         ) : (
           log.map((item, i) => (
             <div
               key={`${item.tracking}-${i}`}
-              className="flex items-center gap-4 px-5 py-3 border-b border-gray-200/50 dark:border-zinc-800/50 last:border-none hover:bg-gray-100 dark:bg-blue-950/20 transition-colors"
+              className="flex items-center gap-4 px-5 py-3 border-b border-zinc-200/50 dark:border-zinc-800/50 last:border-none hover:bg-zinc-100 dark:bg-blue-950/20 transition-colors"
             >
-              <span className="font-mono text-xs text-gray-500 dark:text-zinc-400 w-32 shrink-0">
+              <span className="font-mono text-xs text-zinc-500 dark:text-zinc-400 w-32 shrink-0">
                 {item.tracking}
               </span>
-              <span className="text-xs text-gray-400 dark:text-zinc-500 flex-1 truncate">
+              <span className="text-xs text-zinc-400 dark:text-zinc-500 flex-1 truncate">
                 {item.receiver}
               </span>
-              <span className="text-xs text-gray-300 dark:text-zinc-600 w-20 text-right shrink-0">
+              <span className="text-xs text-zinc-300 dark:text-zinc-600 w-20 text-right shrink-0">
                 {item.time}
               </span>
               <span

@@ -6,6 +6,7 @@ import { useMapLibre } from "../../../shared/hooks/useMapLibre.js";
 import { apiGet, apiPost } from "../../../shared/hooks/useApi.js";
 import { useFarePreview } from "../hooks/useFarePreview.js";
 import { useMerchantProfile } from "../hooks/useMerchantProfile.js";
+import { useToast } from "../../../context/ToastContext";
 
 import ReceiverSection from "./shipment/RecieverSection.jsx";
 import PackageSection from "./shipment/PackageSection.jsx";
@@ -17,14 +18,14 @@ import FarePreviewCard from "./shipment/FarePreviewCard.jsx";
 // ─── shared primitives ────────────────────────────────────────
 const Card = ({ children, className = "" }) => (
   <div
-    className={`bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl p-5 shadow-sm ${className}`}
+    className={`bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl p-5 shadow-sm ${className}`}
   >
     {children}
   </div>
 );
 
 const SectionTitle = ({ children }) => (
-  <h2 className="text-sm font-semibold text-gray-700 dark:text-zinc-200 mb-4">
+  <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-200 mb-4">
     {children}
   </h2>
 );
@@ -73,6 +74,7 @@ function validate(form, fromDistrictId) {
 
 // ─── main ─────────────────────────────────────────────────────
 export default function CreateShipment() {
+  const toast = useToast();
   const [form, setForm] = useState(INITIAL);
   const [submitting, setSub] = useState(false);
   const [errors, setErrors] = useState({});
@@ -139,7 +141,6 @@ export default function CreateShipment() {
       });
   };
 
-  // ── submit ─────────────────────────────────────────────────
   const handleSubmit = async () => {
     const e = validate(form, fromDistrictId);
     if (Object.keys(e).length) {
@@ -164,9 +165,12 @@ export default function CreateShipment() {
         fromDistrictId: Number(fromDistrictId),
         toDistrictId: Number(form.toDistrictId),
       });
+      toast({ message: "Redirecting to payment…", type: "info" });
       window.location.href = result.data.paymentUrl;
     } catch (err) {
-      setErrors({ submit: err.message });
+      const msg = err.message ?? "Failed to create shipment.";
+      setErrors({ submit: msg });
+      toast({ message: msg, type: "error" });
       setSub(false);
     }
   };
@@ -177,14 +181,14 @@ export default function CreateShipment() {
 
   // ── render ─────────────────────────────────────────────────
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-4 md:p-6 max-w-4xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+        <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">
           New shipment
         </h1>
         {pickupAddress && (
-          <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5 flex items-center gap-1">
+          <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5 flex items-center gap-1">
             <MapPin size={11} /> Pickup: {pickupAddress}
           </p>
         )}

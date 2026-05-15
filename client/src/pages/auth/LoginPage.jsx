@@ -45,7 +45,7 @@ export default function LoginPage() {
           <Field label="Password">
             <Input type="password" placeholder="Enter your password" value={password} onChange={(e) => setPassword(e.target.value)} required />
             <div className="flex justify-end mt-1">
-              <Link to="/password/forgot" className="text-xs text-gray-400 dark:text-zinc-500 hover:text-indigo-400 transition-colors">
+              <Link to="/password/forgot" className="text-xs text-zinc-400 dark:text-zinc-500 hover:text-indigo-400 transition-colors">
                 Forgot password?
               </Link>
             </div>
@@ -58,7 +58,7 @@ export default function LoginPage() {
         <div className="flex flex-col gap-2.5">
           {REGISTER_LINKS.map(({ to, label }) => (
             <Link key={to} to={to} className="no-underline">
-              <button className="w-full bg-transparent border border-gray-200 dark:border-zinc-800 hover:border-gray-400 rounded-xl py-3 text-sm text-gray-500 hover:text-gray-800 dark:text-zinc-200 transition-colors">
+              <button className="w-full bg-transparent border border-zinc-200 dark:border-zinc-800 hover:border-gray-400 rounded-xl py-3 text-sm text-zinc-500 hover:text-zinc-800 dark:text-zinc-200 transition-colors">
                 {label}
               </button>
             </Link>

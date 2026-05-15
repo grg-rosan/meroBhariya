@@ -18,12 +18,12 @@ export default class ErrorBoundary extends Component {
         <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-4">
           <div className="text-center">
             <p className="text-white font-medium">Something went wrong.</p>
-            <p className="text-gray-400 dark:text-zinc-500 text-sm mt-1">
+            <p className="text-zinc-400 dark:text-zinc-500 text-sm mt-1">
               {this.state.error.message}
             </p>
             <button
               onClick={() => this.setState({ error: null })}
-              className="mt-4 text-sm text-gray-500 dark:text-zinc-400 hover:text-white underline"
+              className="mt-4 text-sm text-zinc-500 dark:text-zinc-400 hover:text-white underline"
             >
               Try again
             </button>

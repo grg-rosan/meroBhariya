@@ -118,7 +118,7 @@ export default function AddressAutocomplete({
   return (
     <div ref={containerRef} className="relative">
       {label && (
-        <label className="block text-xs font-medium text-gray-600 dark:text-zinc-400 mb-1.5">
+        <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">
           {label}
           {required && <span className="text-rose-400 ml-0.5">*</span>}
         </label>
@@ -130,28 +130,28 @@ export default function AddressAutocomplete({
         ${
           error
             ? "border-red-400 dark:border-red-500"
-            : "border-gray-300 dark:border-zinc-600 focus-within:border-gray-500 dark:focus-within:border-zinc-400"
+            : "border-zinc-300 dark:border-zinc-600 focus-within:border-gray-500 dark:focus-within:border-zinc-400"
         }`}
       >
         <MapPin
           size={13}
-          className="text-gray-400 dark:text-zinc-500 shrink-0"
+          className="text-zinc-400 dark:text-zinc-500 shrink-0"
         />
         <input
           value={raw}
           onChange={handleInput}
           onFocus={() => suggestions.length && setOpen(true)}
           placeholder={placeholder}
-          className="flex-1 text-sm bg-transparent outline-none text-gray-900 dark:text-zinc-100 placeholder-gray-400 dark:placeholder-zinc-500"
+          className="flex-1 text-sm bg-transparent outline-none text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500"
         />
         {loading && (
-          <Loader2 size={12} className="animate-spin text-gray-400 shrink-0" />
+          <Loader2 size={12} className="animate-spin text-zinc-400 shrink-0" />
         )}
         {raw && !loading && (
           <button
             type="button"
             onClick={handleClear}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300 shrink-0"
+            className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 shrink-0"
           >
             <X size={13} />
           </button>
@@ -161,17 +161,17 @@ export default function AddressAutocomplete({
       {error && <p className="text-xs text-red-400 mt-1">{error}</p>}
 
       {open && suggestions.length > 0 && (
-        <ul className="absolute z-50 top-full left-0 right-0 mt-1 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-lg overflow-hidden max-h-56 overflow-y-auto">
+        <ul className="absolute z-50 top-full left-0 right-0 mt-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg overflow-hidden max-h-56 overflow-y-auto">
           {suggestions.map((s, i) => (
             <li key={i}>
               <button
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => handleSelect(s)}
-                className="w-full flex items-start gap-2 px-3 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
+                className="w-full flex items-start gap-2 px-3 py-2.5 text-left hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
               >
-                <MapPin size={12} className="text-gray-400 mt-0.5 shrink-0" />
-                <span className="text-sm text-gray-700 dark:text-zinc-300 leading-snug">
+                <MapPin size={12} className="text-zinc-400 mt-0.5 shrink-0" />
+                <span className="text-sm text-zinc-700 dark:text-zinc-300 leading-snug">
                   {s.label}
                 </span>
               </button>

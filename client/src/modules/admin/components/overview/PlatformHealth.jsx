@@ -2,7 +2,7 @@ import { Bar } from "../../../../shared/ui/porter-ui";
 
 export default function PlatformHealth({ health, qa, loading }) {
   return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5">
+    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5">
       <h2 className="text-sm font-medium text-white mb-4">Platform health</h2>
 
       {loading ? (
@@ -10,7 +10,7 @@ export default function PlatformHealth({ health, qa, loading }) {
           {[...Array(2)].map((_, i) => (
             <div
               key={i}
-              className="h-5 bg-gray-100 dark:bg-blue-950 rounded animate-pulse"
+              className="h-5 bg-zinc-100 dark:bg-blue-950 rounded animate-pulse"
             />
           ))}
         </div>
@@ -29,9 +29,9 @@ export default function PlatformHealth({ health, qa, loading }) {
         </>
       )}
 
-      <div className="mt-5 pt-4 border-t border-gray-200 dark:border-zinc-800 space-y-2">
+      <div className="mt-5 pt-4 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
         <div className="flex justify-between items-center">
-          <span className="text-xs text-gray-400 dark:text-zinc-500">
+          <span className="text-xs text-zinc-400 dark:text-zinc-500">
             Pending verifications
           </span>
           <div className="flex gap-2">
@@ -44,7 +44,7 @@ export default function PlatformHealth({ health, qa, loading }) {
           </div>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-xs text-gray-400 dark:text-zinc-500">
+          <span className="text-xs text-zinc-400 dark:text-zinc-500">
             Expired documents
           </span>
           <span className="text-xs bg-red-500/10 text-red-400 px-2 py-0.5 rounded">

@@ -19,24 +19,24 @@ export function QRModal({ trackingNumber, qrCode, onClose, onDone }) {
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 w-full max-w-xs shadow-2xl">
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 w-full max-w-xs shadow-2xl">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Shipment created!</h2>
-            <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">Print the label and stick it on the package</p>
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Shipment created!</h2>
+            <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">Print the label and stick it on the package</p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:text-zinc-500 dark:hover:text-zinc-300">
+          <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300">
             <X size={16} />
           </button>
         </div>
 
         {/* QR code */}
-        <div className="bg-white rounded-xl p-4 flex flex-col items-center mb-4 border border-gray-100">
+        <div className="bg-white rounded-xl p-4 flex flex-col items-center mb-4 border border-zinc-100">
           <img src={qrCode} alt={trackingNumber} className="w-48 h-48" />
-          <p className="font-mono text-sm font-bold text-gray-900 mt-2 tracking-widest">
+          <p className="font-mono text-sm font-bold text-zinc-900 mt-2 tracking-widest">
             {trackingNumber}
           </p>
-          <p className="text-xs text-gray-400 mt-1">Dispatcher scans this at the hub</p>
+          <p className="text-xs text-zinc-400 mt-1">Dispatcher scans this at the hub</p>
         </div>
 
         <div className="space-y-2">
@@ -48,7 +48,7 @@ export function QRModal({ trackingNumber, qrCode, onClose, onDone }) {
           </button>
           <button
             onClick={onDone}
-            className="w-full py-2.5 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-700 dark:text-zinc-300 text-sm rounded-lg transition-all"
+            className="w-full py-2.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-sm rounded-lg transition-all"
           >
             Done — view shipments
           </button>

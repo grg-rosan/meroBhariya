@@ -18,10 +18,10 @@ export default function DeliverPackage() {
   const handleSubmit = () => deliver({ codCollected, podNote });
 
   return (
-    <div className="p-6 max-w-md mx-auto">
+    <div className="p-4 md:p-6 max-w-md mx-auto">
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-white">Confirm delivery</h1>
-        <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">
+        <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
           Your GPS will be verified before delivery is logged
         </p>
       </div>
@@ -45,7 +45,7 @@ export default function DeliverPackage() {
         onClick={handleSubmit}
       />
 
-      <p className="text-xs text-gray-300 dark:text-zinc-600 text-center mt-3">
+      <p className="text-xs text-zinc-300 dark:text-zinc-600 text-center mt-3">
         Your GPS coordinates are verified server-side using PostGIS
       </p>
     </div>

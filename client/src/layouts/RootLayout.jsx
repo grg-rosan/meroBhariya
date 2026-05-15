@@ -4,10 +4,12 @@ import { AuthProvider } from "../modules/auth/AuthContext";
 import { NotificationProvider } from "../context/NotificationContext";
 import ErrorBoundary from "../components/feedback/ErrorBoundary";
 import { ToastProvider } from "../context/ToastContext";
+import { ThemeProvider } from "../context/ThemeContext";
 
 export default function RootLayout() {
   return (
     <ErrorBoundary>
+      <ThemeProvider>
       <ToastProvider>
         <AuthProvider>
           <NotificationProvider>
@@ -15,6 +17,7 @@ export default function RootLayout() {
           </NotificationProvider>
         </AuthProvider>
       </ToastProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }
