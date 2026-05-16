@@ -1,6 +1,7 @@
 // src/modules/merchant/components/CreateShipment.jsx
 import { useState, useRef, useEffect } from "react";
-import { Loader2, AlertCircle, MapPin, CreditCard } from "lucide-react";
+import { Loader2, AlertCircle, MapPin, CreditCard, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import { useMapLibre } from "../../../shared/hooks/useMapLibre.js";
 import { apiGet, apiPost } from "../../../shared/hooks/useApi.js";
@@ -75,10 +76,12 @@ function validate(form, fromDistrictId) {
 // ─── main ─────────────────────────────────────────────────────
 export default function CreateShipment() {
   const toast = useToast();
+  const navigate = useNavigate();
   const [form, setForm] = useState(INITIAL);
   const [submitting, setSub] = useState(false);
   const [errors, setErrors] = useState({});
   const [districts, setDistricts] = useState([]);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   const { fromDistrictId, pickupAddress } = useMerchantProfile(districts);
   const {
@@ -124,7 +127,7 @@ export default function CreateShipment() {
     mapRef.current.flyTo({ center: lngLat, zoom: 14, duration: 800 });
   }, [form.deliveryLat, form.deliveryLng, mapRef, upsertMarker]);
 
-  // ── address change (special: updates multiple fields) ──────
+  // ── address change ─────────────────────────────────────────
   const handleAddressChange = (addr, latLng, districtId) => {
     setForm((f) => ({
       ...f,
@@ -141,6 +144,21 @@ export default function CreateShipment() {
       });
   };
 
+  // ── cancel helpers ─────────────────────────────────────────
+  const isDirty = Object.keys(INITIAL).some((k) => {
+    const v = form[k];
+    return v !== INITIAL[k] && v !== "" && v !== null && v !== false;
+  });
+
+  const handleCancel = () => {
+    // If nothing was touched, navigate away immediately
+    if (!isDirty) return navigate(-1);
+    setShowCancelModal(true);
+  };
+
+  const confirmCancel = () => navigate(-1);
+
+  // ── submit ─────────────────────────────────────────────────
   const handleSubmit = async () => {
     const e = validate(form, fromDistrictId);
     if (Object.keys(e).length) {
@@ -181,105 +199,185 @@ export default function CreateShipment() {
 
   // ── render ─────────────────────────────────────────────────
   return (
-    <div className="p-4 md:p-6 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">
-          New shipment
-        </h1>
-        {pickupAddress && (
-          <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5 flex items-center gap-1">
-            <MapPin size={11} /> Pickup: {pickupAddress}
-          </p>
-        )}
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* ── Left column ──────────────────────────────────── */}
-        <div className="space-y-5">
-          <Card>
-            <SectionTitle>Receiver details</SectionTitle>
-            <ReceiverSection
-              receiverName={form.receiverName}
-              receiverPhone={form.receiverPhone}
-              deliveryAddress={form.deliveryAddress}
-              districts={districts}
-              errors={errors}
-              toDistrictName={toDistrictName}
-              onChange={set}
-              onAddressChange={handleAddressChange}
-            />
-          </Card>
-
-          <Card>
-            <SectionTitle>Package details</SectionTitle>
-            <PackageSection
-              weight={form.weight}
-              orderValue={form.orderValue}
-              isFragile={form.isFragile}
-              errors={errors}
-              onChange={set}
-            />
-          </Card>
-
-          <Card>
-            <SectionTitle>Payment type</SectionTitle>
-            <PaymentSection
-              paymentType={form.paymentType}
-              codAmount={form.codAmount}
-              errors={errors}
-              onChange={set}
-            />
-          </Card>
-
-          <Card>
-            <SectionTitle>Vehicle type</SectionTitle>
-            <VehicleSection vehicleTypeId={form.vehicleTypeId} onChange={set} />
-          </Card>
-
-          {/* Submit error */}
-          {errors.submit && (
-            <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-700/50 rounded-lg">
-              <AlertCircle size={14} className="text-red-500 shrink-0" />
-              <span className="text-sm text-red-600 dark:text-red-300">
-                {errors.submit}
-              </span>
-            </div>
-          )}
-
-          {/* CTA */}
-          <button
-            onClick={handleSubmit}
-            disabled={submitting}
-            className="w-full py-3 bg-rose-500 hover:bg-rose-600 active:bg-rose-700 text-white text-sm font-medium rounded-xl disabled:opacity-40 transition-all flex items-center justify-center gap-2 shadow-sm"
-          >
-            {submitting ? (
-              <>
-                <Loader2 size={14} className="animate-spin" /> Redirecting to
-                Khalti…
-              </>
-            ) : (
-              <>
-                <CreditCard size={14} /> Pay & Ship — रु{" "}
-                {fareData ? Number(fareData.totalFare).toLocaleString() : "…"}
-              </>
+    <>
+      <div className="p-4 md:p-6 max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-6">
+          <div>
+            <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">
+              New shipment
+            </h1>
+            {pickupAddress && (
+              <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5 flex items-center gap-1">
+                <MapPin size={11} /> Pickup: {pickupAddress}
+              </p>
             )}
+          </div>
+
+          {/* Cancel — icon-only on mobile, full label on md+ */}
+          <button
+            onClick={handleCancel}
+            disabled={submitting}
+            className="
+              flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium
+              text-zinc-500 dark:text-zinc-400
+              hover:text-zinc-800 dark:hover:text-zinc-100
+              hover:bg-zinc-100 dark:hover:bg-zinc-800
+              active:bg-zinc-200 dark:active:bg-zinc-700
+              disabled:opacity-40 disabled:cursor-not-allowed
+              transition-colors
+            "
+            aria-label="Cancel shipment creation"
+          >
+            <X size={15} />
+            <span className="hidden md:inline">Cancel</span>
           </button>
         </div>
 
-        {/* ── Right column ─────────────────────────────────── */}
-        <div className="space-y-4">
-          <MapPreview
-            mapContainerRef={mapContainerRef}
-            hasDeliveryLocation={!!form.deliveryLat}
-          />
-          <FarePreviewCard
-            fareData={fareData}
-            loading={fareLoading}
-            error={fareError}
-          />
+        <div className="grid lg:grid-cols-2 gap-6">
+          {/* ── Left column ──────────────────────────────────── */}
+          <div className="space-y-5">
+            <Card>
+              <SectionTitle>Receiver details</SectionTitle>
+              <ReceiverSection
+                receiverName={form.receiverName}
+                receiverPhone={form.receiverPhone}
+                deliveryAddress={form.deliveryAddress}
+                districts={districts}
+                errors={errors}
+                toDistrictName={toDistrictName}
+                onChange={set}
+                onAddressChange={handleAddressChange}
+              />
+            </Card>
+
+            <Card>
+              <SectionTitle>Package details</SectionTitle>
+              <PackageSection
+                weight={form.weight}
+                orderValue={form.orderValue}
+                isFragile={form.isFragile}
+                errors={errors}
+                onChange={set}
+              />
+            </Card>
+
+            <Card>
+              <SectionTitle>Payment type</SectionTitle>
+              <PaymentSection
+                paymentType={form.paymentType}
+                codAmount={form.codAmount}
+                errors={errors}
+                onChange={set}
+              />
+            </Card>
+
+            <Card>
+              <SectionTitle>Vehicle type</SectionTitle>
+              <VehicleSection
+                vehicleTypeId={form.vehicleTypeId}
+                onChange={set}
+              />
+            </Card>
+
+            {/* Submit error */}
+            {errors.submit && (
+              <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-700/50 rounded-lg">
+                <AlertCircle size={14} className="text-red-500 shrink-0" />
+                <span className="text-sm text-red-600 dark:text-red-300">
+                  {errors.submit}
+                </span>
+              </div>
+            )}
+
+            {/* CTA stack — Submit on top, Cancel below */}
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={handleSubmit}
+                disabled={submitting}
+                className="w-full py-3 bg-rose-500 hover:bg-rose-600 active:bg-rose-700 text-white text-sm font-medium rounded-xl disabled:opacity-40 transition-all flex items-center justify-center gap-2 shadow-sm"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" /> Redirecting
+                    to Khalti…
+                  </>
+                ) : (
+                  <>
+                    <CreditCard size={14} /> Pay & Ship — रु{" "}
+                    {fareData
+                      ? Number(fareData.totalFare).toLocaleString()
+                      : "…"}
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={handleCancel}
+                disabled={submitting}
+                className="
+                  w-full py-2.5 rounded-xl text-sm font-medium
+                  border border-zinc-300 dark:border-zinc-600
+                  text-zinc-600 dark:text-zinc-300
+                  hover:bg-zinc-100 dark:hover:bg-zinc-800
+                  active:bg-zinc-200 dark:active:bg-zinc-700
+                  disabled:opacity-40 disabled:cursor-not-allowed
+                  transition-colors
+                "
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+
+          {/* ── Right column ─────────────────────────────────── */}
+          <div className="space-y-4">
+            <MapPreview
+              mapContainerRef={mapContainerRef}
+              hasDeliveryLocation={!!form.deliveryLat}
+            />
+            <FarePreviewCard
+              fareData={fareData}
+              loading={fareLoading}
+              error={fareError}
+            />
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* ── Dirty-form confirmation modal ──────────────────────── */}
+      {showCancelModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+          onClick={() => setShowCancelModal(false)}
+        >
+          <div
+            className="w-full max-w-sm bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-xl border border-zinc-200 dark:border-zinc-700"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-base font-semibold text-zinc-900 dark:text-white mb-1">
+              Discard shipment?
+            </h2>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
+              All entered details will be lost. This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowCancelModal(false)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              >
+                Keep editing
+              </button>
+              <button
+                onClick={confirmCancel}
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-red-500 hover:bg-red-600 active:bg-red-700 text-white transition-colors"
+              >
+                Discard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
