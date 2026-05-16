@@ -20,6 +20,9 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
+  "https://mero-bhariya.vercel.app",
+  "https://merobhariya.me",
+  "https://www.merobhariya.me",
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
