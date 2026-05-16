@@ -11,7 +11,7 @@ import { getRedisClient } from "./config/redis.config.js";
 import { startDeliveryConsumer } from "./infrastructure/rabbitmq/consumers/delivery.consumer.js";
 import logger from "./utils/logger.js";
 
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // Auto-migrate on startup with retry logic
 const runMigrations = (retries = 5, delayMs = 3000) => {
