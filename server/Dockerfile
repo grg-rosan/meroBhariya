@@ -1,11 +1,18 @@
 FROM node:22-slim
 
-# ✅ needed for prisma on slim image
+# needed for prisma on slim image
 RUN apt-get update -y && apt-get install -y openssl ca-certificates
+
 WORKDIR /app
+
 COPY package*.json ./
-RUN npm install
+RUN npm install --production
+
 COPY . .
-RUN npx prisma generate 
+
+RUN npx prisma generate
+
 EXPOSE 3000
-CMD ["npm", "run", "dev"]
+
+# runs migrations then starts server (no nodemon)
+CMD sh -c "npx prisma migrate deploy && node src/server.js"

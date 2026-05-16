@@ -14,3 +14,13 @@ server/uploads/*
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Docker
+docker-compose.prod.yml    # ← optional, only if you want to keep it private
+.docker/
+
+# Node (root level)
+node_modules/
+
+# Logs
+*.log
