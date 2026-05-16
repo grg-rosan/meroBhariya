@@ -15,4 +15,4 @@ RUN npx prisma generate
 EXPOSE 3000
 
 # runs migrations then starts server (no nodemon)
-CMD sh -c "npx prisma migrate deploy && node src/server.js"
+CMD sh -c "npx prisma migrate deploy && npx prisma db seed && node src/server.js"
