@@ -1,8 +1,7 @@
 import jwt from "jsonwebtoken";
 import cookie from "cookie";
 import { prisma } from "../../config/db.config.js";
-import  from "../../utils/.js";
-
+import logger from "../logger/index.js";
 let io;
 
 export const getIO = () => {
