@@ -38,12 +38,17 @@ function sanitizeUser(user) {
 }
 
 async function sendEmail(to, subject, html) {
-  await transporter.sendMail({
-    from: `MeroBhariya <${process.env.EMAIL_USER}>`,
-    to,
-    subject,
-    html,
-  });
+  await Promise.race([
+    transporter.sendMail({
+      from: `MeroBhariya <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      html,
+    }),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Email timeout")), 10000) 
+    ),
+  ]);
 }
 
 // ─── Role creators for registration ──────────────────────────────────────────
