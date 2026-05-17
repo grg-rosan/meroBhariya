@@ -3,7 +3,7 @@ import { buildPaginationMeta } from "../../../utils/others/pagination.js";
 import AppError from "../../../utils/error/appError.js";
 import { publishMerchantNotification } from "../../../infrastructure/rabbitmq/publisher.js";
 import { settleDeliveryEarning } from "../../rider/finance/rider.earnings.service.js";
-import logger from "../../../utils/logger.js";
+import logger from "../../../infrastructure/logger/index.js";
 import { buildDateFilter } from "../../../utils/others/dateFilter.js";
 // ─── Settle delivery (called by RabbitMQ delivery consumer) ──────────────────
 

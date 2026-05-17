@@ -1,6 +1,5 @@
 import { createClient } from "redis";
-import logger from "../utils/logger.js";
-
+import logger from "../infrastructure/logger/index.js";
 let client;
 
 export async function getRedisClient() {

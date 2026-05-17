@@ -9,8 +9,7 @@ import { connectRabbitMQ } from "./infrastructure/rabbitmq/connection.js";
 import { startNotificationConsumers } from "./modules/notification/notification.consumer.js";
 import { getRedisClient } from "./config/redis.config.js";
 import { startDeliveryConsumer } from "./infrastructure/rabbitmq/consumers/delivery.consumer.js";
-import logger from "./utils/logger.js";
-
+import logger from "./infrastructure/logger/index.js";
 const port = process.env.PORT || 3000;
 
 // Auto-migrate on startup with retry logic

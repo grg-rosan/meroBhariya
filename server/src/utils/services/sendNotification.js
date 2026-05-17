@@ -1,12 +1,5 @@
-// src/utils/sendNotification.js
-//
-// Currently writes notifications to the console + can be extended to
-// send emails (Nodemailer), SMS (Sparrow SMS — Nepal), or push notifications.
-//
-// To add email: install nodemailer and fill in sendEmail() below.
-// To add SMS:   install axios and use Sparrow SMS API (sparrowsms.com).
-import logger from "../logger.js";
 
+import logger from "../../infrastructure/logger/index.js";
 // ─── Notification types ───────────────────────────────────────────────────────
 
 export const NOTIFICATION_TYPE = {

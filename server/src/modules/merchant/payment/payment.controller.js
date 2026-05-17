@@ -1,4 +1,4 @@
-import logger from "../../../utils/logger.js";
+import logger from "../../../infrastructure/logger/index.js";
 import { catchAsync } from "../../../utils/error/errorHandler.js";
 import {
   initiateExistingShipmentPayment,

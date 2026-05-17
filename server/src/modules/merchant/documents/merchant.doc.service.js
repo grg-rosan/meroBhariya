@@ -4,8 +4,7 @@ import {
   uploadToCloudinary,
   deleteFromCloudinary,
 } from "../../../utils/services/cloudinary.js";
-import logger from "../../../utils/logger.js";
-
+import logger from "../../../infrastructure/logger/index.js";
 // ─── Required doc types (matches MerchantDocType enum in schema) ──────────────
 
 export const REQUIRED_DOC_TYPES = [

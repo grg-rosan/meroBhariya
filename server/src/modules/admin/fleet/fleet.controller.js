@@ -1,7 +1,6 @@
 // src/modules/admin/fleet/fleet.controller.js
 import * as fleetService from "./fleet.services.js";
-import logger from "../../../utils/logger.js";
-
+import logger from "../../../infrastructure/logger/index.js";
 function handleError(res, err) {
   if (err.status && err.message)
     return res.status(err.status).json({ message: err.message });

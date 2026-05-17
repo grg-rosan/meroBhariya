@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import cookie from "cookie";
 import { prisma } from "../../config/db.config.js";
-import logger from "../../utils/logger.js";
+import  from "../../utils/.js";
 
 let io;
 
@@ -49,13 +49,13 @@ export const initSocketHandlers = (socketIO) => {
 
     if (socket.user.role === "DISPATCHER") {
       socket.join("dispatchers"); // shared dispatcher room
-      logger.info(
+      .info(
         { userId: socket.user.id, fullName: socket.user.fullName },
         "[Socket] joined dispatchers room",
       );
     }
     socket.on("disconnect", () => {
-      logger.info(
+      .info(
         { userId: socket.user.id, fullName: socket.user.fullName },
         "Disconnected",
       );

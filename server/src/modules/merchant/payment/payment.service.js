@@ -6,7 +6,7 @@ import { generateTrackingNumber } from "../shipment/shipment.helpers.js";
 import QRCode from "qrcode";
 import { publishShipmentNew } from "../shipment/shipment.events.js";
 import { khaltiConfig } from "../../../config/khalti.config.js";
-import logger from "../../../utils/logger.js";
+import logger from "../../../infrastructure/logger/index.js";
 const SESSION_TTL = 60 * 30; // 30 minutes
 
 // ── initiatePaymentSession ────────────────────────────────────

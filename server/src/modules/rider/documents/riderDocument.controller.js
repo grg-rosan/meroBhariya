@@ -5,8 +5,7 @@ import {
   uploadToCloudinary,
   deleteFromCloudinary,
 } from "../../../utils/services/cloudinary.js";
-import logger from "../../../utils/logger.js";
-
+import logger from "../../../infrastructure/logger/index.js";
 export const getDocuments = catchAsync(async (req, res) => {
   const data = await docService.getRiderDocuments(req.userId);
   res.status(200).json({ success: true, data });

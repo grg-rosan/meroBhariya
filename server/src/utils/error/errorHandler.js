@@ -1,5 +1,5 @@
 // src/utils/error/errorHandler.js
-import logger from "../services/logger.js";
+import logger from "../../infrastructure/logger/index.js";
 export function catchAsync(fn) {
   return (req, res, next) => {
     Promise.resolve(fn(req, res, next)).catch(next);

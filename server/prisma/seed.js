@@ -1,8 +1,7 @@
 import { prisma, pool } from "../src/config/db.config.js";
 import bcrypt from "bcryptjs";
 import "dotenv/config";
-import logger from "../src/utils/logger.js";
-
+import logger from "../src/infrastructure/logger/index.js";
 //_________data_________
 const ZONES = [
   {

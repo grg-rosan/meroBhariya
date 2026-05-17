@@ -1,8 +1,7 @@
 import { getChannel } from "../connection.js";
 import { QUEUE } from "../queue.js";
 import { getIO } from "../../socket/socket.handler.js";
-import logger from "../../../utils/logger.js";
-
+import logger from "../../logger/index.js";
 export async function startDispatcherConsumer() {
   const ch = getChannel();
   if (!ch)

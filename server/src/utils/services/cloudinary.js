@@ -1,7 +1,6 @@
 import cloudinary from "../../config/cloudinary.config.js";
 import AppError from "../error/appError.js";
-import logger from "./logger.js";
-
+import logger from "../../infrastructure/logger/index.js";
 export const uploadToCloudinary = async (filePath, folder) => {
   try {
     const result = await cloudinary.uploader.upload(filePath, {

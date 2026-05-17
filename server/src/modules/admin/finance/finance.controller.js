@@ -1,7 +1,6 @@
 // src/modules/admin/finance/finance.controller.js
 import * as financeService from "./finance.services.js";
-import logger from "../../../utils/logger.js";
-
+import logger from "../../../infrastructure/logger/index.js";
 function handleError(res, err) {
   if (err.status && err.message)
     return res.status(err.status).json({ message: err.message });

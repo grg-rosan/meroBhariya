@@ -1,6 +1,6 @@
 import { getChannel } from "./connection.js";
 import { EXCHANGE } from "./queue.js";
-import logger from "../../utils/logger.js";
+import logger from "../logger/index.js";
 
 export function publish(routingKey, payload) {
   const ch = getChannel();

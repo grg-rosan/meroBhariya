@@ -5,7 +5,7 @@
 
 import { getChannel } from "../../infrastructure/rabbitmq/connection.js";
 import { QUEUE } from "../../infrastructure/rabbitmq/queue.js";
-import logger from "../../utils/logger.js";
+import logger from "../../infrastructure/logger/index.js";
 let io = null;
 
 export async function startNotificationConsumers(socketIO) {

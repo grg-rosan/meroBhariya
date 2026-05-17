@@ -1,6 +1,5 @@
 import AppError from "../utils/error/appError.js";
-import logger from "../utils/logger.js";
-
+import logger from "../infrastructure/logger/index.js";
 // Specialized Handlers
 const handleCastError = (err) =>
   new AppError(`Invalid ${err.path}: ${err.value}`, 400);

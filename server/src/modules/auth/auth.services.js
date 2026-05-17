@@ -10,8 +10,7 @@ import {
   resetEmailTemplate,
   otpEmailTemplate,
 } from "../../utils/services/emailTemplate.js";
-import logger from "../../utils/logger.js";
-
+import logger from "../../infrastructure/logger/index.js";
 const SALT_ROUNDS = 12;
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES = process.env.JWT_EXPIRES_IN || "7d";

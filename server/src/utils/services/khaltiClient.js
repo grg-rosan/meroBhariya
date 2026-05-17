@@ -1,6 +1,6 @@
 import axios from "axios";
 import AppError from "../error/appError.js";
-import logger from "./logger.js";
+import logger from "../../infrastructure/logger/index.js";
 import { deflateRaw } from "node:zlib";
 import { khaltiConfig } from "../../config/khalti.config.js";
 

@@ -1,7 +1,7 @@
 import { getChannel } from "../connection.js";
 import { QUEUE } from "../queue.js";
 import { settleDelivery } from "../../../modules/admin/finance/finance.services.js";
-import logger from "../../../utils/logger.js";
+import logger from "../../logger/index.js";
 
 export async function startDeliveryConsumer() {
   const ch = getChannel();

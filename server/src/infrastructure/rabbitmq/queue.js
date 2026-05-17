@@ -1,5 +1,5 @@
 import { getChannel } from "./connection.js";
-import logger from "../../utils/logger.js";
+import logger from "../logger/index.js";
 
 export const EXCHANGE = "porter.shipments";
 
