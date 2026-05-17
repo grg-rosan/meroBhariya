@@ -48,13 +48,13 @@ export const initSocketHandlers = (socketIO) => {
 
     if (socket.user.role === "DISPATCHER") {
       socket.join("dispatchers"); // shared dispatcher room
-      .info(
+      logger.info(
         { userId: socket.user.id, fullName: socket.user.fullName },
         "[Socket] joined dispatchers room",
       );
     }
     socket.on("disconnect", () => {
-      .info(
+      logger.info(
         { userId: socket.user.id, fullName: socket.user.fullName },
         "Disconnected",
       );
