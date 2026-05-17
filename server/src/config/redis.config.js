@@ -8,7 +8,6 @@ export async function getRedisClient() {
   client = createClient({
     url: process.env.REDIS_URL,
     socket: {
-      tls: process.env.NODE_ENV === "production",   // TLS only in prod
       rejectUnauthorized: false
     }
   });
