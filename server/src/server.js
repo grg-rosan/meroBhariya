@@ -34,8 +34,16 @@ const runMigrations = (retries = 5, delayMs = 3000) => {
 runMigrations();
 
 const server = http.createServer(app);
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://mero-bhariya.vercel.app",
+  "https://merobhariya.me",
+  "https://www.merobhariya.me",
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
 const io = new socketIOServer(server, {
-  cors: { origin: "http://localhost:5173", credentials: true },
+  cors: { origin: allowedOrigins, credentials: true },
 });
 
 initSocketHandlers(io);
