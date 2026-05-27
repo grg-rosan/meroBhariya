@@ -12,7 +12,7 @@ export default function GpsStatus({ geo, radius }) {
     >
       <div
         className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-          geo.loc ? "bg-green-500/10" : "bg-zinc-100 dark:bg-blue-950"
+          geo.loc ? "bg-green-500/10" : "bg-zinc-100 dark:bg-zinc-800"
         }`}
       >
         <Navigation2

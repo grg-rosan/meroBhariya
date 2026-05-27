@@ -18,7 +18,7 @@ export default function AdminNotifications() {
         {unreadCount > 0 && (
           <button
             onClick={markAllRead}
-            className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 hover:text-white border border-zinc-300 dark:border-zinc-700 hover:border-gray-500 dark:hover:border-zinc-500 px-3 py-1.5 rounded-lg transition-all"
+            className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white border border-zinc-300 dark:border-zinc-700 hover:border-gray-500 dark:hover:border-zinc-500 px-3 py-1.5 rounded-lg transition-all"
           >
             <CheckCheck size={12} /> Mark all read
           </button>

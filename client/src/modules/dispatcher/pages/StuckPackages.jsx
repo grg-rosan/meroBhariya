@@ -89,10 +89,10 @@ export default function StuckPackages() {
                     <button className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs rounded-lg font-medium transition-all">
                       <Zap size={11} /> Force assign
                     </button>
-                    <button className="flex items-center gap-1.5 px-3 py-1.5 border border-zinc-300 dark:border-zinc-700 text-zinc-500  hover:text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:bg-blue-950 text-xs rounded-lg transition-all">
+                    <button className="flex items-center gap-1.5 px-3 py-1.5 border border-zinc-300 dark:border-zinc-700 text-zinc-500  hover:text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:bg-zinc-800 text-xs rounded-lg transition-all">
                       <Phone size={11} /> Call merchant
                     </button>
-                    <button className="flex items-center gap-1.5 px-3 py-1.5 border border-zinc-300 dark:border-zinc-700 text-zinc-500  hover:text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:bg-blue-950 text-xs rounded-lg transition-all">
+                    <button className="flex items-center gap-1.5 px-3 py-1.5 border border-zinc-300 dark:border-zinc-700 text-zinc-500  hover:text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:bg-zinc-800 text-xs rounded-lg transition-all">
                       <Clock size={11} /> Escalate to admin
                     </button>
                   </div>

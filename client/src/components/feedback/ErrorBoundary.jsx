@@ -23,7 +23,7 @@ export default class ErrorBoundary extends Component {
             </p>
             <button
               onClick={() => this.setState({ error: null })}
-              className="mt-4 text-sm text-zinc-500 dark:text-zinc-400 hover:text-white underline"
+              className="mt-4 text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white underline"
             >
               Try again
             </button>

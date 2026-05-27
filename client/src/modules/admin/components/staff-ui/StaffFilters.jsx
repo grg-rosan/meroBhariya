@@ -14,7 +14,7 @@ export default function StaffFilters({ search, onSearch, roleFilter, onRole }) {
           value={search}
           onChange={(e) => onSearch(e.target.value)}
           placeholder="Search by name or email…"
-          className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-zinc-300 dark:border-zinc-700 transition-colors"
+          className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-zinc-300 dark:border-zinc-700 transition-colors"
         />
       </div>
 

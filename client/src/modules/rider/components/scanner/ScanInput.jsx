@@ -19,7 +19,7 @@ export default function ScanInput({ input, onChange, onScan, loading, hasResult 
           onChange={onChange}
           onKeyDown={(e) => e.key === "Enter" && onScan()}
           placeholder="PTR-XXXX"
-          className="w-40 px-3 py-2 text-sm bg-zinc-100 dark:bg-blue-950 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-sky-500"
+          className="w-40 px-3 py-2 text-sm bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-sky-500"
         />
         <button
           onClick={onScan}

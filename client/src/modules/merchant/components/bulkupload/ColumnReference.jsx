@@ -17,7 +17,7 @@ export default function ColumnReference() {
         {REQUIRED_COLUMNS.map((col) => (
           <code
             key={col}
-            className="text-xs bg-zinc-100 dark:bg-blue-950 text-zinc-700 dark:text-zinc-300 px-2 py-0.5 rounded"
+            className="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-2 py-0.5 rounded"
           >
             {col}
           </code>

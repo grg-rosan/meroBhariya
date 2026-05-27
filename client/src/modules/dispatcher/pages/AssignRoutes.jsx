@@ -102,7 +102,7 @@ export default function AssignRoutes() {
         <div className="flex items-center gap-2">
           <button
             onClick={refetch}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800 rounded-lg hover:bg-zinc-100 dark:bg-blue-950 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800 rounded-lg hover:bg-zinc-100 dark:bg-zinc-800 transition-all"
           >
             <RefreshCw
               size={12}

@@ -36,7 +36,7 @@ export function useThemeTokens(dark) {
     selBar:    dark ? "bg-zinc-900 border-zinc-700" : "bg-white border-zinc-200",
     selText:   dark ? "text-zinc-300"               : "text-zinc-700",
     btnBase:   dark
-      ? "bg-violet-600/20 hover:bg-violet-600 border border-violet-600/40 hover:border-violet-500 text-violet-300 hover:text-white"
+      ? "bg-violet-600/20 hover:bg-violet-600 border border-violet-600/40 hover:border-violet-500 text-violet-300 hover:text-zinc-900 dark:hover:text-white"
       : "bg-violet-50 hover:bg-violet-600 border border-violet-200 hover:border-violet-500 text-violet-600 hover:text-white",
     modalCard: dark ? "bg-zinc-900 border-zinc-700" : "bg-white border-zinc-200",
     summary:   dark ? "bg-zinc-800 text-zinc-300"   : "bg-zinc-50 text-zinc-700",
@@ -46,7 +46,7 @@ export function useThemeTokens(dark) {
     sidebar:   dark ? "bg-zinc-900 border-zinc-800" : "bg-white border-zinc-200",
     navActive: dark ? "bg-zinc-800 text-white font-medium" : "bg-zinc-100 text-zinc-900 font-medium",
     navIdle:   dark
-      ? "text-zinc-400 hover:text-white hover:bg-zinc-800"
+      ? "text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-800"
       : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100",
     hover:     dark ? "hover:bg-zinc-800" : "hover:bg-zinc-50",
     tableHead: dark ? "bg-zinc-800/50 border-zinc-800" : "bg-zinc-50 border-zinc-200",

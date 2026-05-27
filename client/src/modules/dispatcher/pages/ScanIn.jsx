@@ -215,7 +215,7 @@ export default function ScanIn() {
                 onChange={(e) => setInput(e.target.value.toUpperCase())}
                 onKeyDown={(e) => e.key === "Enter" && handleScan()}
                 placeholder="PTR-XXXXXXXX"
-                className="w-48 px-3 py-2 text-sm bg-zinc-100 dark:bg-blue-950 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-600 font-mono focus:outline-none focus:border-emerald-500"
+                className="w-48 px-3 py-2 text-sm bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-600 font-mono focus:outline-none focus:border-emerald-500"
               />
               <button
                 onClick={() => handleScan()}
@@ -246,7 +246,7 @@ export default function ScanIn() {
           log.map((item, i) => (
             <div
               key={`${item.tracking}-${i}`}
-              className="flex items-center gap-4 px-5 py-3 border-b border-zinc-200/50 dark:border-zinc-800/50 last:border-none hover:bg-zinc-100 dark:bg-blue-950/20 transition-colors"
+              className="flex items-center gap-4 px-5 py-3 border-b border-zinc-200/50 dark:border-zinc-800/50 last:border-none hover:bg-zinc-100 dark:bg-zinc-800/20 transition-colors"
             >
               <span className="font-mono text-xs text-zinc-500 dark:text-zinc-400 w-32 shrink-0">
                 {item.tracking}

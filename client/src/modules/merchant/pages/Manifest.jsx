@@ -89,7 +89,7 @@ export default function Manifests() {
                 <tr
                   key={s.trackingNumber}
                   className={
-                    "border-b border-zinc-200/50 dark:border-zinc-800/50 hover:bg-zinc-100 dark:bg-blue-950/30 transition-colors " +
+                    "border-b border-zinc-200/50 dark:border-zinc-800/50 hover:bg-zinc-100 dark:bg-zinc-800/30 transition-colors " +
                     (selected.has(s.trackingNumber) ? "bg-rose-500/5" : "")
                   }
                 >
@@ -131,7 +131,7 @@ export default function Manifests() {
                       : "-"}
                   </td>
                   <td className="px-4 py-3">
-                    <button className="flex items-center gap-1.5 px-2.5 py-1 text-xs border border-zinc-300 dark:border-zinc-700 text-zinc-500  hover:text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:bg-blue-950 rounded transition-all">
+                    <button className="flex items-center gap-1.5 px-2.5 py-1 text-xs border border-zinc-300 dark:border-zinc-700 text-zinc-500  hover:text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:bg-zinc-800 rounded transition-all">
                       <Printer size={11} /> Print
                     </button>
                   </td>

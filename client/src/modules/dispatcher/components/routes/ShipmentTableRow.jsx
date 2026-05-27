@@ -7,7 +7,7 @@ export default function ShipmentTableRow({ shipment, selected, onToggle }) {
       className={`border-b border-zinc-200/50 dark:border-zinc-800/50 cursor-pointer transition-colors ${
         selected
           ? "bg-emerald-500/5"
-          : "hover:bg-zinc-100 dark:bg-blue-950/30"
+          : "hover:bg-zinc-100 dark:bg-zinc-800/30"
       }`}
     >
       <td className="px-4 py-3">
@@ -33,7 +33,7 @@ export default function ShipmentTableRow({ shipment, selected, onToggle }) {
         {shipment.weight} kg
       </td>
       <td className="px-3 py-3">
-        <span className="text-xs bg-zinc-100 dark:bg-blue-950 text-zinc-500 dark:text-zinc-400 px-2 py-0.5 rounded">
+        <span className="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 px-2 py-0.5 rounded">
           {shipment.vehicleType?.name ?? "—"}
         </span>
       </td>
