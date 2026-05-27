@@ -6,26 +6,31 @@ import { khaltiConfig } from "../../config/khalti.config.js";
 
 
 const khaltiApi = axios.create({
-  baseURL: khaltiConfig.KHALTI_BASE_URL,
+  baseURL: khaltiConfig.baseUrl,       
   headers: {
-    Authorization: `Key ${khaltiConfig.KHALTI_SECRET_KEY}`,
+    Authorization: `Key ${khaltiConfig.secretKey}`,  
     "Content-Type": "application/json",
   },
 });
-
 export async function requestKhaltiInitiate(payload) {
   try {
-    const { data } = await khaltiApi.post("/epayment/initiate/", {
-      
-    });
+    const { data } = await khaltiApi.post("/epayment/initiate/", payload);
     return data;
   } catch (error) {
     const errorDetail = error.response?.data || error.message;
-    logger.error({error: error, detail: errorDetail()});
-    throw AppError(errorDetail?.detail || errorDetail?.message ||"Khalti Payment Initiation Failed",  error.response?.status || 502) ;
+    // Temporary: log the full Khalti response
+    logger.error({
+      khaltiStatus: error.response?.status,
+      khaltiData: error.response?.data,
+      khaltiHeaders: error.response?.headers,
+      payload,
+    }, "Khalti raw error");
+    throw new AppError(
+      errorDetail?.detail || errorDetail?.message || "Khalti Payment Initiation Failed",
+      error.response?.status || 502
+    );
   }
 }
-
 export async function requestKhaltiLookup(pidx) {
   try {
     const { data } = await khaltiApi.post("/epayment/lookup/", { pidx });

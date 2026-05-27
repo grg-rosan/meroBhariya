@@ -11,8 +11,8 @@ const router = Router();
 
 router.use(requireAuth, requireMerchantProfile);
 
-router.post("/initiate/:shipmentId", initiateExistingPayment);
 router.post("/initiate", computeFareMw, initiatePayment);
+router.post("/initiate/:shipmentId", initiateExistingPayment);
 router.get("/verify", verifyPayment);
 
 export default router;
