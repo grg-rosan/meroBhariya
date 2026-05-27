@@ -1,8 +1,14 @@
 import { prisma, pool } from "../src/config/db.config.js";
 import bcrypt from "bcryptjs";
 import "dotenv/config";
-import logger from "../src/infrastructure/logger/index.js";
-//_________data_________
+const logger = {
+  info: (msg) => console.log(msg),
+  error: (obj, msg) => console.error(msg ?? obj, obj?.err ?? ""),
+};
+// ─────────────────────────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────────────────────────
+
 const ZONES = [
   {
     name: "Valley",
@@ -13,7 +19,6 @@ const ZONES = [
     districts: [
       { name: "Kathmandu", province: "Bagmati" },
       { name: "Lalitpur", province: "Bagmati" },
-      { name: "Bhaktapur", province: "Bagmati" },
       { name: "Makwanpur", province: "Bagmati" },
     ],
   },
@@ -24,9 +29,8 @@ const ZONES = [
     multiplier: 1.1,
     sortOrder: 2,
     districts: [
-      { name: "Parsa", province: "Madhesh" },
       { name: "Chitwan", province: "Bagmati" },
-      { name: "Morang", province: "Koshi" },
+      { name: "Parsa", province: "Madhesh" },
     ],
   },
   {
@@ -109,13 +113,7 @@ async function hashPassword(password) {
   return bcrypt.hash(password, 12);
 }
 
-async function findOrCreateUser({
-  email,
-  fullName,
-  phoneNumber,
-  role,
-  password,
-}) {
+async function findOrCreateUser({ email, fullName, phoneNumber, role, password }) {
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) return existing;
   return prisma.user.create({
@@ -126,7 +124,7 @@ async function findOrCreateUser({
       role,
       passwordHash: await hashPassword(password),
       isActive: true,
-      isEmailVerified: true, // staff accounts skip verification
+      isEmailVerified: true,
     },
   });
 }
@@ -138,7 +136,7 @@ async function findOrCreateUser({
 async function main() {
   logger.info("🌱 Starting seed...");
 
-  // ── 1. Super Admin ────────────────────────────────────────
+  // ── 1. Super Admin (prod + dev) ───────────────────────────
   await findOrCreateUser({
     fullName: "Super Admin",
     email: process.env.SEED_ADMIN_EMAIL ?? "admin@merobhariya.com",
@@ -148,17 +146,7 @@ async function main() {
   });
   logger.info("✅ Super Admin seeded.");
 
-  // ── 2. Dispatcher ─────────────────────────────────────────
-  await findOrCreateUser({
-    fullName: "Test Dispatcher",
-    email: process.env.SEED_DISPATCHER_EMAIL ?? "dispatcher@merobhariya.com",
-    password: process.env.SEED_DISPATCHER_PASSWORD ?? "Dispatch123!",
-    phoneNumber: "9800000001",
-    role: "DISPATCHER",
-  });
-  logger.info("✅ Dispatcher seeded.");
-
-  // ── 3. Zones + Districts ──────────────────────────────────
+  // ── 2. Zones + Districts (prod + dev) ─────────────────────
   for (const zd of ZONES) {
     let zone = await prisma.zone.findFirst({ where: { name: zd.name } });
     if (!zone) {
@@ -196,7 +184,7 @@ async function main() {
   }
   logger.info("✅ Zones and Districts seeded.");
 
-  // ── 4. Vehicle Types + Fare Configs ──────────────────────
+  // ── 3. Vehicle Types + Fare Configs (prod + dev) ──────────
   for (const v of VEHICLES) {
     const vt = await prisma.vehicleType.upsert({
       where: { name: v.name },
@@ -211,20 +199,25 @@ async function main() {
   }
   logger.info("✅ Vehicles and FareConfigs seeded.");
 
-  // ── 5. Test Merchant (dev only) ───────────────────────────
-  // Pre-verified so you can create shipments immediately in dev
+  // ── 4. Dev-only test accounts ─────────────────────────────
   if (process.env.NODE_ENV !== "production") {
+    // Dispatcher
+    await findOrCreateUser({
+      fullName: "Test Dispatcher",
+      email: "dispatcher@merobhariya.com",
+      password: "Dispatch123!",
+      phoneNumber: "9800000001",
+      role: "DISPATCHER",
+    });
+    logger.info("✅ Dispatcher seeded (dev only).");
+
+    // Merchant
     const merchantUser = await findOrCreateUser({
       fullName: "Test Merchant",
       email: "merchant@merobhariya.com",
       password: "Merchant123!",
       phoneNumber: "9811111111",
       role: "MERCHANT",
-    });
-
-    // Kathmandu district for merchant pickup location
-    const ktmDistrict = await prisma.district.findFirst({
-      where: { name: "Kathmandu" },
     });
 
     let merchantProfile = await prisma.merchantProfile.findUnique({
@@ -242,43 +235,19 @@ async function main() {
       });
       await prisma.$executeRaw`UPDATE "MerchantProfile" SET location = ST_GeomFromEWKT('SRID=4326;POINT(85.3240 27.7172)') WHERE id = ${merchantProfile.id}`;
 
-      // Seed approved merchant documents
       await prisma.merchantDocument.createMany({
         data: [
-          {
-            merchantId: merchantProfile.id,
-            type: "PAN_CERTIFICATE",
-            fileUrl: "https://placehold.co/seed",
-            status: "APPROVED",
-          },
-          {
-            merchantId: merchantProfile.id,
-            type: "BUSINESS_REGISTRATION",
-            fileUrl: "https://placehold.co/seed",
-            status: "APPROVED",
-          },
-          {
-            merchantId: merchantProfile.id,
-            type: "OWNER_CITIZENSHIP",
-            fileUrl: "https://placehold.co/seed",
-            status: "APPROVED",
-          },
-          {
-            merchantId: merchantProfile.id,
-            type: "OWNER_PHOTO",
-            fileUrl: "https://placehold.co/seed",
-            status: "APPROVED",
-          },
+          { merchantId: merchantProfile.id, type: "PAN_CERTIFICATE", fileUrl: "https://placehold.co/seed", status: "APPROVED" },
+          { merchantId: merchantProfile.id, type: "BUSINESS_REGISTRATION", fileUrl: "https://placehold.co/seed", status: "APPROVED" },
+          { merchantId: merchantProfile.id, type: "OWNER_CITIZENSHIP", fileUrl: "https://placehold.co/seed", status: "APPROVED" },
+          { merchantId: merchantProfile.id, type: "OWNER_PHOTO", fileUrl: "https://placehold.co/seed", status: "APPROVED" },
         ],
       });
     }
     logger.info("✅ Test Merchant seeded (dev only).");
 
-    // ── 6. Test Rider (dev only) ────────────────────────────
-    const bikeType = await prisma.vehicleType.findUnique({
-      where: { name: "Bike" },
-    });
-
+    // Rider
+    const bikeType = await prisma.vehicleType.findUnique({ where: { name: "Bike" } });
     const riderUser = await findOrCreateUser({
       fullName: "Test Rider",
       email: "rider@merobhariya.com",
@@ -302,61 +271,19 @@ async function main() {
         },
       });
 
-      // Seed approved rider documents
       await prisma.riderDocument.createMany({
         data: [
-          {
-            riderId: riderProfile.id,
-            type: "CITIZENSHIP_FRONT",
-            fileUrl: "https://placehold.co/seed",
-            status: "APPROVED",
-          },
-          {
-            riderId: riderProfile.id,
-            type: "CITIZENSHIP_BACK",
-            fileUrl: "https://placehold.co/seed",
-            status: "APPROVED",
-          },
-          {
-            riderId: riderProfile.id,
-            type: "DRIVING_LICENSE_FRONT",
-            fileUrl: "https://placehold.co/seed",
-            status: "APPROVED",
-          },
-          {
-            riderId: riderProfile.id,
-            type: "DRIVING_LICENSE_BACK",
-            fileUrl: "https://placehold.co/seed",
-            status: "APPROVED",
-          },
-          {
-            riderId: riderProfile.id,
-            type: "VEHICLE_BLUEBOOK",
-            fileUrl: "https://placehold.co/seed",
-            status: "APPROVED",
-          },
-          {
-            riderId: riderProfile.id,
-            type: "VEHICLE_INSURANCE",
-            fileUrl: "https://placehold.co/seed",
-            status: "APPROVED",
-          },
-          {
-            riderId: riderProfile.id,
-            type: "RIDER_PHOTO",
-            fileUrl: "https://placehold.co/seed",
-            status: "APPROVED",
-          },
-          {
-            riderId: riderProfile.id,
-            type: "VEHICLE_PHOTO",
-            fileUrl: "https://placehold.co/seed",
-            status: "APPROVED",
-          },
+          { riderId: riderProfile.id, type: "CITIZENSHIP_FRONT", fileUrl: "https://placehold.co/seed", status: "APPROVED" },
+          { riderId: riderProfile.id, type: "CITIZENSHIP_BACK", fileUrl: "https://placehold.co/seed", status: "APPROVED" },
+          { riderId: riderProfile.id, type: "DRIVING_LICENSE_FRONT", fileUrl: "https://placehold.co/seed", status: "APPROVED" },
+          { riderId: riderProfile.id, type: "DRIVING_LICENSE_BACK", fileUrl: "https://placehold.co/seed", status: "APPROVED" },
+          { riderId: riderProfile.id, type: "VEHICLE_BLUEBOOK", fileUrl: "https://placehold.co/seed", status: "APPROVED" },
+          { riderId: riderProfile.id, type: "VEHICLE_INSURANCE", fileUrl: "https://placehold.co/seed", status: "APPROVED" },
+          { riderId: riderProfile.id, type: "RIDER_PHOTO", fileUrl: "https://placehold.co/seed", status: "APPROVED" },
+          { riderId: riderProfile.id, type: "VEHICLE_PHOTO", fileUrl: "https://placehold.co/seed", status: "APPROVED" },
         ],
       });
 
-      // Rider wallet — required for earning transactions
       await prisma.riderWallet.create({
         data: { riderId: riderProfile.id, balance: 0, totalEarned: 0 },
       });
