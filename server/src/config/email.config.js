@@ -1,13 +1,20 @@
 // src/config/email.config.js
 import nodemailer from "nodemailer";
-
+import AppError from "../utils/error/appError";
+const required = ["EMAIL_HOST", "EMAIL_PORT", "EMAIL_USER", "EMAIL_PASS"];
+for (const key of required) {
+  if (!process.env[key]) throw new AppError(`Missing env var: ${key}`);
+}
 export const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: Number(process.env.EMAIL_PORT),
-  secure: false, 
+  secure: false,
   requireTLS: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+  connectionTimeout: 5_000,   
+  greetingTimeout:   5_000,
+  socketTimeout:    10_000,   
 });

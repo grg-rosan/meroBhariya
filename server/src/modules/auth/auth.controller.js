@@ -108,7 +108,9 @@ export const getMeHandler = catchAsync(async (req, res) => {
 
 // ─── POST /api/auth/logout ────────────────────────────────────────────────────
 
+// auth.controller.js — logoutHandler
 export const logoutHandler = catchAsync(async (req, res) => {
+  logger.info({ userId: req.user?.id }, "[Auth] Logout");
   return res.status(200).json({ message: "Logged out successfully." });
 });
 

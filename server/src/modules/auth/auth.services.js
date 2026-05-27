@@ -38,12 +38,18 @@ function sanitizeUser(user) {
 }
 
 async function sendEmail(to, subject, html) {
-  await transporter.sendMail({
-    from: `MeroBhariya <${process.env.EMAIL_USER}>`,
-    to,
-    subject,
-    html,
-  });
+  const timeout = new Promise((_, reject) =>
+    setTimeout(() => reject(new AppError("Email send timed out")), 10_000)
+  );
+  await Promise.race([
+    transporter.sendMail({
+      from: `MeroBhariya <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      html,
+    }),
+    timeout,
+  ]);
 }
 
 // ─── Role creators for registration ──────────────────────────────────────────
@@ -277,7 +283,7 @@ export async function forgotPassword(email) {
   await sendEmail(
     email,
     "Reset Your MeroBhariya Password",
-    resetEmailTemplate(user.name, code),
+    resetEmailTemplate(user.fullName, code),
   );
   logger.info({ email, code }, "[DEV] Reset code for email");
 
