@@ -27,6 +27,9 @@ const allowedOrigins = [
 ].filter(Boolean);
 
 app.set('trust proxy', 1);
+
+app.get("/health", (req, res) => res.json({ status: "ok" }));
+
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
