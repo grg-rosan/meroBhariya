@@ -12,8 +12,8 @@ import RiderSelector from "../components/routes/RiderSelector";
  * delegates all rendering to ShipmentTable and RiderSelector.
  */
 export default function AssignRoutes() {
-  const {
-    data: pendingData,
+const {
+    shipments,        
     loading: loadingShipments,
     refetch,
   } = usePendingShipments();
@@ -33,7 +33,7 @@ export default function AssignRoutes() {
     reset: resetRider,
   } = useRiderAssignment(vehicleTypeId);
 
-  const shipments = pendingData?.shipments ?? [];
+
 
   // Unique vehicle types derived from current shipment list
   const vehicleTypes = [

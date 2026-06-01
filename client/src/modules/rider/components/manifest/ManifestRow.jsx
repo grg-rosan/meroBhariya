@@ -1,24 +1,19 @@
-// src/rider/components/manifest/ManifestStopRow.jsx
 import { useNavigate } from "react-router-dom";
 import { Navigation, Phone } from "lucide-react";
 
 export function ManifestStopRow({ stop }) {
   const navigate = useNavigate();
 
-  const handleNavigate = () => {
-    navigate("/rider/navigation", { state: { stop } });
-  };
-
   return (
-    <div className="flex items-center gap-4 px-5 py-4 border-b border-zinc-200/50 dark:border-zinc-800/50 last:border-none hover:bg-zinc-100 dark:bg-blue-950/20 transition-colors">
+    <div className="flex items-center gap-4 px-5 py-4 border-b border-zinc-200/50 dark:border-zinc-800/50 last:border-none hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors">
       {/* Stop number badge */}
       <div
         className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 ${
-          stop.status === "delivered"
+          stop.status === "DELIVERED"
             ? "bg-green-500/20 text-green-400"
             : stop.isActive
               ? "bg-sky-500 text-white"
-              : "bg-zinc-100 dark:bg-blue-950 text-zinc-400 dark:text-zinc-500"
+              : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400"
         }`}
       >
         {stop.stopNum}
@@ -42,19 +37,17 @@ export function ManifestStopRow({ stop }) {
       </div>
 
       {/* Actions / Status */}
-      {stop.status === "delivered" ? (
-        <span className="text-xs text-green-400 font-medium shrink-0">
-          Delivered
-        </span>
+      {stop.status === "DELIVERED" ? (
+        <span className="text-xs text-green-400 font-medium shrink-0">Delivered</span>
       ) : (
         <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
-            onClick={handleNavigate}
+            onClick={() => navigate("/rider/navigation", { state: { stop } })}
             className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
               stop.isActive
                 ? "bg-sky-500 hover:bg-sky-600 text-white"
-                : "border border-zinc-600 hover:bg-zinc-800 text-sky-400"
+                : "border border-zinc-300 dark:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-sky-500 dark:text-sky-400"
             }`}
           >
             <Navigation size={12} />
@@ -62,8 +55,8 @@ export function ManifestStopRow({ stop }) {
           </button>
           {stop.isActive && (
             <a
-              href={`tel:${stop.phone}`}
-              className="w-8 h-8 flex items-center justify-center border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:bg-blue-950 text-zinc-500 dark:text-zinc-400 rounded-lg transition-all"
+              href={`tel:${stop.receiverPhone}`}
+              className="w-8 h-8 flex items-center justify-center border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 rounded-lg transition-all"
             >
               <Phone size={13} />
             </a>

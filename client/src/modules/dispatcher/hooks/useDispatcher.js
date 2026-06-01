@@ -20,6 +20,7 @@ export const useHubInventory = () => {
   const path =
     user?.role === "DISPATCHER" ? "/api/dispatcher/shipments/hub" : null;
   const result = useAPI(path);
+  console.log("hub raw", result.data);
   return {
     ...result,
     shipments: result.data?.data?.shipments ?? [],

@@ -41,30 +41,11 @@ export default function HubInventory() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <StatCard
-          icon={Boxes}
-          label="In hub"
-          value={stats.inHub ?? 0}
-          color="emerald"
-        />
-        <StatCard
-          icon={Package}
-          label="Unassigned"
-          value={stats.unassigned ?? 0}
-          color="red"
-        />
-        <StatCard
-          icon={MapPin}
-          label="Assigned"
-          value={stats.assigned ?? 0}
-          color="amber"
-        />
-        <StatCard
-          icon={Truck}
-          label="Out for delivery"
-          value={stats.outForDelivery ?? 0}
-          color="green"
-        />
+<StatCard icon={Boxes}   label="In hub"          value={stats.inHub ?? 0}          color="green" />
+<StatCard icon={Package} label="Unassigned"       value={stats.unassigned ?? 0}     color="red"   />
+<StatCard icon={MapPin}  label="Assigned"         value={stats.assigned ?? 0}       color="amber" />
+<StatCard icon={Truck}   label="Out for delivery" value={stats.outForDelivery ?? 0} color="green" />
+      
       </div>
 
       {/* Filters */}
