@@ -15,3 +15,8 @@ export const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS,
   },
 });
+
+transporter.verify((error) => {
+  if (error) logger.error("[Email] SMTP failed:", error.message);
+  else logger.log("[Email] SMTP ready ✅");
+});
