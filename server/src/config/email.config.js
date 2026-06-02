@@ -34,8 +34,14 @@ export const transporter = nodemailer.createTransport({
 transporter.verify((error) => {
   if (error)
     logger.error(
-      { err: error, host: process.env.EMAIL_HOST, port: emailPort, secure, requireTLS },
       "[Email] SMTP failed",
+      {
+        err: error,
+        host: process.env.EMAIL_HOST,
+        port: emailPort,
+        secure,
+        requireTLS,
+      },
     );
   else logger.info("[Email] SMTP ready");
 });

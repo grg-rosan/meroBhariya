@@ -51,7 +51,7 @@ async function sendEmail(to, subject, html) {
       ),
     ]);
   } catch (err) {
-    logger.error({ err, to, subject }, "[Auth] Email dispatch failed");
+    logger.error("[Auth] Email dispatch failed", { err, to, subject });
     throw new AppError("Could not send email. Please try again later.", 503);
   }
 }
