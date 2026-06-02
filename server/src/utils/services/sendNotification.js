@@ -1,5 +1,5 @@
 import logger from "../../infrastructure/logger/index.js";
-import { transporter } from "../../config/email.config.js";
+import { sendEmail } from "./emailSender.js";
 
 // ─── Notification types ───────────────────────────────────────────────────────
 
@@ -24,15 +24,10 @@ export async function sendNotification({ type, user, payload = {} }) {
   }
 
   try {
-    await transporter.sendMail({
-      from:    `"MeroBhariya" <${process.env.EMAIL_USER}>`,
-      to:      user.email,
-      subject: message.subject,
-      html:    message.body,
-    });
+    await sendEmail({ to: user.email, subject: message.subject, html: message.body });
     logger.info({ userId: user.id, type }, "[Notification] Email sent");
   } catch (err) {
-    logger.error({ userId: user.id, type, err }, "[Notification] Email failed");
+    logger.error("[Notification] Email failed", { userId: user.id, type, err });
   }
 }
 

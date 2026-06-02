@@ -5,7 +5,7 @@ import { randomInt } from "node:crypto";
 import { prisma } from "../../config/db.config.js";
 import AppError from "../../utils/error/appError.js";
 import { getRedisClient } from "../../config/redis.config.js";
-import { transporter } from "../../config/email.config.js";
+import { sendEmail as sendEmailViaProvider } from "../../utils/services/emailSender.js";
 import {
   resetEmailTemplate,
   otpEmailTemplate,
@@ -39,20 +39,10 @@ function sanitizeUser(user) {
 
 async function sendEmail(to, subject, html) {
   try {
-    await Promise.race([
-      transporter.sendMail({
-        from: `MeroBhariya <${process.env.EMAIL_USER}>`,
-        to,
-        subject,
-        html,
-      }),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Email timeout")), 10000),
-      ),
-    ]);
+    await sendEmailViaProvider({ to, subject, html });
   } catch (err) {
     logger.error("[Auth] Email dispatch failed", { err, to, subject });
-    throw new AppError("Could not send email. Please try again later.", 503);
+    throw err;
   }
 }
 
