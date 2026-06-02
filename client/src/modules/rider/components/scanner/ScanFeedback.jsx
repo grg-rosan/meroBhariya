@@ -1,11 +1,12 @@
 import { CheckCircle, XCircle } from "lucide-react";
 
 function Banner({ color, icon: Icon, message, action }) {
+  const isGreen = color.includes("green");
   return (
     <div className={`${color} rounded-xl p-4 mb-4 flex flex-col gap-2`}>
       <div className="flex items-center gap-2">
-        <Icon size={16} className={color.includes("green") ? "text-green-400" : "text-red-400"} />
-        <span className={`text-sm font-medium ${color.includes("green") ? "text-green-300" : "text-red-300"}`}>
+        <Icon size={16} className={isGreen ? "text-green-400" : "text-red-400"} />
+        <span className={`text-sm font-medium ${isGreen ? "text-green-300" : "text-red-300"}`}>
           {message}
         </span>
       </div>
@@ -18,40 +19,58 @@ function Banner({ color, icon: Icon, message, action }) {
   );
 }
 
-export default function ScanFeedback({ pickupSuccess, deliverSuccess, scanError, geofenceError, onScanAnother }) {
-  if (pickupSuccess) return (
-    <Banner
-      color="bg-green-500/10 border border-green-700/50"
-      icon={CheckCircle}
-      message="Pickup recorded — take parcel to the hub for dispatcher scan."
-      action={{ label: "Scan another package", onClick: onScanAnother }}
-    />
-  );
+const GREEN = "bg-green-500/10 border border-green-700/50";
+const RED   = "bg-red-500/10 border border-red-700/50";
 
-  if (deliverSuccess) return (
-    <Banner
-      color="bg-green-500/10 border border-green-700/50"
-      icon={CheckCircle}
-      message="Delivery confirmed successfully!"
-      action={{ label: "Scan another package", onClick: onScanAnother }}
-    />
-  );
+export default function ScanFeedback({
+  pickupSuccess,
+  hubSuccess,
+  deliverSuccess,
+  scanError,
+  geofenceError,
+  onScanAnother,
+}) {
+  if (pickupSuccess)
+    return (
+      <Banner
+        color={GREEN}
+        icon={CheckCircle}
+        message="Pickup recorded — take parcel to the hub for dispatcher scan."
+        action={{ label: "Scan another package", onClick: onScanAnother }}
+      />
+    );
 
-  if (geofenceError) return (
-    <Banner
-      color="bg-red-500/10 border border-red-700/50"
-      icon={XCircle}
-      message={`Too far from delivery address (${geofenceError.distanceMeters}m away). Move closer and try again.`}
-    />
-  );
+  if (hubSuccess)
+    return (
+      <Banner
+        color={GREEN}
+        icon={CheckCircle}
+        message="Package dispatched from hub — you're out for delivery!"
+        action={{ label: "Scan another package", onClick: onScanAnother }}
+      />
+    );
 
-  if (scanError) return (
-    <Banner
-      color="bg-red-500/10 border border-red-700/50"
-      icon={XCircle}
-      message={scanError}
-    />
-  );
+  if (deliverSuccess)
+    return (
+      <Banner
+        color={GREEN}
+        icon={CheckCircle}
+        message="Delivery confirmed successfully!"
+        action={{ label: "Scan another package", onClick: onScanAnother }}
+      />
+    );
+
+  if (geofenceError)
+    return (
+      <Banner
+        color={RED}
+        icon={XCircle}
+        message={`Too far from delivery address (${geofenceError.distanceMeters}m away). Move closer and try again.`}
+      />
+    );
+
+  if (scanError)
+    return <Banner color={RED} icon={XCircle} message={scanError} />;
 
   return null;
 }

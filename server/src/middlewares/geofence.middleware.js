@@ -1,9 +1,22 @@
 import { prisma } from "../config/db.config.js";
-const DELIVERY_RADIUS_METERS = 100; // reject if rider is >100m away
+
+const DELIVERY_RADIUS_METERS = 100;
 
 export async function geofenceCheck(req, res, next) {
+  const body = req.body ?? {};
+
+  // ── DEV BYPASS ────────────────────────────────────────────────────────────
+  if (process.env.NODE_ENV === "development") {
+    req.riderLocation = {
+      lat: parseFloat(body.lat) || 0,
+      lng: parseFloat(body.lng) || 0,
+    };
+    return next();
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+
   const { id: shipmentId } = req.params;
-  const { lat, lng } = req.body; // rider's current GPS from app
+  const { lat, lng } = body;
 
   if (!lat || !lng) {
     return res.status(400).json({
@@ -12,21 +25,19 @@ export async function geofenceCheck(req, res, next) {
     });
   }
 
-  // 1. Load the shipment's delivery location from DB
   const shipment = await prisma.$queryRaw`
-// geofenceMiddleware.js — fix column name in raw query
-SELECT
-  id,
-  ST_X("deliveryLocation"::geometry) AS dest_lng,   // ← quoted camelCase
-  ST_Y("deliveryLocation"::geometry) AS dest_lat,
-  ST_DWithin(
-    "deliveryLocation"::geography,                   // ← same here
-    ST_SetSRID(ST_MakePoint(...), 4326)::geography,
-    ${DELIVERY_RADIUS_METERS}
-  ) AS within_range
-FROM "Shipment"
-WHERE id = ${shipmentId}
-  AND status = 'OUT_FOR_DELIVERY'
+    SELECT
+      id,
+      ST_X("deliveryLocation"::geometry) AS dest_lng,
+      ST_Y("deliveryLocation"::geometry) AS dest_lat,
+      ST_DWithin(
+        "deliveryLocation"::geography,
+        ST_SetSRID(ST_MakePoint(${parseFloat(lng)}, ${parseFloat(lat)}), 4326)::geography,
+        ${DELIVERY_RADIUS_METERS}
+      ) AS within_range
+    FROM "Shipment"
+    WHERE id = ${shipmentId}
+      AND status = 'OUT_FOR_DELIVERY'
   `;
 
   if (!shipment.length) {
@@ -39,11 +50,11 @@ WHERE id = ${shipmentId}
   const { within_range, dest_lat, dest_lng } = shipment[0];
 
   if (!within_range) {
-    // Calculate actual distance for debugging / error message
     const distResult = await prisma.$queryRaw`
       SELECT
         ROUND(
-          ST_Distance("deliveryLocation"::geography,
+          ST_Distance(
+            "deliveryLocation"::geography,
             ST_SetSRID(ST_MakePoint(${parseFloat(lng)}, ${parseFloat(lat)}), 4326)::geography
           )::numeric, 1
         ) AS distance_meters
@@ -62,7 +73,6 @@ WHERE id = ${shipmentId}
     });
   }
 
-  // Rider is close enough — attach coords to request for downstream use
   req.riderLocation = { lat: parseFloat(lat), lng: parseFloat(lng) };
   next();
 }

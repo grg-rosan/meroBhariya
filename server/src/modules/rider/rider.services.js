@@ -129,10 +129,10 @@ export const getRiderManifest = async (userId) => {
       m."pickupAddress"                   AS "merchantPickupAddress",
       ST_Y(m.location::geometry)          AS "merchantLat",
       ST_X(m.location::geometry)          AS "merchantLng"
-    FROM "Shipment"       s
+    FROM "Shipment"        s
     JOIN "MerchantProfile" m ON m.id = s."merchantId"
     WHERE s."riderId" = ${profile.id}
-      AND s.status IN ('AWAITING_PICKUP', 'PICKED_UP', 'OUT_FOR_DELIVERY')
+      AND s.status IN ('AWAITING_PICKUP', 'PICKED_UP', 'ASSIGNED', 'OUT_FOR_DELIVERY')
     ORDER BY s."updatedAt" ASC
   `;
 
@@ -162,67 +162,6 @@ export const getRiderManifest = async (userId) => {
   }));
 };
 
-export const deliverPackage = async (userId, trackingNumber, { codCollected, note } = {}) => {
-  const profile = await findProfile(userId);
-
-  const shipment = await prisma.shipment.findUnique({
-    where:  { trackingNumber },
-    select: {
-      id:       true,
-      riderId:  true,
-      status:   true,
-      merchant: { select: { userId: true } },
-    },
-  });
-
-  if (!shipment) throw new AppError(`Shipment ${trackingNumber} not found`, 404);
-  if (shipment.riderId !== profile.id) throw new AppError("This shipment is not assigned to you", 403);
-  if (shipment.status !== "OUT_FOR_DELIVERY") {
-    throw new AppError(
-      `Cannot deliver — use hub flow first (status: ${shipment.status}).`,
-      400,
-    );
-  }
-
-  const [updated] = await prisma.$transaction([
-    prisma.shipment.update({
-      where:  { id: shipment.id },
-      data:   { status: "DELIVERED" },
-      select: { id: true, trackingNumber: true, status: true },
-    }),
-    prisma.shipmentLog.create({
-      data: {
-        shipmentId:  shipment.id,
-        status:      "DELIVERED",
-        note:        note ?? null,
-        updatedById: userId,
-      },
-    }),
-    prisma.transaction.update({
-      where: { shipmentId: shipment.id },
-      data:  { collectedByRider: codCollected ?? 0 },
-    }),
-  ]);
-
-  // Notify merchant — delivery confirmation
-  publishMerchantNotification({
-    merchantUserId: shipment.merchant.userId,
-    shipmentId:     updated.id,
-    trackingNumber: updated.trackingNumber,
-    status:         "DELIVERED",
-    message:        `Your shipment ${updated.trackingNumber} has been delivered.`,
-  });
-
-  // Finance settlement — triggers delivery.consumer.js → settleDelivery()
-  publish("shipment.delivered", {
-    shipmentId:     updated.id,
-    trackingNumber: updated.trackingNumber,
-    codCollected:   codCollected ?? 0,
-  });
-
-  return updated;
-};
-
 
 export const updateRiderLocation = async (userId, { latitude, longitude }) => {
   const profile = await findProfile(userId);
@@ -246,8 +185,6 @@ export async function scanAssignedShipment(userId, trackingNumber, actionRaw) {
   const profile = await findProfile(userId);
   const action = String(actionRaw ?? "").toUpperCase();
 
-  // Read via raw SQL + status::text so a slightly stale Prisma Client (missing newer
-  // enum values such as AWAITING_PICKUP) does not throw P2023 when decoding rows.
   const rows = await prisma.$queryRaw`
     SELECT
       s.id,
@@ -267,9 +204,8 @@ export async function scanAssignedShipment(userId, trackingNumber, actionRaw) {
   const shipment = rows[0] ?? null;
 
   if (!shipment) throw new AppError(`Shipment ${trackingNumber} not found`, 404);
-  if (shipment.riderId !== profile.id) {
+  if (shipment.riderId !== profile.id)
     throw new AppError("This shipment is not assigned to you", 403);
-  }
 
   const status = String(shipment.status);
 
@@ -283,48 +219,22 @@ export async function scanAssignedShipment(userId, trackingNumber, actionRaw) {
     codAmount:       Number(shipment.codAmount),
   };
 
-  if (action === "DELIVER") {
-    if (status !== "OUT_FOR_DELIVERY") {
-      throw new AppError(
-        `Package not ready for delivery scan (status ${status})`,
-        400,
-      );
-    }
-    return summary;
-  }
-
+  // ── PICKUP: merchant → rider ───────────────────────────────────────────────
   if (action === "PICKUP") {
-    if (status === "OUT_FOR_DELIVERY" || status === "PICKED_UP") {
-      return { ...summary, status };
-    }
-    if (status !== "AWAITING_PICKUP") {
-      throw new AppError(
-        `Cannot confirm pickup for status ${status}`,
-        400,
-      );
-    }
+    if (status === "OUT_FOR_DELIVERY" || status === "PICKED_UP") return { ...summary, status };
+    if (status !== "AWAITING_PICKUP")
+      throw new AppError(`Cannot confirm pickup for status ${status}`, 400);
 
     const [updated] = await prisma.$transaction([
       prisma.shipment.update({
         where: { id: shipment.id },
         data:  { status: "PICKED_UP" },
-        select: {
-          id:              true,
-          trackingNumber:  true,
-          status:          true,
-          receiverName:    true,
-          deliveryAddress: true,
-          weight:          true,
-          codAmount:       true,
-        },
+        select: { id: true, trackingNumber: true, status: true,
+                  receiverName: true, deliveryAddress: true, weight: true, codAmount: true },
       }),
       prisma.shipmentLog.create({
-        data: {
-          shipmentId:  shipment.id,
-          status:      "PICKED_UP",
-          note:        "Rider confirmed pickup — awaiting hub scan.",
-          updatedById: userId,
-        },
+        data: { shipmentId: shipment.id, status: "PICKED_UP",
+                note: "Rider confirmed pickup — awaiting hub scan.", updatedById: userId },
       }),
     ]);
 
@@ -336,12 +246,47 @@ export async function scanAssignedShipment(userId, trackingNumber, actionRaw) {
       message:        `Rider collected ${updated.trackingNumber}; heading to hub.`,
     });
 
-    return {
-      ...updated,
-      weight:    Number(updated.weight),
-      codAmount: Number(updated.codAmount),
-    };
+    return { ...updated, weight: Number(updated.weight), codAmount: Number(updated.codAmount) };
   }
 
-  throw new AppError("Invalid action (use PICKUP or DELIVER)", 400);
-}
+  // ── HUB_DISPATCH: rider picks up from hub → out for delivery ───────────────
+  if (action === "HUB_DISPATCH") {
+    if (status !== "ASSIGNED")
+      throw new AppError(
+        `Package is not ready for hub dispatch (status: ${status}). Dispatcher must assign you first.`,
+        400,
+      );
+
+    const [updated] = await prisma.$transaction([
+      prisma.shipment.update({
+        where: { id: shipment.id },
+        data:  { status: "OUT_FOR_DELIVERY" },
+        select: { id: true, trackingNumber: true, status: true,
+                  receiverName: true, deliveryAddress: true, weight: true, codAmount: true },
+      }),
+      prisma.shipmentLog.create({
+        data: { shipmentId: shipment.id, status: "OUT_FOR_DELIVERY",
+                note: "Rider scanned package at hub — out for delivery.", updatedById: userId },
+      }),
+    ]);
+
+    publishMerchantNotification({
+      merchantUserId: shipment.merchantUserId,
+      shipmentId:     updated.id,
+      trackingNumber: updated.trackingNumber,
+      status:         "OUT_FOR_DELIVERY",
+      message:        `Your shipment ${updated.trackingNumber} is out for delivery.`,
+    });
+
+    return { ...updated, weight: Number(updated.weight), codAmount: Number(updated.codAmount) };
+  }
+
+  // ── DELIVER: validate package is ready for delivery confirmation ───────────
+  if (action === "DELIVER") {
+    if (status !== "OUT_FOR_DELIVERY")
+      throw new AppError(`Package not ready for delivery scan (status: ${status})`, 400);
+    return summary;
+  }
+
+  throw new AppError("Invalid action. Use PICKUP, HUB_DISPATCH, or DELIVER.", 400);
+} 

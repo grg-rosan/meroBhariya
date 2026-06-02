@@ -10,6 +10,10 @@ import {
   publishShipmentNew,
   publishShipmentCancelled,
 } from "./shipment.events.js";
+import {
+  publish,
+  publishMerchantNotification,
+} from "../../../infrastructure/rabbitmq/publisher.js";
 
 // ── createShipment ────────────────────────────────────────────
 export async function createShipment(merchantId, data, userId, ctx) {
@@ -387,32 +391,56 @@ export async function bulkCreateShipments(merchantId, file, userId) {
 
 export async function deliverShipment(shipmentId, userId, { codCollected, podNote }) {
   const riderProfile = await prisma.riderProfile.findUnique({
-    where: { userId },
+    where:  { userId },
     select: { id: true },
   });
   if (!riderProfile) throw new AppError("Rider profile not found.", 404);
 
   const shipment = await prisma.shipment.findUnique({
-    where:   { id: shipmentId },
-    include: { merchant: { select: { userId: true } } },
+    where:  { id: shipmentId },
+    select: {
+      id:          true,
+      riderId:     true,
+      status:      true,
+      paymentType: true,
+      totalFare:   true,
+      fareSnapshot:true,
+      codAmount:   true,
+      merchant:    { select: { userId: true } },
+    },
   });
-  if (!shipment)                         throw new AppError("Shipment not found.", 404);
+  if (!shipment)                          throw new AppError("Shipment not found.", 404);
   if (shipment.riderId !== riderProfile.id) throw new AppError("Not assigned to you.", 403);
   if (shipment.status !== "OUT_FOR_DELIVERY")
     throw new AppError(`Cannot deliver — status is ${shipment.status}.`, 400);
 
+  const totalFare = Number(shipment.totalFare ?? shipment.fareSnapshot ?? 0);
+
   const [updated] = await prisma.$transaction([
     prisma.shipment.update({
-      where: { id: shipmentId },
-      data:  { status: "DELIVERED" },
+      where:  { id: shipmentId },
+      data:   { status: "DELIVERED" },
       select: { id: true, trackingNumber: true, status: true },
     }),
     prisma.shipmentLog.create({
-      data: { shipmentId, status: "DELIVERED", note: podNote ?? null, updatedById: userId },
+      data: {
+        shipmentId,
+        status:      "DELIVERED",
+        note:        podNote ?? null,
+        updatedById: userId,
+      },
     }),
-    prisma.transaction.update({
-      where: { shipmentId },
-      data:  { collectedByRider: codCollected ?? 0 },
+    prisma.transaction.upsert({
+      where:  { shipmentId },
+      update: { collectedByRider: codCollected ?? 0 },
+      create: {
+        shipmentId,
+        paymentType:      shipment.paymentType,   // "PREPAID" or "COD"
+        totalFare,                                 // 777.03
+        codAmount:        Number(shipment.codAmount ?? 0),
+        collectedByRider: codCollected ?? 0,
+        isRemitted:       false,
+      },
     }),
   ]);
 

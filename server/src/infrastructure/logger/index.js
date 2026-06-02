@@ -4,7 +4,6 @@ import { LogtailTransport } from "@logtail/winston";
 
 const { combine, timestamp, colorize, printf, json } = winston.format;
 
-
 const normalizeMessage = winston.format((info) => {
   if (typeof info.message === "object" && info.message !== null) {
     info.message = JSON.stringify(info.message);
@@ -17,13 +16,18 @@ const devFormat = printf(({ level, message, timestamp, ...meta }) => {
   return `${timestamp} [${level}]: ${message} ${extras}`;
 });
 
-const transports = [
-  new winston.transports.Console(),
-  new winston.transports.File({ filename: "logs/error.log", level: "error" }),
-  new winston.transports.File({ filename: "logs/combined.log" }),
-];
+const isProd = process.env.NODE_ENV === "production";
 
-if (process.env.NODE_ENV === "production" && process.env.BETTERSTACK_TOKEN) {
+const transports = isProd
+  ? [
+      new winston.transports.File({ filename: "logs/error.log", level: "error" }),
+      new winston.transports.File({ filename: "logs/combined.log" }),
+    ]
+  : [
+      new winston.transports.Console(),
+    ];
+
+if (isProd && process.env.BETTERSTACK_TOKEN) {
   const logtail = new Logtail(process.env.BETTERSTACK_TOKEN);
   transports.push(new LogtailTransport(logtail));
 }
@@ -31,9 +35,9 @@ if (process.env.NODE_ENV === "production" && process.env.BETTERSTACK_TOKEN) {
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || "info",
   format: combine(
-    normalizeMessage(), 
+    normalizeMessage(),
     timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-    process.env.NODE_ENV === "production"
+    isProd
       ? json()
       : combine(colorize(), devFormat)
   ),

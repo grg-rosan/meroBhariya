@@ -13,7 +13,6 @@ router.use(requireAuth, requireRole("RIDER"));
 router.get  ("/dashboard", riderController.getDashboard);
 router.patch("/duty",      riderController.toggleDuty);
 router.get  ("/manifest",  riderController.getManifest);
-router.post ("/deliver",   riderController.deliverPackage);
 router.patch("/location",  riderController.updateLocation);
 
 // ─── Finance ──────────────────────────────────────────────────

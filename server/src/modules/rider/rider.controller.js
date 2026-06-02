@@ -23,18 +23,6 @@ export const getManifest = catchAsync(async (req, res) => {
   res.status(200).json({ success: true, data });
 });
 
-
-export const deliverPackage = catchAsync(async (req, res) => {
-  const { trackingNumber, codCollected, note } = req.body;
-  if (!trackingNumber) throw new AppError("trackingNumber is required", 400);
-
-  const data = await riderService.deliverPackage(req.userId, trackingNumber, {
-    codCollected,
-    note,
-  });
-  res.status(200).json({ success: true, data });
-});
-
 // rider location
 export const updateLocation = catchAsync(async (req, res) => {
   const { latitude, longitude } = req.body;

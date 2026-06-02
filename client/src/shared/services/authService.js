@@ -23,6 +23,9 @@ export const authAPI = {
   forgotPassword: (email) =>
     apiPost(`/api/auth/password/forgot`, { email }),
 
+  verifyPasswordReset: (email, code) =>
+    apiPost(`/api/auth/password/verify-code`, { email, code }),
+
   resetPassword: (email, resetCode, password) =>
     apiPost(`/api/auth/password/reset`, {
       email,

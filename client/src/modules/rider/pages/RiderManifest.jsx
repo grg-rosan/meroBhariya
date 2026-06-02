@@ -6,12 +6,14 @@ import { useNavigate } from "react-router-dom";
 // ── Stop row ──────────────────────────────────────────────────
 function StopRow({ stop, index, isActive }) {
   const nav = useNavigate();
-  const cfg = getStatus(stop.status); // ← single source of truth
+  const cfg = getStatus(stop.status);
   const isDone = stop.status === "DELIVERED";
 
   return (
     <div
-      className={`flex items-center gap-4 px-5 py-4 border-b border-zinc-800/50 last:border-none transition-colors ${isActive ? "bg-sky-500/5" : ""}`}
+      className={`flex items-center gap-4 px-5 py-4 border-b border-zinc-200/50 dark:border-zinc-800/50 last:border-none transition-colors ${
+        isActive ? "bg-sky-500/5" : "hover:bg-zinc-50 dark:hover:bg-zinc-800/30"
+      }`}
     >
       {/* Stop number */}
       <div
@@ -20,7 +22,7 @@ function StopRow({ stop, index, isActive }) {
             ? "bg-green-500/20 text-green-400"
             : isActive
               ? "bg-sky-500 text-white"
-              : "bg-zinc-800 text-zinc-400"
+              : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400"
         }`}
       >
         {index + 1}
@@ -29,7 +31,7 @@ function StopRow({ stop, index, isActive }) {
       {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <p className="text-sm font-medium text-zinc-200">
+          <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
             {stop.receiverName}
           </p>
           {stop.codAmount > 0 && (
@@ -47,8 +49,13 @@ function StopRow({ stop, index, isActive }) {
               Bring to hub for scan
             </span>
           )}
+          {stop.status === "ASSIGNED" && (
+            <span className="text-xs px-2 py-0.5 bg-sky-500/10 border border-sky-500/20 text-sky-400 rounded-full">
+              Ready at hub — scan to dispatch
+            </span>
+          )}
         </div>
-        <p className="text-xs text-zinc-500 truncate mt-0.5">
+        <p className="text-xs text-zinc-400 dark:text-zinc-500 truncate mt-0.5">
           {stop.trackingNumber} · {stop.deliveryAddress} · {stop.weight} kg
         </p>
       </div>
@@ -56,59 +63,59 @@ function StopRow({ stop, index, isActive }) {
       {/* Actions */}
       <div className="shrink-0">
         {isDone ? (
-          <span
-            role="status"
-            className={`text-xs px-2 py-1 rounded-full border cursor-default select-none ${cfg.chip}`}
-          >
+          <span className={`text-xs px-2 py-1 rounded-full border cursor-default select-none ${cfg.chip}`}>
             {cfg.label}
           </span>
         ) : (
           <div className="flex items-center gap-2 flex-wrap justify-end">
+            {/* Navigate — always visible */}
             <button
               type="button"
               onClick={() => nav("/rider/navigation", { state: { stop } })}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
                 isActive && stop.status === "OUT_FOR_DELIVERY"
                   ? "bg-sky-500 hover:bg-sky-600 text-white"
-                  : "border border-zinc-600 hover:bg-zinc-800 text-sky-400"
+                  : "border border-zinc-300 dark:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-sky-500 dark:text-sky-400"
               }`}
             >
               <Navigation size={12} /> Navigate
             </button>
+
+            {/* Call — OUT_FOR_DELIVERY only */}
             {isActive && stop.status === "OUT_FOR_DELIVERY" && (
               <a
                 href={`tel:${stop.receiverPhone}`}
-                className="w-8 h-8 flex items-center justify-center border border-zinc-700 hover:bg-zinc-800 text-zinc-400 rounded-lg transition-all"
+                className="w-8 h-8 flex items-center justify-center border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 rounded-lg transition-all"
               >
                 <Phone size={13} />
               </a>
             )}
+
+            {/* Scan pickup — AWAITING_PICKUP only */}
             {isActive && stop.status === "AWAITING_PICKUP" && (
               <button
                 type="button"
-                onClick={() =>
-                  nav("/rider/scanner", {
-                    state: {
-                      mode: "pickup",
-                      trackingNumber: stop.trackingNumber,
-                    },
-                  })
-                }
+                onClick={() => nav("/rider/scanner", { state: { mode: "PICKUP", trackingNumber: stop.trackingNumber } })}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-500 text-white text-xs font-medium rounded-lg transition-all"
               >
                 <Package size={12} /> Scan pickup
               </button>
             )}
-            {!(
-              isActive &&
-              (stop.status === "OUT_FOR_DELIVERY" ||
-                stop.status === "AWAITING_PICKUP")
-            ) && (
-              <span
-                role="status"
-                title="Shipment status"
-                className={`text-xs px-2 py-1 rounded-full border cursor-default select-none ${cfg.chip}`}
+
+            {/* Hub dispatch — ASSIGNED only */}
+            {isActive && stop.status === "ASSIGNED" && (
+              <button
+                type="button"
+                onClick={() => nav("/rider/scanner", { state: { mode: "HUB_DISPATCH", trackingNumber: stop.trackingNumber } })}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-medium rounded-lg transition-all"
               >
+                <Package size={12} /> Scan at hub
+              </button>
+            )}
+
+            {/* Status badge — when no primary action button shown */}
+            {!(isActive && ["OUT_FOR_DELIVERY", "AWAITING_PICKUP", "ASSIGNED"].includes(stop.status)) && (
+              <span className={`text-xs px-2 py-1 rounded-full border cursor-default select-none ${cfg.chip}`}>
                 {cfg.label}
               </span>
             )}
