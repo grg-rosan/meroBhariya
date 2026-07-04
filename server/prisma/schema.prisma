@@ -260,7 +260,7 @@ model Shipment {
   // Legacy — keep for backward compat
   fareSnapshot Float?
 
-  status      ShipmentStatus @default(PENDING)
+  status      ShipmentStatus @default(UNPAID)
   paymentType PaymentType    @default(PREPAID)
 
   // Khalti payment for this shipment
@@ -436,15 +436,16 @@ model CODRecord {
 
 //_________documents_________
 model MerchantDocument {
-  id         String          @id @default(cuid())
-  merchantId String
-  merchant   MerchantProfile @relation(fields: [merchantId], references: [id])
-  type       MerchantDocType
-  fileUrl    String
-  status     DocumentStatus  @default(PENDING)
-  uploadedAt DateTime        @default(now())
-  reviewedAt DateTime?
-  reviewNote String?
+  id           String          @id @default(cuid())
+  merchantId   String
+  merchant     MerchantProfile @relation(fields: [merchantId], references: [id])
+  type         MerchantDocType
+  fileUrl      String
+  filePublicId String?
+  status       DocumentStatus  @default(PENDING)
+  uploadedAt   DateTime        @default(now())
+  reviewedAt   DateTime?
+  reviewNote   String?
 
   @@index([merchantId, status])
 }

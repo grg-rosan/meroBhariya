@@ -3,7 +3,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import AppError from "./utils/error/appError.js";
-import { globalMiddleware } from "./middlewares/error.middleware.js";
+import { globalErrorMiddleware } from "./utils/error/errorHandler.js"; // ← fixed import
 import { connectDB } from "./config/db.config.js";
 
 // Import Routes
@@ -12,7 +12,7 @@ import adminRoutes from "./modules/admin/admin.routes.js";
 import dispatcherRoutes from "./modules/dispatcher/dispatcher.route.js";
 import merchantRoutes from "./modules/merchant/merchant.routes.js";
 import riderRoutes from "./modules/rider/rider.route.js";
-import shipmentSharedRoutes from "./modules/merchant/shipment/shipment.shared.route.js"
+import shipmentSharedRoutes from "./modules/merchant/shipment/shipment.shared.route.js";
 
 connectDB();
 
@@ -26,8 +26,7 @@ const allowedOrigins = [
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
-app.set('trust proxy', 1);
-
+app.set("trust proxy", 1);
 app.get("/health", (req, res) => res.json({ status: "ok" }));
 
 app.use(cors({
@@ -35,15 +34,15 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error(`CORS blocked: ${origin}`));
+      callback(new AppError(`CORS blocked: ${origin}`, 403)); // ← was plain Error, no statusCode/isOperational
     }
   },
-  credentials: true
+  credentials: true,
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
 
 // API routes
 app.use("/api/auth", authRoutes);
@@ -57,8 +56,5 @@ app.all("/{*path}", (req, res, next) => {
   next(new AppError(`Can't find ${req.url} on this server`, 404));
 });
 
-app.use(globalMiddleware);
-
+app.use(globalErrorMiddleware); // ← fixed
 export default app;
-
-
