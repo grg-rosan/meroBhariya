@@ -7,7 +7,7 @@ import StatCard from "../../../components/common/StatCard";
 export default function HubInventory() {
   const { shipments, stats, loading, refetch } = useHubInventory();
 
-  const [search, setSearch]   = useState("");
+  const [search, setSearch] = useState("");
   const [statusF, setStatusF] = useState("");
 
   const filtered = shipments.filter(
@@ -23,9 +23,7 @@ export default function HubInventory() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-white">
-            Balaju hub — inventory
-          </h1>
+          <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">Kumari Hub </h1>
           <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
             Live count of packages at this hub
           </p>
@@ -41,11 +39,11 @@ export default function HubInventory() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-<StatCard icon={Boxes}   label="In hub"          value={stats.inHub ?? 0}          color="green" />
-<StatCard icon={Package} label="Unassigned"       value={stats.unassigned ?? 0}     color="red"   />
-<StatCard icon={MapPin}  label="Assigned"         value={stats.assigned ?? 0}       color="amber" />
-<StatCard icon={Truck}   label="Out for delivery" value={stats.outForDelivery ?? 0} color="green" />
-      
+        <StatCard icon={Boxes} label="In hub" value={stats.inHub ?? 0} color="green" />
+        <StatCard icon={Package} label="Unassigned" value={stats.unassigned ?? 0} color="red" />
+        <StatCard icon={MapPin} label="Assigned" value={stats.assigned ?? 0} color="amber" />
+        <StatCard icon={Truck} label="Out for delivery" value={stats.outForDelivery ?? 0} color="green" />
+
       </div>
 
       {/* Filters */}
@@ -65,19 +63,18 @@ export default function HubInventory() {
 
         <div className="flex items-center gap-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-1">
           {[
-            { v: "",                 l: "All"      },
-            { v: "IN_HUB",          l: "At hub"   },
-            { v: "ASSIGNED",        l: "Assigned" },
-            { v: "OUT_FOR_DELIVERY", l: "Out"      },
+            { v: "", l: "All" },
+            { v: "IN_HUB", l: "At hub" },
+            { v: "ASSIGNED", l: "Assigned" },
+            { v: "OUT_FOR_DELIVERY", l: "Out" },
           ].map((f) => (
             <button
               key={f.v}
               onClick={() => setStatusF(f.v)}
-              className={`px-3 py-1 text-xs rounded-md font-medium transition-all ${
-                statusF === f.v
+              className={`px-3 py-1 text-xs rounded-md font-medium transition-all ${statusF === f.v
                   ? "bg-emerald-500 text-white"
                   : "text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
-              }`}
+                }`}
             >
               {f.l}
             </button>
@@ -135,7 +132,7 @@ export default function HubInventory() {
                   </td>
                   <td className="px-4 py-3 text-xs text-zinc-400 dark:text-zinc-500">
                     {new Date(i.updatedAt).toLocaleTimeString("en-US", {
-                      hour:   "2-digit",
+                      hour: "2-digit",
                       minute: "2-digit",
                     })}
                   </td>

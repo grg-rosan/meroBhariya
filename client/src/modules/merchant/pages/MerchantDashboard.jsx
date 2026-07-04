@@ -32,7 +32,7 @@ export default function MerchantDashboard() {
     <div className="p-4 md:p-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-white">Dashboard</h1>
+<h1 className="text-xl font-semibold text-zinc-900 dark:text-white">Dashboard</h1>
           <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
             Welcome back, {name}
           </p>

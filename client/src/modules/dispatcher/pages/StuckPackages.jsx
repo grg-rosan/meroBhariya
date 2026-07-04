@@ -24,7 +24,7 @@ export default function StuckPackages() {
   return (
     <div className="p-4 md:p-6 max-w-4xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-xl font-semibold text-white">Stuck packages</h1>
+        <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">Stuck Packages</h1>
         <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
           Packages in hub for more than 24 hours
         </p>

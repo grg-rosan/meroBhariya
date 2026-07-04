@@ -67,7 +67,7 @@ export default function PickupQueue() {
     <PageContainer wide className="transition-colors duration-200">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold">Pickup Queue</h1>
+          <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">Pickup Queue</h1>
           <p className={`${t.sub} text-sm mt-0.5`}>
             Shipments waiting for rider assignment
           </p>

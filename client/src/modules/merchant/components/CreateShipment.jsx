@@ -83,7 +83,13 @@ export default function CreateShipment() {
   const [districts, setDistricts] = useState([]);
   const [showCancelModal, setShowCancelModal] = useState(false);
 
-  const { fromDistrictId, pickupAddress } = useMerchantProfile(districts);
+  const {
+    fromDistrictId,
+    pickupAddress,
+    isVerified,
+    loading: profileLoading,
+  } = useMerchantProfile(districts);
+
   const {
     fareData,
     loading: fareLoading,
@@ -151,7 +157,6 @@ export default function CreateShipment() {
   });
 
   const handleCancel = () => {
-    // If nothing was touched, navigate away immediately
     if (!isDirty) return navigate(-1);
     setShowCancelModal(true);
   };
@@ -197,6 +202,39 @@ export default function CreateShipment() {
     ? districts.find((d) => d.id === form.toDistrictId)?.name
     : null;
 
+  // ── loading state (profile still resolving) ─────────────────
+  if (profileLoading) {
+    return (
+      <div className="p-4 md:p-6 max-w-4xl mx-auto flex justify-center py-20">
+        <Loader2 size={20} className="animate-spin text-zinc-400" />
+      </div>
+    );
+  }
+
+  // ── unverified merchant gate ─────────────────────────────────
+  if (!isVerified) {
+    return (
+      <div className="p-4 md:p-6 max-w-4xl mx-auto">
+        <div className="flex flex-col items-center text-center gap-3 py-16 px-6 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl">
+          <AlertCircle size={28} className="text-amber-500" />
+          <h2 className="text-base font-semibold text-zinc-900 dark:text-white">
+            Verification pending
+          </h2>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-sm">
+            Your merchant account is still under review. You'll be able to
+            create shipments once it's verified.
+          </p>
+          <button
+            onClick={() => navigate(-1)}
+            className="mt-2 px-4 py-2 rounded-lg text-sm font-medium border border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 active:bg-zinc-200 dark:active:bg-zinc-700 transition-colors"
+          >
+            Go back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // ── render ─────────────────────────────────────────────────
   return (
     <>
@@ -214,7 +252,6 @@ export default function CreateShipment() {
             )}
           </div>
 
-          {/* Cancel — icon-only on mobile, full label on md+ */}
           <button
             onClick={handleCancel}
             disabled={submitting}

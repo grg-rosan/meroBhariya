@@ -34,18 +34,6 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s      
-
-  redis:
-    image: redis:alpine   
-    restart: always
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-      start_period: 30s
   server:
     build: 
       context: ./server
@@ -70,8 +58,6 @@ services:
       db:
         condition: service_healthy
       rabbitmq:
-        condition: service_healthy
-      redis:
         condition: service_healthy
     command: >
       sh -c "npx prisma generate &&

@@ -130,8 +130,7 @@ export default function ScanIn() {
   return (
     <div className="p-4 md:p-6 max-w-2xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-xl font-semibold text-white">Scan into hub</h1>
-        <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
+        <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">Scan to hub</h1>        <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
           Scan the QR code on the package label — marks shipment as IN HUB
           instantly.
         </p>
@@ -141,21 +140,19 @@ export default function ScanIn() {
       <div className="flex gap-2 mb-4">
         <button
           onClick={() => setMode("manual")}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-            mode === "manual"
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${mode === "manual"
               ? "bg-zinc-200 dark:bg-blue-900 text-white"
               : "text-zinc-400  hover:text-zinc-700 dark:text-zinc-300"
-          }`}
+            }`}
         >
           <Keyboard size={12} /> Manual
         </button>
         <button
           onClick={() => setMode("camera")}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-            mode === "camera"
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${mode === "camera"
               ? "bg-zinc-200 dark:bg-blue-900 text-white"
               : "text-zinc-400  hover:text-zinc-700 dark:text-zinc-300"
-          }`}
+            }`}
         >
           <Camera size={12} /> Camera
         </button>
@@ -182,13 +179,12 @@ export default function ScanIn() {
 
         {/* Scan area */}
         <div
-          className={`border-2 border-dashed rounded-xl p-6 text-center transition-all ${
-            result
+          className={`border-2 border-dashed rounded-xl p-6 text-center transition-all ${result
               ? "border-emerald-600 bg-emerald-500/5"
               : error
                 ? "border-red-600 bg-red-500/5"
                 : "border-zinc-300 dark:border-zinc-700"
-          }`}
+            }`}
         >
           <div className="w-14 h-14 border-2 border-emerald-500/50 rounded-xl mx-auto mb-3 flex items-center justify-center">
             <ScanLine size={24} className="text-emerald-500" />
@@ -258,11 +254,10 @@ export default function ScanIn() {
                 {item.time}
               </span>
               <span
-                className={`text-xs px-2 py-0.5 rounded font-medium shrink-0 ${
-                  item.success
+                className={`text-xs px-2 py-0.5 rounded font-medium shrink-0 ${item.success
                     ? "bg-emerald-500/10 text-emerald-400"
                     : "bg-red-500/10 text-red-400"
-                }`}
+                  }`}
               >
                 {item.success ? "IN HUB" : "Failed"}
               </span>

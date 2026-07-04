@@ -85,6 +85,7 @@ export function useMerchantProfile(districts = []) {
     error,
     fromDistrictId,
     pickupAddress: profile?.pickupAddress ?? null,
+    isVerified: profile?.isVerified ?? false,
 
     // documents
     docs,

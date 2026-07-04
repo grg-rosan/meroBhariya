@@ -5,10 +5,10 @@ import StatCard from "../../../components/common/StatCard";
 // ── Status badge colours ───────────────────────────────────────
 // Must match PayoutStatus enum: PENDING | PROCESSING | COMPLETED | FAILED
 const STATUS_STYLE = {
-  COMPLETED:  "bg-green-500/10 text-green-400",
-  PENDING:    "bg-amber-500/10 text-amber-400",
+  COMPLETED: "bg-green-500/10 text-green-400",
+  PENDING: "bg-amber-500/10 text-amber-400",
   PROCESSING: "bg-sky-500/10   text-sky-400",
-  FAILED:     "bg-red-500/10   text-red-400",
+  FAILED: "bg-red-500/10   text-red-400",
 };
 
 // ── Presentational sub-components ─────────────────────────────
@@ -61,14 +61,14 @@ export default function RiderEarnings() {
     );
   }
 
-  const payouts   = data?.payouts   ?? [];
+  const payouts = data?.payouts ?? [];
   const breakdown = data?.breakdown ?? [];
   const todayTotal = breakdown.reduce((sum, b) => sum + b.amount, 0);
 
   return (
     <div className="p-4 md:p-6 max-w-4xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-xl font-semibold text-white">Earnings</h1>
+        <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">Earnings</h1>
         <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
           Your income and payout history
         </p>
@@ -76,10 +76,10 @@ export default function RiderEarnings() {
 
       {/* ── Stat cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <StatCard icon={Banknote}   label="This week"    value={`रु ${(data?.week  ?? 0).toLocaleString()}`}       color="green" />
-        <StatCard icon={TrendingUp} label="This month"   value={`रु ${(data?.month ?? 0).toLocaleString()}`}       color="sky"   />
-        <StatCard icon={Banknote}   label="Available"    value={`रु ${(data?.walletBalance ?? 0).toLocaleString()}`} color="amber" />
-        <StatCard icon={Package}    label="Total drops"  value={data?.totalDrops ?? 0}                             color="blue"  />
+        <StatCard icon={Banknote} label="This week" value={`रु ${(data?.week ?? 0).toLocaleString()}`} color="green" />
+        <StatCard icon={TrendingUp} label="This month" value={`रु ${(data?.month ?? 0).toLocaleString()}`} color="sky" />
+        <StatCard icon={Banknote} label="Available" value={`रु ${(data?.walletBalance ?? 0).toLocaleString()}`} color="amber" />
+        <StatCard icon={Package} label="Total drops" value={data?.totalDrops ?? 0} color="blue" />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4">
