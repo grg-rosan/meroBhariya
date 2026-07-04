@@ -1,9 +1,11 @@
 // src/admin/pages/Finance.jsx
-import { Wallet, AlertTriangle, TrendingUp, Users } from "lucide-react";
+import { Wallet, AlertTriangle, TrendingUp, Users, Check, X } from "lucide-react";
 import {
   useRevenueSummary,
   usePendingCOD,
   useRiderSettlements,
+  usePendingPayouts,
+  useProcessPayout,
 } from "../hooks/useAdmin";
 import StatCard from "../../../components/common/StatCard";
 
@@ -23,6 +25,10 @@ export default function Finance() {
   const { data: summary, loading: summaryLoading } = useRevenueSummary();
   const { data: codData,  loading: codLoading     } = usePendingCOD();
   const { data: riderData, loading: ridersLoading } = useRiderSettlements();
+  const { data: payoutData, loading: payoutsLoading, refetch: refetchPayouts } = usePendingPayouts();
+  const { approve, reject, loading: processingPayout } = useProcessPayout();
+
+  const pendingPayouts = payoutData?.payouts ?? [];
 
   const s = summary ?? {};
 
@@ -244,6 +250,100 @@ export default function Finance() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Pending Rider Payout Requests */}
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden mt-6">
+        <div className="px-5 py-3 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+          <h2 className="text-sm font-medium text-white">
+            Pending Rider Payout Requests
+          </h2>
+          <span className="text-xs text-amber-400">
+            रु {Number(payoutData?.totalAmount ?? 0).toLocaleString()} total pending
+          </span>
+        </div>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-zinc-200 dark:border-zinc-800">
+              {["Rider", "Requested At", "Method", "Amount", "Actions"].map((h) => (
+                <th
+                  key={h}
+                  className="text-left px-4 py-2.5 text-xs text-zinc-400 dark:text-zinc-500 font-medium"
+                >
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {payoutsLoading ? (
+              [...Array(2)].map((_, i) => <SkeletonRow key={i} cols={5} />)
+            ) : pendingPayouts.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={5}
+                  className="px-4 py-8 text-center text-zinc-300 dark:text-zinc-600 text-xs"
+                >
+                  No pending payout requests
+                </td>
+              </tr>
+            ) : (
+              pendingPayouts.map((p) => (
+                <tr
+                  key={p.id}
+                  className="border-b border-zinc-200/50 dark:border-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-blue-950/30"
+                >
+                  <td className="px-4 py-3 text-sm text-zinc-800 dark:text-zinc-200 font-medium">
+                    {p.rider?.user?.fullName ?? "—"}
+                  </td>
+                  <td className="px-4 py-3 text-xs text-zinc-400 dark:text-zinc-500">
+                    {new Date(p.requestedAt).toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "short",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </td>
+                  <td className="px-4 py-3 text-xs text-zinc-400 dark:text-zinc-500 font-mono">
+                    {p.method}
+                  </td>
+                  <td className="px-4 py-3 text-sm font-medium text-amber-400">
+                    रु {Number(p.amount).toLocaleString()}
+                  </td>
+                  <td className="px-4 py-3 flex gap-2">
+                    <button
+                      onClick={async () => {
+                        if (confirm(`Approve payout of NPR ${p.amount} for ${p.rider?.user?.fullName}?`)) {
+                          await approve(p.id);
+                          refetchPayouts();
+                        }
+                      }}
+                      disabled={processingPayout}
+                      className="p-1 bg-green-600 hover:bg-green-700 text-white rounded transition-colors disabled:opacity-50 cursor-pointer"
+                      title="Approve Payout"
+                    >
+                      <Check size={14} />
+                    </button>
+                    <button
+                      onClick={async () => {
+                        const reason = prompt("Enter rejection reason:");
+                        if (reason !== null) {
+                          await reject(p.id, reason);
+                          refetchPayouts();
+                        }
+                      }}
+                      disabled={processingPayout}
+                      className="p-1 bg-red-600 hover:bg-red-700 text-white rounded transition-colors disabled:opacity-50 cursor-pointer"
+                      title="Reject Payout"
+                    >
+                      <X size={14} />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

@@ -53,6 +53,11 @@ export const getShiftSummary = async (userId) => {
       select: {
         codAmount: true,
         fareSnapshot: true,
+        riderTransaction: {
+          select: {
+            amount: true,
+          },
+        },
       },
     }),
     prisma.shipmentLog.findMany({
@@ -79,7 +84,7 @@ export const getShiftSummary = async (userId) => {
 
   const deliveriesToday = deliveredToday.length;
   const codCollected = deliveredToday.reduce((sum, s) => sum + (s.codAmount ?? 0), 0);
-  const todayEarnings = deliveredToday.reduce((sum, s) => sum + (s.fareSnapshot ?? 0), 0);
+  const todayEarnings = deliveredToday.reduce((sum, s) => sum + Number(s.riderTransaction?.amount ?? 0), 0);
 
   return {
     rider: {
