@@ -4,7 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import AppError from "./utils/error/appError.js";
 import { globalErrorMiddleware } from "./utils/error/errorHandler.js"; // ← fixed import
-import { connectDB } from "./config/db.config.js";
+import { connectDB, prisma } from "./config/db.config.js";
 
 // Import Routes
 import authRoutes from "./modules/auth/auth.route.js";
@@ -51,6 +51,19 @@ app.use("/api/dispatcher", dispatcherRoutes);
 app.use("/api/rider", riderRoutes);
 app.use("/api/merchant", merchantRoutes);
 app.use("/api/shipments", shipmentSharedRoutes);
+
+// Public route to list districts for registration
+app.get("/api/districts", async (req, res, next) => {
+  try {
+    const districts = await prisma.district.findMany({
+      select: { id: true, name: true, province: true, zoneId: true },
+      orderBy: { name: "asc" },
+    });
+    res.json({ success: true, data: districts });
+  } catch (err) {
+    next(err);
+  }
+});
 
 app.all("/{*path}", (req, res, next) => {
   next(new AppError(`Can't find ${req.url} on this server`, 404));

@@ -22,5 +22,4 @@ const createRiderProfile = async (tx, userId, data) => {
     },
   });
 };
-x
 export { createMerchantProfile, createRiderProfile };

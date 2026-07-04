@@ -83,9 +83,16 @@ const ROLE_CREATORS = {
 
   merchant: async (
     tx,
-    { name, email, phone, passwordHash, businessName, address, panNumber },
+    { name, email, phone, passwordHash, businessName, address, panNumber, districtId, latitude, longitude },
   ) => {
-    return tx.user.create({
+    if (!districtId) throw new AppError("Pickup district is required.", 400);
+
+    const district = await tx.district.findUnique({
+      where: { id: Number(districtId) },
+    });
+    if (!district) throw new AppError("Invalid district selected.", 400);
+
+    const user = await tx.user.create({
       data: {
         fullName: name,
         email,
@@ -98,10 +105,24 @@ const ROLE_CREATORS = {
             businessName,
             panNumber: panNumber || null,
             pickupAddress: address,
+            pickupDistrictId: district.id,
           },
         },
       },
+      include: {
+        merchantProfile: true,
+      },
     });
+
+    if (latitude !== undefined && longitude !== undefined && latitude !== null && longitude !== null) {
+      await tx.$executeRaw`
+        UPDATE "MerchantProfile"
+        SET "location" = ST_SetSRID(ST_MakePoint(${longitude}::float8, ${latitude}::float8), 4326)
+        WHERE id = ${user.merchantProfile.id}
+      `;
+    }
+
+    return user;
   },
 };
 
@@ -127,6 +148,18 @@ export async function initiateRegistration(role, payload) {
   const { email, phone } = payload;
 
   if (!ROLE_CREATORS[role]) throw new AppError("Invalid role.", 400);
+
+  if (role === "merchant") {
+    if (!payload.districtId) {
+      throw new AppError("Pickup district is required.", 400);
+    }
+    const district = await prisma.district.findUnique({
+      where: { id: Number(payload.districtId) },
+    });
+    if (!district) {
+      throw new AppError("Invalid district selected.", 400);
+    }
+  }
 
   const existing = await prisma.user.findFirst({
     where: { OR: [{ email }, { phoneNumber: phone }] },
@@ -391,7 +424,7 @@ export async function getMe(userId) {
     where: { id: userId },
     include: {
       merchantProfile: {
-        select: { id: true, businessName: true, pickupAddress: true },
+        select: { id: true, businessName: true, pickupAddress: true, pickupDistrictId: true },
       },
       riderProfile: {
         select: {

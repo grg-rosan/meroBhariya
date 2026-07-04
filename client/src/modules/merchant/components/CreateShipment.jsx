@@ -8,6 +8,7 @@ import { apiGet, apiPost } from "../../../shared/hooks/useApi.js";
 import { useFarePreview } from "../hooks/useFarePreview.js";
 import { useMerchantProfile } from "../hooks/useMerchantProfile.js";
 import { useToast } from "../../../context/ToastContext";
+import AddressAutocomplete from "./AddressAutocomplete.jsx";
 
 import ReceiverSection from "./shipment/RecieverSection.jsx";
 import PackageSection from "./shipment/PackageSection.jsx";
@@ -73,6 +74,99 @@ function validate(form, fromDistrictId) {
   return e;
 }
 
+function ProfileCompletionForm({ districts, onSave }) {
+  const [address, setAddress] = useState("");
+  const [districtId, setDistrictId] = useState("");
+  const [latitude, setLatitude] = useState(null);
+  const [longitude, setLongitude] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!address.trim()) {
+      setError("Pickup address is required");
+      return;
+    }
+    if (!latitude || !longitude) {
+      setError("Please select a pickup address from the suggestions");
+      return;
+    }
+    if (!districtId) {
+      setError("Pickup district is required");
+      return;
+    }
+    setError("");
+    setLoading(true);
+    try {
+      await onSave({ address, districtId: Number(districtId), latitude, longitude });
+    } catch (err) {
+      console.error(err);
+      setError("Failed to update profile. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4 text-left">
+      <AddressAutocomplete
+        label="Pickup address"
+        value={address}
+        districts={districts}
+        onChange={(addr, latLng, resolvedDistrictId) => {
+          setAddress(addr);
+          setLatitude(latLng?.lat ?? null);
+          setLongitude(latLng?.lng ?? null);
+          if (resolvedDistrictId) {
+            setDistrictId(resolvedDistrictId);
+          }
+          setError("");
+        }}
+        required
+      />
+
+      <div>
+        <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+          Pickup District
+        </label>
+        <select
+          value={districtId}
+          onChange={(e) => {
+            setDistrictId(e.target.value);
+            setError("");
+          }}
+          required
+          className="w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-rose-500"
+        >
+          <option value="">Select a district...</option>
+          {districts.map((d) => (
+            <option key={d.id} value={d.id}>
+              {d.name} ({d.province})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {error && <p className="text-xs text-rose-500 mt-1">{error}</p>}
+
+      <button
+        type="submit"
+        disabled={!address || !districtId || loading}
+        className="w-full py-2 px-4 bg-rose-500 hover:bg-rose-600 active:bg-rose-700 text-white text-sm font-medium rounded-lg disabled:opacity-40 transition-all flex items-center justify-center gap-2"
+      >
+        {loading ? (
+          <>
+            <Loader2 size={14} className="animate-spin" /> Saving...
+          </>
+        ) : (
+          "Save & Continue"
+        )}
+      </button>
+    </form>
+  );
+}
+
 // ─── main ─────────────────────────────────────────────────────
 export default function CreateShipment() {
   const toast = useToast();
@@ -84,10 +178,12 @@ export default function CreateShipment() {
   const [showCancelModal, setShowCancelModal] = useState(false);
 
   const {
+    profile,
     fromDistrictId,
     pickupAddress,
     isVerified,
     loading: profileLoading,
+    updateProfile,
   } = useMerchantProfile(districts);
 
   const {
@@ -230,6 +326,36 @@ export default function CreateShipment() {
           >
             Go back
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── incomplete profile gate (missing pickup district or coordinates) ────────
+  if (!fromDistrictId || !profile?.latitude || !profile?.longitude) {
+    return (
+      <div className="p-4 md:p-6 max-w-xl mx-auto">
+        <div className="flex flex-col items-center text-center gap-3 py-12 px-6 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-2xl shadow-sm">
+          <div className="p-3 bg-rose-500/10 text-rose-500 rounded-full mb-2">
+            <MapPin size={28} />
+          </div>
+          <h2 className="text-base font-semibold text-zinc-900 dark:text-white">
+            Complete your profile
+          </h2>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-sm mb-4">
+            Before you can create shipments, please set your pickup location. This is required for distance-based fare calculations.
+          </p>
+          <ProfileCompletionForm
+            districts={districts}
+            onSave={async ({ address, districtId, latitude, longitude }) => {
+              await updateProfile({
+                pickupAddress: address,
+                pickupDistrictId: districtId,
+                latitude,
+                longitude,
+              });
+            }}
+          />
         </div>
       </div>
     );
