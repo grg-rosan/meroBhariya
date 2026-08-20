@@ -59,7 +59,7 @@ export default function Finance() {
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-xl font-semibold text-white">Finance summary</h1>
+        <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">Finance summary</h1>
         <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
           COD held vs. owed to merchants — live snapshot
         </p>

@@ -67,7 +67,7 @@ export default function RiderNavigation() {
           <ArrowLeft size={15} />
         </button>
         <div>
-          <h1 className="text-xl font-semibold text-white">
+          <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">
             {mergedStop.status === "AWAITING_PICKUP"
               ? "Go collect"
               : mergedStop.status === "PICKED_UP"

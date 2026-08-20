@@ -138,7 +138,7 @@ export default function MerchantDashboard() {
           <Bar label="Overall" pct={deliveryRate} />
           <div className="mt-5 pt-4 border-t border-zinc-200 dark:border-zinc-800 grid grid-cols-2 gap-3 text-center">
             <div>
-              <div className="text-xl font-semibold text-white">
+              <div className="text-xl font-semibold text-zinc-900 dark:text-white">
                 {delivered}
               </div>
               <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">

@@ -1,0 +1,10 @@
+[33m326572b[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mdebugging[m[33m, [m[1;31morigin/debugging[m[33m)[m fixed rider payout
+[33mb0e4873[m fixed bugs
+[33m2f1f73a[m all
+[33m93743d2[m otp debug
+[33m903148f[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m fixed email service chagned to resend
+[33mb741a0b[m inital changes
+[33md5a0083[m fixed readme and smtp failure
+[33m723f995[m feat: optimize delivery logistics and refactor dispatcher services
+[33m3fb17d9[m fixed otp error from random file
+[33mad1961f[m fixed server response time and added healty check

@@ -154,7 +154,7 @@ export default function RiderManifest() {
     <div className="p-4 md:p-6 max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-white">Today's manifest</h1>
+          <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">Today's manifest</h1>
           <p className="text-sm text-zinc-500 mt-0.5">
             {stops.length} shipment{stops.length !== 1 ? "s" : ""} · {done}{" "}
             completed

@@ -28,7 +28,7 @@ function ResultSummary({ result }) {
       </div>
       <div className="grid grid-cols-3 gap-3 text-center">
         <div>
-          <div className="text-xl font-semibold text-white">{result.total}</div>
+          <div className="text-xl font-semibold text-zinc-900 dark:text-white">{result.total}</div>
           <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">Total rows</div>
         </div>
         <div>

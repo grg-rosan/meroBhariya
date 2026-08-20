@@ -12,7 +12,7 @@ export default function FleetFares() {
     <div className="p-4 md:p-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-white">Fleet & fare config</h1>
+          <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">Fleet & fare config</h1>
           <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
             Set per-km, per-kg, and surcharge rates per vehicle type
           </p>
