@@ -1,4 +1,6 @@
-Good instinct to ask — you don't want two sections saying the same thing. The cleanest fix is to **merge it into your existing "Getting Started" section** (step 3), rather than creating a separate one. Here's the full README with that done:
+Confirmed — that's exactly the bug. Your `README.md` on GitHub contains my full chat reply verbatim: the lead-in sentence, the outer ` ```markdown ` fence, and my closing note at the bottom, all wrapped around the actual README content.
+
+Here's the clean version — pure README, nothing else. Replace the entire file with this:
 
 ```markdown
 # meroBhariya 🚚
@@ -227,6 +229,3 @@ On first startup, the seed script creates a Super Admin account:
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-```
-
-I folded the run/stop commands directly into step 3 of "Getting Started" instead of a separate section — that way there's one clear path for your hirer to follow top to bottom, no duplication.
