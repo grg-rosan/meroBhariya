@@ -39,7 +39,7 @@ export default function MerchantDashboard() {
         </div>
         <button
           onClick={refetch}
-          className="flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800 rounded-lg hover:bg-zinc-100 dark:bg-blue-950 transition-all"
+          className="flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800 rounded-lg hover:bg-zinc-100 dark:bg-zinc-800 transition-all"
         >
           <RefreshCw size={12} className={loading ? "animate-spin" : ""} />{" "}
           Refresh
@@ -110,7 +110,7 @@ export default function MerchantDashboard() {
                 {recent.map((s) => (
                   <tr
                     key={s.trackingNumber}
-                    className="border-b border-zinc-200/50 dark:border-zinc-800/50 hover:bg-zinc-100 dark:bg-blue-950/30 transition-colors"
+                    className="border-b border-zinc-200/50 dark:border-zinc-800/50 hover:bg-zinc-100 dark:bg-zinc-800/30 transition-colors"
                   >
                     <td className="px-5 py-3 text-xs font-mono text-zinc-500 dark:text-zinc-400">
                       {s.trackingNumber}

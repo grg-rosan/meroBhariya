@@ -17,9 +17,9 @@ export default function QuickActions({ qa, loading }) {
           <Link
             key={a.label}
             to={a.to}
-            className="flex items-center justify-between p-3 border border-zinc-200 dark:border-zinc-800 rounded-lg hover:bg-zinc-100 dark:bg-blue-950 transition-all group"
+            className="flex items-center justify-between p-3 border border-zinc-200 dark:border-zinc-800 rounded-lg hover:bg-zinc-100 dark:bg-zinc-800 transition-all group"
           >
-            <span className="text-sm text-zinc-700 dark:text-zinc-300 group-hover:text-white transition-colors">
+            <span className="text-sm text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
               {a.label}
             </span>
             {a.key != null && (

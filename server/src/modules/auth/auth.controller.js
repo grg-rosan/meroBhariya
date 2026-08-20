@@ -70,6 +70,16 @@ export const verifyOtpHandler = catchAsync(async (req, res) => {
 
 // ─── POST /api/auth/password/forgot ──────────────────────────────────────────
 
+export const verifyPasswordResetHandler = catchAsync(async (req, res) => {
+  const { email, code } = req.body;
+  const missing = ["email", "code"].filter((k) => !req.body[k]);
+  if (missing.length)
+    throw new AppError(`Missing fields: ${missing.join(", ")}`, 400);
+
+  const result = await authService.verifyPasswordResetCode(email, code);
+  return res.status(200).json(result);
+});
+
 export const forgotPasswordHandler = catchAsync(async (req, res) => {
   const { email } = req.body;
   if (!email) throw new AppError("Email is required.", 400);
@@ -108,7 +118,9 @@ export const getMeHandler = catchAsync(async (req, res) => {
 
 // ─── POST /api/auth/logout ────────────────────────────────────────────────────
 
+// auth.controller.js — logoutHandler
 export const logoutHandler = catchAsync(async (req, res) => {
+  logger.info({ userId: req.user?.id }, "[Auth] Logout");
   return res.status(200).json({ message: "Logged out successfully." });
 });
 

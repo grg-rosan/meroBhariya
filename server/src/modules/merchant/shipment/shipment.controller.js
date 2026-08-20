@@ -112,7 +112,7 @@ export const riderScanShipment = catchAsync(async (req, res) => {
 
 export const deliverShipment = catchAsync(async (req, res) => {
   // riderLocation is attached by geofenceCheck middleware
-  const { codCollected, podNote } = req.body;
+  const { codCollected, podNote } = req.body ?? {};
   const data = await shipmentService.deliverShipment(
     req.params.id,
     req.userId,

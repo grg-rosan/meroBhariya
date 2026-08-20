@@ -18,6 +18,7 @@ const runMigrations = (retries = 5, delayMs = 3000) => {
     try {
       logger.info(`Running database migrations (attempt ${i + 1}/${retries})...`);
       execSync("npx prisma migrate deploy", { stdio: "inherit" });
+      execSync("node prisma/seed.js", { stdio: "inherit" }); 
       logger.info("Migrations complete.");
       return;
     } catch (err) {

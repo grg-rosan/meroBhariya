@@ -10,7 +10,7 @@ function ProgressBar({ progress }) {
         <span>Uploading…</span>
         <span>{progress}%</span>
       </div>
-      <div className="h-1.5 bg-zinc-100 dark:bg-blue-950 rounded-full overflow-hidden">
+      <div className="h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
         <div className="h-full bg-rose-500 transition-all" style={{ width: `${progress}%` }} />
       </div>
     </div>

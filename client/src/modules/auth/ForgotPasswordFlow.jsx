@@ -22,7 +22,7 @@ export default function ForgotPasswordFlow() {
   };
 
   const handleVerify = async (otp) => {
-    await authAPI.verifyOtp(email, otp); // validates code
+    await authAPI.verifyPasswordReset(email, otp);
     setResetCode(otp);
     setStep("reset");
   };

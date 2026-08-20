@@ -1,4 +1,4 @@
-import { useState }        from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useNavigate }     from "react-router-dom";
 import { useToast }        from "../../../context/ToastContext";
 
@@ -49,16 +49,32 @@ export function useDeliverPackage(shipmentId) {
   const [result,        setResult]        = useState(null);
   const [geofenceError, setGeofenceError] = useState(null);
 
-  const deliver = async ({ codCollected, podNote, podFile }) => {
+  const inFlightRef   = useRef(false);
+  const deliveredRef  = useRef(false);
+  const geoRequestRef = useRef(null);
+  geoRequestRef.current = geo.request;
+  const toastRef = useRef(null);
+  toastRef.current = toast;
+
+  useEffect(() => {
+    deliveredRef.current = false;
+    inFlightRef.current  = false;
+  }, [shipmentId]);
+
+  const deliver = useCallback(async ({ codCollected, podNote, podFile }) => {
+    if (inFlightRef.current || deliveredRef.current) return;
+
+    inFlightRef.current = true;
     setSubmitting(true);
     setResult(null);
     setGeofenceError(null);
 
     let coords;
     try {
-      coords = await geo.request();
+      coords = await geoRequestRef.current();
     } catch {
-      toast({ message: "Could not get GPS. Enable location in browser settings.", type: "error" });
+      toastRef.current({ message: "Could not get GPS. Enable location in browser settings.", type: "error" });
+      inFlightRef.current = false;
       setSubmitting(false);
       return;
     }
@@ -97,8 +113,9 @@ export function useDeliverPackage(shipmentId) {
         throw err;
       }
 
+      deliveredRef.current = true;
       setResult("success");
-      toast({ message: "Delivery confirmed!", type: "success" });
+      toastRef.current({ message: "Delivery confirmed!", type: "success" });
       setTimeout(() => navigate("/rider/manifest"), 2000);
 
     } catch (e) {
@@ -107,12 +124,13 @@ export function useDeliverPackage(shipmentId) {
         setGeofenceError({ distanceMeters: e.distanceMeters });
       } else {
         setResult("error");
-        toast({ message: e.message ?? "Delivery failed.", type: "error" });
+        toastRef.current({ message: e.message ?? "Delivery failed.", type: "error" });
       }
     } finally {
+      inFlightRef.current = false;
       setSubmitting(false);
     }
-  };
+  }, [shipmentId, navigate]);
 
   return { deliver, submitting, result, geofenceError, geo };
 }

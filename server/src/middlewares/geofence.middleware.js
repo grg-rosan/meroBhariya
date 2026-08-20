@@ -3,18 +3,20 @@ import { prisma } from "../config/db.config.js";
 const DELIVERY_RADIUS_METERS = 100;
 
 export async function geofenceCheck(req, res, next) {
+  const body = req.body ?? {};
+
   // ── DEV BYPASS ────────────────────────────────────────────────────────────
   if (process.env.NODE_ENV === "development") {
     req.riderLocation = {
-      lat: parseFloat(req.body.lat) || 0,
-      lng: parseFloat(req.body.lng) || 0,
+      lat: parseFloat(body.lat) || 0,
+      lng: parseFloat(body.lng) || 0,
     };
     return next();
   }
   // ─────────────────────────────────────────────────────────────────────────
 
   const { id: shipmentId } = req.params;
-  const { lat, lng } = req.body;
+  const { lat, lng } = body;
 
   if (!lat || !lng) {
     return res.status(400).json({

@@ -5,7 +5,7 @@ import { randomInt } from "node:crypto";
 import { prisma } from "../../config/db.config.js";
 import AppError from "../../utils/error/appError.js";
 import { getRedisClient } from "../../config/redis.config.js";
-import { transporter } from "../../config/email.config.js";
+import { sendEmail as sendEmailViaProvider } from "../../utils/services/emailSender.js";
 import {
   resetEmailTemplate,
   otpEmailTemplate,
@@ -38,17 +38,12 @@ function sanitizeUser(user) {
 }
 
 async function sendEmail(to, subject, html) {
-  await Promise.race([
-    transporter.sendMail({
-      from: `MeroBhariya <${process.env.EMAIL_USER}>`,
-      to,
-      subject,
-      html,
-    }),
-    new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Email timeout")), 10000) 
-    ),
-  ]);
+  try {
+    await sendEmailViaProvider({ to, subject, html });
+  } catch (err) {
+    logger.error("[Auth] Email dispatch failed", { err, to, subject });
+    throw err;
+  }
 }
 
 // ─── Role creators for registration ──────────────────────────────────────────
@@ -226,7 +221,13 @@ export async function sendOtp(userId, email) {
     throw new AppError("Too many OTP requests. Try again in 1 hour.", 429);
 
   const otp = randomInt(100000, 1000000).toString();
-  await redis.set(`otp:${userId}`, otp, { EX: OTP_TTL });
+  const otpKey = `otp:${userId}`;
+  await redis.set(otpKey, otp, { EX: OTP_TTL });
+  const confirmed = await redis.get(otpKey);
+  logger.info(
+    { userId, otpKey, stored: confirmed, match: confirmed === otp },
+    "[Auth] OTP stored in Redis",
+  );
 
   await sendEmail(
     email,
@@ -242,13 +243,20 @@ export async function sendOtp(userId, email) {
 
 export async function verifyOtp(userId, inputOtp) {
   const redis = await getRedisClient();
-  const stored = await redis.get(`otp:${userId}`);
+  const otpKey = `otp:${userId}`;
+  const stored = await redis.get(otpKey);
+  const submitted = String(inputOtp ?? "").trim();
+
+  logger.info(
+    { userId, otpKey, stored, submitted },
+    "[Auth] OTP verify attempt",
+  );
 
   if (!stored)
     throw new AppError("OTP has expired. Please request a new one.", 400);
-  if (stored !== inputOtp) throw new AppError("Invalid OTP.", 400);
+  if (String(stored) !== submitted) throw new AppError("Invalid OTP.", 400);
 
-  await redis.del(`otp:${userId}`);
+  await redis.del(otpKey);
 
   await prisma.user.update({
     where: { id: userId },
@@ -256,6 +264,33 @@ export async function verifyOtp(userId, inputOtp) {
   });
 
   return { message: "Email verified successfully." };
+}
+
+// ─── Verify password reset code (pwd_reset key, not otp key) ─────────────────
+
+export async function verifyPasswordResetCode(email, code) {
+  const redis = await getRedisClient();
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user || !user.isActive) throw new AppError("Invalid reset code.", 400);
+
+  const key = `pwd_reset:${user.id}`;
+  const stored = await redis.get(key);
+  const submitted = String(code ?? "").trim();
+
+  logger.info(
+    { email, userId: user.id, key, stored, submitted },
+    "[Auth] Password reset code verify",
+  );
+
+  if (!stored)
+    throw new AppError(
+      "Reset code has expired. Please request a new one.",
+      400,
+    );
+  if (String(stored) !== submitted)
+    throw new AppError("Invalid reset code.", 400);
+
+  return { message: "Code verified." };
 }
 
 // ─── Forgot Password ──────────────────────────────────────────────────────────
@@ -277,12 +312,18 @@ export async function forgotPassword(email) {
     throw new AppError("Too many requests. Try again in 1 hour.", 429);
 
   const code = randomInt(100000, 1000000).toString();
-  await redis.set(`pwd_reset:${user.id}`, code, { EX: RESET_TTL });
+  const resetKey = `pwd_reset:${user.id}`;
+  await redis.set(resetKey, code, { EX: RESET_TTL });
+  const confirmed = await redis.get(resetKey);
+  logger.info(
+    { userId: user.id, resetKey, stored: confirmed, match: confirmed === code },
+    "[Auth] Password reset code stored in Redis",
+  );
 
   await sendEmail(
     email,
     "Reset Your MeroBhariya Password",
-    resetEmailTemplate(user.name, code),
+    resetEmailTemplate(user.fullName, code),
   );
   logger.info({ email, code }, "[DEV] Reset code for email");
 
@@ -301,13 +342,19 @@ export async function resetPassword(email, code, newPassword) {
 
   const key = `pwd_reset:${user.id}`;
   const stored = await redis.get(key);
+  const submitted = String(code ?? "").trim();
+
+  logger.info(
+    { email, userId: user.id, key, stored, submitted: submitted },
+    "[Auth] Password reset submit",
+  );
 
   if (!stored)
     throw new AppError(
       "Reset code has expired. Please request a new one.",
       400,
     );
-  if (stored !== code) throw new AppError("Invalid reset code.", 400);
+  if (String(stored) !== submitted) throw new AppError("Invalid reset code.", 400);
 
   const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
   await prisma.user.update({ where: { id: user.id }, data: { passwordHash } });

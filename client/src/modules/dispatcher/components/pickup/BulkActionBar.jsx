@@ -37,7 +37,7 @@ export default function BulkActionBar({
       <div className="flex gap-2">
         <button
           onClick={onClear}
-          className={`px-3 py-1.5 text-sm rounded-lg border ${borderClass} ${subClass} hover:text-white`}
+          className={`px-3 py-1.5 text-sm rounded-lg border ${borderClass} ${subClass} hover:text-zinc-900 dark:hover:text-white`}
         >
           Clear
         </button>

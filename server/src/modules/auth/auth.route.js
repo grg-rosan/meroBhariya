@@ -10,6 +10,7 @@ import {
   sendOtpHandler,
   verifyOtpHandler,
   forgotPasswordHandler,
+  verifyPasswordResetHandler,
   resetPasswordHandler,
   changePasswordHandler
 } from "./auth.controller.js";
@@ -29,6 +30,7 @@ router.post("/otp/verify", otpLimiter, verifyOtpHandler);
 
 // Password
 router.post("/password/forgot", authLimiter, forgotPasswordHandler);
+router.post("/password/verify-code", otpLimiter, verifyPasswordResetHandler);
 router.post("/password/reset", authLimiter, resetPasswordHandler);
 
 // Protected

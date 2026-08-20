@@ -159,7 +159,7 @@ export default function RiderDashboard() {
               <div key={item.id} className="relative pb-4 last:pb-0">
                 <div className="absolute -left-5 top-1 w-2.5 h-2.5 rounded-full bg-sky-500 border-2 border-zinc-200 dark:border-zinc-900 z-10" />
                 {i < activity.length - 1 && (
-                  <div className="absolute -left-[15px] top-3 w-px h-full bg-zinc-100 dark:bg-blue-950" />
+                  <div className="absolute -left-[15px] top-3 w-px h-full bg-zinc-100 dark:bg-zinc-800" />
                 )}
                 <p className="text-sm text-zinc-700 dark:text-zinc-300">
                   {item.status} — {item.receiverName} · {item.deliveryAddress}

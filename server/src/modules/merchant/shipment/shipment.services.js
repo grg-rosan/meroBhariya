@@ -10,6 +10,10 @@ import {
   publishShipmentNew,
   publishShipmentCancelled,
 } from "./shipment.events.js";
+import {
+  publish,
+  publishMerchantNotification,
+} from "../../../infrastructure/rabbitmq/publisher.js";
 
 // ── createShipment ────────────────────────────────────────────
 export async function createShipment(merchantId, data, userId, ctx) {
