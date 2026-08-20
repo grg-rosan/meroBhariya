@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { useNavigate }     from "react-router-dom";
 import { useToast }        from "../../../context/ToastContext";
 
-const IS_DEV = import.meta.env.DEV;
+const IS_DEV = import.meta.env.DEV; // true when running vite dev server
 
 function useGeolocation() {
   const [loc,     setLoc]     = useState(null);
@@ -11,12 +11,14 @@ function useGeolocation() {
 
   const request = () =>
     new Promise((resolve, reject) => {
+      // ── DEV BYPASS ───────────────────────────────────────────
       if (IS_DEV) {
-        const coords = { lat: 27.7172, lng: 85.3240 };
+        const coords = { lat: 27.7172, lng: 85.3240 }; // Kathmandu
         setLoc(coords);
         resolve(coords);
         return;
       }
+      // ─────────────────────────────────────────────────────────
       setLoading(true);
       setError(null);
       navigator.geolocation.getCurrentPosition(
@@ -105,7 +107,7 @@ export function useDeliverPackage(shipmentId) {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        const err      = new Error(data.message ?? "Delivery failed.");
+        const err = new Error(data.message ?? "Delivery failed.");
         err.code           = data.code;
         err.distanceMeters = data.distanceMeters;
         throw err;
