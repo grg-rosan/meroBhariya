@@ -31,7 +31,7 @@ export default function Staff() {
       {/* header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-white">Staff</h1>
+          <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">Staff</h1>
           <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
             Manage admin and dispatcher accounts
           </p>

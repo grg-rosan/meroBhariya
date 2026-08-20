@@ -89,6 +89,43 @@ export const useTransactions = (params = {}) => {
 };
 export const usePendingCOD = () => useAPI("/api/admin/finance/cod/pending");
 
+export const usePendingPayouts = () => useAPI("/api/admin/finance/payouts");
+
+export function useProcessPayout() {
+  const [loading, setLoading] = useState(false);
+  const toast = useToast();
+
+  const approve = async (payoutId) => {
+    setLoading(true);
+    try {
+      const data = await apiPatch(`/api/admin/finance/payouts/${payoutId}/approve`);
+      toast({ message: "Payout request approved successfully.", type: "success" });
+      return data;
+    } catch (e) {
+      toast({ message: e.message, type: "error" });
+      throw e;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const reject = async (payoutId, reason) => {
+    setLoading(true);
+    try {
+      const data = await apiPatch(`/api/admin/finance/payouts/${payoutId}/reject`, { reason });
+      toast({ message: "Payout request rejected.", type: "success" });
+      return data;
+    } catch (e) {
+      toast({ message: e.message, type: "error" });
+      throw e;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { approve, reject, loading };
+}
+
 export function useSettleCOD() {
   const [loading, setLoading] = useState(false);
   const toast = useToast(); 

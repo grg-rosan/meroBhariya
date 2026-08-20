@@ -10,7 +10,7 @@ export default function AdminNotifications() {
     <div className="p-4 md:p-6 max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-white">Notifications</h1>
+          <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">Notifications</h1>
           <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
             {unreadCount > 0 ? `${unreadCount} unread` : "All caught up"}
           </p>

@@ -47,7 +47,7 @@ export default function Settlements() {
     <div className="p-4 md:p-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-white">COD settlements</h1>
+          <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">COD settlements</h1>
           <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
             Settle collected COD back to merchants via riders
           </p>

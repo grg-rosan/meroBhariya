@@ -14,15 +14,25 @@ export async function settleDelivery({
   codAmount,
   fareSnapshot,
   paymentType,
+  codCollected,
 }) {
-  // Idempotency guard — consumer may retry on failure
-  const existing = await prisma.transaction.findUnique({
+  // Check if rider earning transaction already exists to keep it idempotent
+  const existingRiderTx = await prisma.riderTransaction.findFirst({
     where: { shipmentId },
   });
-  if (existing) {
-    logger.warn({ shipmentId }, "[Settlement] Already settled, skipping");
+
+  if (existingRiderTx) {
+    logger.info({ shipmentId }, "[Settlement] Rider earning already settled, skipping");
+    const existing = await prisma.transaction.findUnique({
+      where: { shipmentId },
+    });
     return existing;
   }
+
+  // Check if general transaction already exists (often created synchronously in /deliver)
+  let transaction = await prisma.transaction.findUnique({
+    where: { shipmentId },
+  });
 
   const shipment = await prisma.shipment.findUnique({
     where: { id: shipmentId },
@@ -31,35 +41,37 @@ export async function settleDelivery({
   if (!shipment)
     throw new Error(`[Settlement] Shipment not found: ${shipmentId}`);
 
-  const transaction = await prisma.$transaction(async (tx) => {
-    const t = await tx.transaction.create({
-      data: {
-        shipmentId,
-        totalFare: fareSnapshot ?? 0,
-        codAmount: codAmount ?? 0,
-        paymentType: paymentType ?? "PREPAID",
-        isRemitted: false,
-      },
+  if (!transaction) {
+    transaction = await prisma.$transaction(async (tx) => {
+      const t = await tx.transaction.create({
+        data: {
+          shipmentId,
+          totalFare: fareSnapshot ?? shipment.totalFare ?? shipment.fareSnapshot ?? 0,
+          codAmount: codAmount ?? shipment.codAmount ?? 0,
+          paymentType: paymentType ?? shipment.paymentType ?? "PREPAID",
+          isRemitted: false,
+        },
+      });
+      await tx.shipmentLog.create({
+        data: {
+          shipmentId,
+          status: "DELIVERED",
+          note:
+            paymentType === "COD"
+              ? `COD of NPR ${codAmount} collected. Pending remittance.`
+              : "Payment settled.",
+          updatedById: riderId ?? shipment.riderId,
+        },
+      });
+      return t;
     });
-    await tx.shipmentLog.create({
-      data: {
-        shipmentId,
-        status: "DELIVERED",
-        note:
-          paymentType === "COD"
-            ? `COD of NPR ${codAmount} collected. Pending remittance.`
-            : "Payment settled.",
-        updatedById: riderId,
-      },
-    });
-    return t;
-  });
+  }
 
-  // ── NEW: Credit rider earning after transaction record created ──
+  // Credit rider earning after transaction record is resolved
   try {
     const earningResult = await settleDeliveryEarning({
       shipmentId,
-      codCollected: codAmount ?? 0,
+      codCollected: codCollected ?? codAmount ?? transaction.collectedByRider ?? 0,
     });
     logger.info(
       {
@@ -70,8 +82,7 @@ export async function settleDelivery({
       "[Settlement] Rider earning credited",
     );
   } catch (err) {
-    // Non-fatal — shipment is already settled, log and continue
-    // Prevents earning failure from rolling back the delivery settlement
+    // Non-fatal — log and continue
     logger.error({ err, shipmentId }, "[Settlement] Rider earning failed");
   }
 
@@ -80,13 +91,13 @@ export async function settleDelivery({
     shipmentId,
     status: "DELIVERED",
     message:
-      paymentType === "COD"
-        ? `Shipment delivered. NPR ${codAmount} COD will be remitted after rider handover.`
+      (paymentType ?? shipment.paymentType) === "COD"
+        ? `Shipment delivered. NPR ${codAmount ?? shipment.codAmount ?? 0} COD will be remitted after rider handover.`
         : "Shipment delivered successfully.",
   });
 
   logger.info(
-    { shipmentId, codAmount, paymentType },
+    { shipmentId, codAmount: codAmount ?? shipment.codAmount, paymentType: paymentType ?? shipment.paymentType },
     "[Settlement] Settled shipment",
   );
 

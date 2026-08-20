@@ -53,6 +53,9 @@ router.get  ("/finance/transactions",              financeCtrl.getTransactionsHa
 router.get  ("/finance/cod/pending",               financeCtrl.getPendingCODHandler);
 router.patch("/finance/cod/:transactionId/settle", financeCtrl.settleCODHandler);
 router.post ("/finance/cod/settle-rider/:riderId", financeCtrl.settleAllCODForRiderHandler);
+router.get  ("/finance/payouts",                    financeCtrl.getPendingPayoutsHandler);
+router.patch("/finance/payouts/:payoutId/approve",  financeCtrl.approvePayoutHandler);
+router.patch("/finance/payouts/:payoutId/reject",   financeCtrl.rejectPayoutHandler);
 
 // ─── Settlements ──────────────────────────────────────────────────────────────
 router.get("/settlements/riders",                    settlementsCtrl.getRiderSettlementsHandler);

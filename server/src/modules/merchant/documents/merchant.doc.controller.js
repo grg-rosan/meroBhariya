@@ -5,7 +5,7 @@ import logger from "../../../infrastructure/logger/index.js";
 function handleError(res, err) {
   if (err.status && err.message)
     return res.status(err.status).json({ message: err.message });
-  logger.error({ err }, "[Merchant/Documents]");
+  logger.error({ err }, "[Merchant/Documents]",{error: err});
   return res.status(500).json({ message: "Internal server error." });
 }
 

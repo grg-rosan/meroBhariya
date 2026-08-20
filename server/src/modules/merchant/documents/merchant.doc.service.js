@@ -54,7 +54,7 @@ export async function uploadMerchantDocuments({ merchantId, files }) {
     // Upload new file to Cloudinary
     const { url: fileUrl, public_id: filePublicId } = await uploadToCloudinary(
       file.path,
-      { folder: `porter/merchant/${merchantId}/documents` },
+      `porter/merchant/${merchantId}/documents`,
     );
 
     if (existing) {
@@ -65,7 +65,7 @@ export async function uploadMerchantDocuments({ merchantId, files }) {
           fileUrl,
           filePublicId,
           status: "PENDING",
-          note: null,
+          reviewNote: null,
           uploadedAt: new Date(),
           reviewedAt: null,
         },

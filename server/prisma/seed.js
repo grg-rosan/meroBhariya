@@ -230,6 +230,7 @@ async function main() {
           businessName: "Test Business Pvt. Ltd.",
           panNumber: "123456789",
           pickupAddress: "New Road, Kathmandu",
+          pickupDistrictId: 1,
           isVerified: true,
         },
       });
@@ -243,8 +244,37 @@ async function main() {
           { merchantId: merchantProfile.id, type: "OWNER_PHOTO", fileUrl: "https://placehold.co/seed", status: "APPROVED" },
         ],
       });
+    } else if (!merchantProfile.pickupDistrictId) {
+      await prisma.merchantProfile.update({
+        where: { id: merchantProfile.id },
+        data: { pickupDistrictId: 1 },
+      });
     }
     logger.info("✅ Test Merchant seeded (dev only).");
+
+    // Backfill any merchant profiles without pickupDistrictId
+    const profilesWithoutDistrict = await prisma.merchantProfile.findMany({
+      where: { pickupDistrictId: null },
+    });
+    for (const prof of profilesWithoutDistrict) {
+      let districtId = 1; // Default to Kathmandu
+      const addr = prof.pickupAddress.toLowerCase();
+      if (addr.includes("hetauda") || addr.includes("makwanpur")) {
+        const d = await prisma.district.findFirst({ where: { name: "Makwanpur" } });
+        if (d) districtId = d.id;
+      } else if (addr.includes("lalitpur")) {
+        const d = await prisma.district.findFirst({ where: { name: "Lalitpur" } });
+        if (d) districtId = d.id;
+      } else if (addr.includes("kathmandu")) {
+        const d = await prisma.district.findFirst({ where: { name: "Kathmandu" } });
+        if (d) districtId = d.id;
+      }
+      await prisma.merchantProfile.update({
+        where: { id: prof.id },
+        data: { pickupDistrictId: districtId },
+      });
+    }
+    logger.info("✅ Backfilled existing merchants.");
 
     // Rider
     const bikeType = await prisma.vehicleType.findUnique({ where: { name: "Bike" } });

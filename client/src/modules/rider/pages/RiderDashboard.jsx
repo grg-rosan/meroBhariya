@@ -72,8 +72,8 @@ export default function RiderDashboard() {
   return (
     <div className="p-4 md:p-6 max-w-4xl mx-auto">
       {banner && (
-        <div className="mb-4 p-4 bg-green-500/10 border border-green-700 rounded-xl text-green-400 text-sm flex items-center justify-between">
-          <span>🎉 {banner.message}</span>
+        <div className="mb-4 p-4 bg-green-50 dark:bg-green-500/10 border border-green-300 dark:border-green-700 rounded-xl text-green-700 dark:text-green-400 text-sm flex items-center justify-between">
+          <span> {banner.message}</span>
           <button
             onClick={() => setBanner(null)}
             className="text-green-600 hover:text-green-400 ml-4"
@@ -85,14 +85,14 @@ export default function RiderDashboard() {
 
       {/* ← use isVerified not rider.isVerified */}
       {!isVerified && (
-        <div className="mb-4 p-4 bg-amber-500/10 border border-amber-700 rounded-xl text-amber-400 text-sm">
-          ⏳ Your documents are under review. You'll be notified once verified.
+        <div className="mb-4 p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-700 rounded-xl text-amber-700 dark:text-amber-400 text-sm">
+        Verify your account to start accepting rides.
         </div>
       )}
 
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-white">My shift</h1>
+          <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">My shift</h1>
           <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
             {rider.fullName} · {rider.vehicleType} · {rider.vehicleNumber}
           </p>
@@ -104,7 +104,7 @@ export default function RiderDashboard() {
           className={`flex items-center gap-3 px-4 py-2 rounded-xl border transition-all ${online ? "border-green-600 bg-green-500/10" : "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900"} ${!isVerified ? "opacity-40 cursor-not-allowed" : ""}`}
         >
           <div
-            className={`relative w-9 h-5 rounded-full transition-colors ${online ? "bg-green-500" : "bg-zinc-200 dark:bg-blue-900"}`}
+            className={`relative w-9 h-5 rounded-full transition-colors ${online ? "bg-green-500" : "bg-zinc-200 dark:bg-zinc-700"}`}
           >
             <div
               className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${online ? "left-[18px]" : "left-0.5"}`}

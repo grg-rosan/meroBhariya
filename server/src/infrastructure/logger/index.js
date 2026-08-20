@@ -4,9 +4,13 @@ import { LogtailTransport } from "@logtail/winston";
 
 const { combine, timestamp, colorize, printf, json, errors } = winston.format;
 
+// Handles BigInt from raw Prisma/PostGIS queries showing up in log metadata
+const safeStringify = (obj) =>
+  JSON.stringify(obj, (_, v) => (typeof v === "bigint" ? v.toString() : v));
+
 const normalizeMessage = winston.format((info) => {
   if (typeof info.message === "object" && info.message !== null) {
-    info.message = JSON.stringify(info.message);
+    info.message = safeStringify(info.message);
   }
   return info;
 });
@@ -15,6 +19,7 @@ const normalizeErrorMeta = winston.format((info) => {
   const err = info?.err;
   if (err instanceof Error) {
     info.err = {
+      ...err,
       name: err.name,
       message: err.message,
       stack: err.stack,
@@ -32,20 +37,14 @@ const normalizeErrorMeta = winston.format((info) => {
 });
 
 const devFormat = printf(({ level, message, timestamp, ...meta }) => {
-  const extras = Object.keys(meta).length ? JSON.stringify(meta) : "";
+  const extras = Object.keys(meta).length ? safeStringify(meta) : "";
   return `${timestamp} [${level}]: ${message} ${extras}`;
 });
 
 const isProd = process.env.NODE_ENV === "production";
 
-const transports = isProd
-  ? [
-      new winston.transports.File({ filename: "logs/error.log", level: "error" }),
-      new winston.transports.File({ filename: "logs/combined.log" }),
-    ]
-  : [
-      new winston.transports.Console(),
-    ];
+// Always keep Console in prod too — Render captures stdout regardless of Logtail status
+const transports = [new winston.transports.Console()];
 
 if (isProd && process.env.BETTERSTACK_TOKEN) {
   const logtail = new Logtail(process.env.BETTERSTACK_TOKEN);
@@ -59,11 +58,14 @@ const logger = winston.createLogger({
     normalizeMessage(),
     normalizeErrorMeta(),
     timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-    isProd
-      ? json()
-      : combine(colorize(), devFormat)
+    isProd ? json() : combine(colorize({ all: true }), devFormat),
   ),
   transports,
+  exceptionHandlers: transports,
+  rejectionHandlers: transports,
 });
 
+export const logError = (msg, meta) => logger.error(msg, meta);
+export const logWarn = (msg, meta) => logger.warn(msg, meta);
+export const logInfo = (msg, meta) => logger.info(msg, meta);
 export default logger;

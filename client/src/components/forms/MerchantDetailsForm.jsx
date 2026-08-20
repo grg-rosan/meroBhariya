@@ -1,11 +1,18 @@
-import { useState } from "react";
-import { Heading, Field, Input, Button } from "../../shared/ui/porter-ui";
+import { useState, useEffect } from "react";
+import { Heading, Field, Input, Select, Button } from "../../shared/ui/porter-ui";
+import { apiGet } from "../../shared/hooks/useApi.js";
+import AddressAutocomplete from "../../modules/merchant/components/AddressAutocomplete";
 
 function validate(form) {
   const errors = {};
   if (!form.businessName.trim())
     errors.businessName = "Business name is required";
-  if (!form.address.trim()) errors.address = "Pickup address is required";
+  if (!form.address.trim()) {
+    errors.address = "Pickup address is required";
+  } else if (!form.latitude || !form.longitude) {
+    errors.address = "Please select a pickup address from the suggestions";
+  }
+  if (!form.districtId) errors.districtId = "Pickup district is required";
   return errors;
 }
 
@@ -13,9 +20,27 @@ export default function MerchantDetailsForm({ onNext, loading = false }) {
   const [form, setForm] = useState({
     businessName: "",
     address: "",
+    districtId: "",
     panNumber: "",
+    latitude: null,
+    longitude: null,
   });
   const [errors, setErrors] = useState({});
+  const [districts, setDistricts] = useState([]);
+  const [fetchingDistricts, setFetchingDistricts] = useState(true);
+
+  useEffect(() => {
+    apiGet("/api/districts")
+      .then((res) => {
+        setDistricts(res.data ?? []);
+      })
+      .catch((err) => {
+        console.error("Failed to load districts", err);
+      })
+      .finally(() => {
+        setFetchingDistricts(false);
+      });
+  }, []);
 
   const set = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
   const clear = (key) => setErrors((prev) => ({ ...prev, [key]: null }));
@@ -30,7 +55,10 @@ export default function MerchantDetailsForm({ onNext, loading = false }) {
     onNext({
       businessName: form.businessName.trim(),
       address: form.address.trim(),
+      districtId: Number(form.districtId),
       panNumber: form.panNumber.trim() || null,
+      latitude: form.latitude,
+      longitude: form.longitude,
     });
   }
 
@@ -53,17 +81,48 @@ export default function MerchantDetailsForm({ onNext, loading = false }) {
             }}
           />
         </Field>
-        <Field label="Pickup address" error={errors.address}>
-          <Input
-            type="text"
-            placeholder="New Road, Kathmandu"
+
+        <AddressAutocomplete
+          label="Pickup address"
+          value={form.address}
+          districts={districts}
+          onChange={(addr, latLng, resolvedDistrictId) => {
+            setForm((prev) => {
+              const updated = {
+                ...prev,
+                address: addr,
+                latitude: latLng?.lat ?? null,
+                longitude: latLng?.lng ?? null,
+              };
+              if (resolvedDistrictId) {
+                updated.districtId = resolvedDistrictId;
+                clear("districtId");
+              }
+              return updated;
+            });
+            clear("address");
+          }}
+          error={errors.address}
+          required
+        />
+
+        <Field label="Pickup district" error={errors.districtId}>
+          <Select
+            value={form.districtId}
             required
-            value={form.address}
+            disabled={fetchingDistricts}
             onChange={(e) => {
-              set("address", e.target.value);
-              clear("address");
+              set("districtId", e.target.value);
+              clear("districtId");
             }}
-          />
+          >
+            <option value="">Select a district...</option>
+            {districts.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name} ({d.province})
+              </option>
+            ))}
+          </Select>
         </Field>
         <Field label="PAN number" error={errors.panNumber}>
           <Input

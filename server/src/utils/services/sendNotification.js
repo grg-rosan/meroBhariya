@@ -17,15 +17,13 @@ export const NOTIFICATION_TYPE = {
 
 export async function sendNotification({ type, user, payload = {} }) {
   const message = buildMessage(type, user, payload);
-
   if (!message) {
-    logger.warn({ type }, "[Notification] Unknown type");
+    logger.warn("[Notification] Unknown type", { type });
     return;
   }
-
   try {
     await sendEmail({ to: user.email, subject: message.subject, html: message.body });
-    logger.info({ userId: user.id, type }, "[Notification] Email sent");
+    logger.info("[Notification] Email sent", { userId: user.id, type });
   } catch (err) {
     logger.error("[Notification] Email failed", { userId: user.id, type, err });
   }

@@ -1,18 +1,7 @@
 // src/modules/merchant/hooks/useMerchantProfile.js
 import { useState, useEffect } from "react";
-import { apiGet, apiPostForm } from "../../../shared/hooks/useApi.js";
+import { apiGet, apiPatch, apiPostForm } from "../../../shared/hooks/useApi.js";
 import { useToast } from "../../../context/ToastContext";
-
-// Matches pickupAddress string against districts list.
-// e.g. "New Road, Kathmandu" → finds district with name "Kathmandu".
-// Sorted by name length descending to avoid partial matches.
-function resolveFromDistrict(pickupAddress, districts) {
-  if (!pickupAddress || !districts?.length) return null;
-  const lower  = pickupAddress.toLowerCase();
-  const sorted = [...districts].sort((a, b) => b.name.length - a.name.length);
-  const match  = sorted.find((d) => lower.includes(d.name.toLowerCase()));
-  return match?.id ?? null;
-}
 
 export function useMerchantProfile(districts = []) {
   const toast = useToast();
@@ -76,7 +65,20 @@ export function useMerchantProfile(districts = []) {
     }
   };
 
-  const fromDistrictId = resolveFromDistrict(profile?.pickupAddress, districts);
+  // ── update profile ────────────────────────────────────
+  const updateProfile = async (data) => {
+    try {
+      const result = await apiPatch("/api/merchant/me", data);
+      setProfile((prev) => ({ ...prev, ...result.data }));
+      toast({ message: "Profile updated successfully.", type: "success" });
+      return result.data;
+    } catch (e) {
+      toast({ message: e.message, type: "error" });
+      throw e;
+    }
+  };
+
+  const fromDistrictId = profile?.pickupDistrictId ?? null;
 
   return {
     // profile
@@ -85,6 +87,8 @@ export function useMerchantProfile(districts = []) {
     error,
     fromDistrictId,
     pickupAddress: profile?.pickupAddress ?? null,
+    isVerified: profile?.isVerified ?? false,
+    updateProfile,
 
     // documents
     docs,

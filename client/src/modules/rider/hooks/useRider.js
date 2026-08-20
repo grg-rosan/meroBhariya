@@ -85,3 +85,24 @@ export const useRiderEarnings = () => {
   const { success: _success, ...earnings } = result.data;
   return { ...result, data: earnings };
 };
+
+export function useRequestPayout() {
+  const [loading, setLoading] = useState(false);
+  const toast = useToast();
+  const request = async (payload) => {
+    setLoading(true);
+    try {
+      const data = await apiPost("/api/rider/payouts", payload);
+      toast({ message: "Payout request submitted successfully.", type: "success" });
+      return data;
+    } catch (e) {
+      const msg = e.message ?? "Payout request failed";
+      toast({ message: msg, type: "error" });
+      throw e;
+    } finally {
+      setLoading(false);
+    }
+  };
+  return { request, loading };
+}
+

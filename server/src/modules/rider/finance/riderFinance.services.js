@@ -198,7 +198,7 @@ export const requestPayout = async (userId, { amount, method }) => {
   if (!amount || amount < 100)
     throw new AppError("Minimum payout amount is NPR 100.", 400);
 
-  const validMethods = ["ESEWA", "KHALTI", "BANK", "CASH"];
+  const validMethods = ["KHALTI"];
   if (!validMethods.includes(method))
     throw new AppError(`Invalid payout method. Must be one of: ${validMethods.join(", ")}`, 400);
 

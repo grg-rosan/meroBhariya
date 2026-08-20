@@ -10,7 +10,7 @@ export default function DispatcherNotifications() {
     <div className="p-4 md:p-6 max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-white">Notifications</h1>
+          <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">Notifications</h1>
           <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-0.5">
             {unreadCount > 0 ? `${unreadCount} unread` : "All caught up"}
           </p>
@@ -41,11 +41,10 @@ export default function DispatcherNotifications() {
             <div
               key={n.id}
               onClick={() => markRead(n.id)}
-              className={`p-4 rounded-xl border cursor-pointer transition-all ${
-                n.read
+              className={`p-4 rounded-xl border cursor-pointer transition-all ${n.read
                   ? "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 opacity-60"
                   : "bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 hover:border-gray-400 "
-              }`}
+                }`}
             >
               <div className="flex items-start gap-3">
                 <span className="text-xl">
